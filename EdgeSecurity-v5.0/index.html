@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeSecurity — Acesso Seguro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body class="login-body">
+  <main class="login-screen">
+    <section class="login-brand">
+      <div class="brand-logo"><span>⌁</span></div>
+      <div class="brand-title">Edge<span>Security</span></div>
+      <div class="brand-badge"><i></i> SISTEMA ONLINE</div>
+      <div class="brand-feats">
+        <div><b>AI</b><span>Proteção</span></div>
+        <div><b>◉</b><span>Biometria</span></div>
+        <div><b>⌁</b><span>Criptografia</span></div>
+      </div>
+    </section>
+
+    <section class="login-card">
+      <h1 id="auth-title">Acesso Secure</h1>
+      <p id="auth-subtitle">Autenticação e controle de permissões</p>
+
+      <div id="setup-notice" class="form-notice" style="display:none">
+        Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.
+      </div>
+
+      <form id="login-form">
+        <label>Identificação do Usuário<input id="username" autocomplete="username" required></label>
+        <label>Senha de Acesso<input id="password" type="password" autocomplete="current-password" required></label>
+        <label id="name-field" style="display:none">Nome<input id="name" autocomplete="name"></label>
+        <label id="email-field" style="display:none">E-mail<input id="email" type="email" autocomplete="email"></label>
+        <div id="login-error" class="form-error"></div>
+        <label class="check" id="remember-field"><input id="remember" type="checkbox"> Manter conectado</label>
+        <button class="btn btn-primary btn-full" type="submit" id="auth-submit">Iniciar sessão</button>
+      </form>
+      <button class="btn btn-secondary btn-full" type="button" id="toggle-setup" style="display:none;margin-top:10px">Voltar para login</button>
+      <small>EdgeSecurity © 2026</small>
+    </section>
+  </main>
+  <script src="js/mock-data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (window.EdgeAuth && EdgeAuth.current()) location.href = 'pages/dashboard.html';
+
+    const form = document.getElementById('login-form');
+    const title = document.getElementById('auth-title');
+    const subtitle = document.getElementById('auth-subtitle');
+    const error = document.getElementById('login-error');
+    const notice = document.getElementById('setup-notice');
+    const nameField = document.getElementById('name-field');
+    const emailField = document.getElementById('email-field');
+    const rememberField = document.getElementById('remember-field');
+    const submit = document.getElementById('auth-submit');
+    const toggleSetup = document.getElementById('toggle-setup');
+    let setupMode = EdgeDB.users.length === 0;
+
+    function renderMode() {
+      setupMode = EdgeDB.users.length === 0 || setupMode;
+      title.textContent = setupMode ? 'Configuração inicial' : 'Acesso Secure';
+      subtitle.textContent = setupMode ? 'Crie o administrador inicial do sistema' : 'Autenticação e controle de permissões';
+      notice.style.display = setupMode ? 'block' : 'none';
+      nameField.style.display = setupMode ? 'block' : 'none';
+      emailField.style.display = setupMode ? 'block' : 'none';
+      rememberField.style.display = setupMode ? 'none' : 'flex';
+      submit.textContent = setupMode ? 'Criar administrador' : 'Iniciar sessão';
+      toggleSetup.style.display = EdgeDB.users.length > 0 ? 'block' : 'none';
+      error.textContent = '';
+    }
+
+    toggleSetup.onclick = () => { setupMode = false; renderMode(); };
+    renderMode();
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      error.textContent = '';
+
+      if (setupMode) {
+        const nome = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const senha = document.getElementById('password').value;
+        if (!nome || !email || !senha) { error.textContent = 'Preencha nome, e-mail e senha.'; return; }
+        if (senha.length < 4) { error.textContent = 'A senha deve possuir pelo menos 4 caracteres.'; return; }
+
+        const user = {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          nome, email, senha, cargo: 'administrador', status: 'ativo',
+          ultimo_login: null, ultimo_logout: null, tempo_total_ativo: 0,
+          cameras: [], permissoes: {
+            visualizar_cameras: true, gerenciar_cameras: true, visualizar_alertas: true,
+            visualizar_relatorios: true, gerenciar_usuarios: true, gerenciar_permissoes: true,
+            acessar_configuracoes: true
+          }
+        };
+        EdgeDB.users.push(user);
+        EdgeDB.save();
+        setupMode = false;
+        document.getElementById('username').value = email;
+        document.getElementById('password').value = senha;
+        renderMode();
+        error.textContent = 'Administrador criado. Faça login para continuar.';
+        return;
+      }
+
+      const result = EdgeAuth.login(
+        document.getElementById('username').value,
+        document.getElementById('password').value,
+        document.getElementById('remember').checked
+      );
+      if (result.ok) location.href = 'pages/dashboard.html';
+      else error.textContent = result.message;
+    });
+  </script>
+</body>
+</html>

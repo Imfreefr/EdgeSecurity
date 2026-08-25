@@ -1,0 +1,21 @@
+(function(){
+ const page=document.body.dataset.page;
+ const template=document.getElementById('page-template');
+ const original=template?template.innerHTML:'';
+ const s=EdgeAuth.require(); if(!s)return;
+ const nav=[['dashboard','bx bx-grid-alt','Dashboard'],['cameras','bx bx-video','Câmeras'],['alertas','bx bx-bell','Sistema de Alertas'],['relatorios','bx bx-bar-chart-alt-2','Relatórios'],['atividades','bx bx-history','Monitor de Atividades'],['configuracoes','bx bx-cog','Configurações']];
+ if(s.cargo==='administrador')nav.splice(2,0,['usuarios','bx bx-group','Usuários e Permissões']);
+ document.getElementById('app').innerHTML=`<div class="app-shell"><aside class="sidebar" id="sidebar"><div class="sb-top"><div class="sb-logo"><span class="sb-brand-full">Edge<span>Security</span></span><span class="sb-brand-mini">ES</span></div><button class="sb-toggle" id="sidebar-toggle" type="button" aria-label="Recolher menu" title="Recolher menu"><i class="bx bx-chevrons-left"></i></button></div><nav class="sb-nav">${nav.map(n=>`<button class="sb-item ${page===n[0]?'active':''}" data-go="${n[0]}" title="${n[2]}"><i class="ico ${n[1]}"></i><span class="sb-label">${n[2]}</span></button>`).join('')}</nav><div class="sb-user"><strong>${escapeHtml(s.nome)}</strong><span>${s.cargo==='administrador'?'Administrador':'Usuário'}</span></div><button class="sb-logout" id="logout" title="Sair"><i class="bx bx-log-out ico"></i><span class="sb-label">Sair</span></button></aside><main class="content">${original}</main></div><div id="toast" class="toast"></div>`;
+ document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>location.href=b.dataset.go==='dashboard'?'dashboard.html':b.dataset.go+'.html');
+ const sidebar=document.getElementById('sidebar');
+ const toggle=document.getElementById('sidebar-toggle');
+ const collapsed=localStorage.getItem('edge_sidebar_collapsed')==='true';
+ if(collapsed) sidebar.classList.add('collapsed');
+ const syncSidebar=()=>{const isCollapsed=sidebar.classList.toggle('collapsed');localStorage.setItem('edge_sidebar_collapsed',String(isCollapsed));toggle.setAttribute('aria-label',isCollapsed?'Expandir menu':'Recolher menu');toggle.title=isCollapsed?'Expandir menu':'Recolher menu';};
+ toggle.onclick=syncSidebar;
+ document.getElementById('logout').onclick=()=>EdgeAuth.logout();
+ document.querySelectorAll('.admin-only').forEach(el=>{if(s.cargo!=='administrador')el.remove()});
+ document.body.classList.toggle('dark',localStorage.getItem('edge_theme')==='dark');
+ document.body.classList.toggle('large',localStorage.getItem('edge_font')==='large');
+ EdgeData.load().catch(e=>showToast(e.message));
+})();
