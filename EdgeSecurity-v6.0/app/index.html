@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EdgeSecurity — Acesso Seguro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body class="login-body">
+  <main class="login-screen">
+    <section class="login-brand">
+      <div class="brand-logo"><span>⌁</span></div>
+      <div class="brand-title">Edge<span>Security</span></div>
+      <div class="brand-badge"><i></i> SISTEMA ONLINE</div>
+      <div class="brand-feats">
+        <div><b>AI</b><span>Proteção</span></div>
+        <div><b>◉</b><span>Biometria</span></div>
+        <div><b>⌁</b><span>Criptografia</span></div>
+      </div>
+    </section>
+
+    <section class="login-card">
+      <h1 id="auth-title">Acesso Secure</h1>
+      <p id="auth-subtitle">Autenticação e controle de permissões</p>
+
+      <div id="setup-notice" class="form-notice" style="display:none">
+        Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.
+      </div>
+
+      <form id="login-form">
+        <label>Identificação do Usuário<input id="username" autocomplete="username" required></label>
+        <label>Senha de Acesso<input id="password" type="password" autocomplete="current-password" required></label>
+        <label id="name-field" style="display:none">Nome<input id="name" autocomplete="name"></label>
+        <label id="email-field" style="display:none">E-mail<input id="email" type="email" autocomplete="email"></label>
+        <div id="login-error" class="form-error"></div>
+        <label class="check" id="remember-field"><input id="remember" type="checkbox"> Manter conectado</label>
+        <button class="btn btn-primary btn-full" type="submit" id="auth-submit">Iniciar sessão</button>
+      </form>
+      <button class="btn btn-secondary btn-full" type="button" id="toggle-setup" style="display:none;margin-top:10px">Voltar para login</button>
+      <small>EdgeSecurity © 2026</small>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    async function renderMode(){
+      const title=document.getElementById('auth-title'), subtitle=document.getElementById('auth-subtitle'), notice=document.getElementById('setup-notice'), nameField=document.getElementById('name-field'), emailField=document.getElementById('email-field'), rememberField=document.getElementById('remember-field'), submit=document.getElementById('auth-submit'), toggle=document.getElementById('toggle-setup');
+      try {
+        const status=await EdgeAPI.get('/setup/status');
+        const setup=status.needs_setup && !window._forceLogin;
+        title.textContent=setup?'Configuração inicial':'Acesso Secure';
+        subtitle.textContent=setup?'Crie o administrador inicial do sistema':'Autenticação e controle de permissões';
+        notice.style.display=setup?'block':'none'; nameField.style.display=setup?'block':'none'; emailField.style.display=setup?'block':'none'; rememberField.style.display=setup?'none':'flex'; submit.textContent=setup?'Criar administrador':'Iniciar sessão'; toggle.style.display=setup?'none':'block';
+        window._setup=setup;
+      } catch(e){document.getElementById('login-error').textContent='Não foi possível conectar ao backend. Inicie o FastAPI na porta 8000.';}
+    }
+    const form=document.getElementById('login-form');
+    document.getElementById('toggle-setup').onclick=()=>{window._forceLogin=true;renderMode()};
+    form.addEventListener('submit',async e=>{e.preventDefault();const error=document.getElementById('login-error');error.textContent='';try{if(window._setup){await EdgeAPI.post('/setup',{nome:document.getElementById('name').value.trim(),email:document.getElementById('email').value.trim(),senha:document.getElementById('password').value});error.textContent='Administrador criado. Faça login para continuar.';document.getElementById('username').value=document.getElementById('email').value;window._forceLogin=true;await renderMode();return;}const r=await EdgeAuth.login(document.getElementById('username').value,document.getElementById('password').value,document.getElementById('remember').checked);location.href='pages/dashboard.html';}catch(err){error.textContent=err.message}});
+    if(EdgeAuth.current()) location.href='pages/dashboard.html';
+    renderMode();
+  </script>
+</body>
+</html>

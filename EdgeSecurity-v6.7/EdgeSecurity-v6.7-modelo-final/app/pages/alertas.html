@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Alertas — EdgeSecurity</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/alertas.css"><link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+</head>
+<body data-page="alertas"><template id="page-template">
+<div class="page-head"><div><h1>Sistema de Alertas</h1><p>Eventos de segurança e detecções das câmeras</p></div></div>
+<div class="filter-card card">
+  <select id="alert-camera"><option value="">Todas as câmeras</option></select>
+  <select id="alert-level"><option value="">Todos os níveis</option><option>Crítico</option><option>Alto</option><option>Normal</option></select>
+  <select id="alert-status"><option value="">Todos os status</option><option>Aberto</option><option>Resolvido</option></select>
+  <input id="alert-date" type="date">
+</div>
+<div class="card"><div id="alerts-table" class="table-wrap"></div></div>
+</template><div id="app"></div>
+<script src="../js/runtime-config.js"></script>
+    <script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/alertas.js"></script></body></html>

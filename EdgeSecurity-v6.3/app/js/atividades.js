@@ -1,0 +1,11 @@
+async function initActivities(){try{const [data,users]=await Promise.all([EdgeAPI.get('/activities'),EdgeAPI.get('/monitor/usuarios')]);
+const online=users.filter(u=>u.online).length;
+document.getElementById('activity-stats').innerHTML=[['Usuários cadastrados',users.length,'SQLite'],['Usuários online',online,online?'Monitoramento ativo':'Nenhum usuário online'],['Ações registradas',data.length,'Histórico'],['Tempo total registrado',formatDuration(users.reduce((n,u)=>n+Number(u.tempo_total_ativo||0),0)),'Sessões persistidas']].map(x=>`<div class="stat"><div class="label">${escapeHtml(x[0])}</div><div class="value" style="font-size:${typeof x[1]==='string'?'18px':'26px'}">${escapeHtml(x[1])}</div><div class="hint">${escapeHtml(x[2])}</div></div>`).join('');
+const userTable=users.length?`<div class="table-wrap monitor-table"><table><thead><tr><th>Usuário</th><th>Status</th><th>Sessão atual</th><th>Tempo total</th><th>Último acesso</th></tr></thead><tbody>${users.map(u=>`<tr><td><strong>${escapeHtml(u.nome)}</strong><br><small>${escapeHtml(u.email)}</small></td><td><span class="status-pill ${u.online?'live':''}">${u.online?'Online':'Offline'}</span></td><td>${u.online?formatDuration(u.sessao_atual_segundos):'—'}</td><td>${formatDuration(u.tempo_total_ativo)}</td><td>${formatDate(u.ultimo_login)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum usuário cadastrado.</div>';
+document.getElementById('activities-table').innerHTML=`<h2 class="monitor-title">Usuários</h2>${userTable}<h2 class="monitor-title">Histórico de atividades</h2>${data.length?`<table><thead><tr><th>Ação</th><th>Descrição</th><th>Data</th></tr></thead><tbody>${data.map(a=>`<tr><td>${escapeHtml(a.acao)}</td><td>${escapeHtml(a.descricao)}</td><td>${formatDate(a.data_hora)}</td></tr>`).join('')}</tbody></table>`:'<div class="empty">Nenhuma atividade registrada.</div>'}`;
+}catch(e){showToast(e.message)}}
+function formatDuration(sec){sec=Math.max(0,Number(sec)||0);
+const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+return h?`${h}h ${String(m).padStart(2,'0')}min`:m?`${m}min ${String(s).padStart(2,'0')}s`:`${s}s`;
+}
+window.addEventListener('edge-data-ready',initActivities);
