@@ -1,1 +1,0 @@
-Coloque o arquivo edgev1.pt nesta pasta. O modelo não está incluído neste ZIP porque foi fornecido separadamente.
