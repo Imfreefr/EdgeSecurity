@@ -5,40 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EdgeSecurity — Acesso Seguro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
 <body class="login-body">
   <main class="login-screen">
-    <section class="login-brand">
-      <div class="brand-logo"><img src="assets/logo.png" alt="EdgeSecurity"></div>
-      <div class="brand-title">Edge<span>Security</span></div>
+    <section class="login-hero" aria-label="EdgeSecurity — segurança na borda">
+      <div>
+        <div class="login-hero-top">
+          <div class="login-hero-mark"><img src="assets/logo.png" alt="EdgeSecurity"></div>
+          <div class="login-hero-brand">Edge<span>Security</span></div>
+        </div>
+        <div class="login-hero-copy">
+          <h2>Segurança <i>na borda.</i><br>Sem cloud. Sem ruído.</h2>
+          <p>Plataforma local para operar câmeras, testar streams e auditar risco em tempo real — projetada para a banca e para a operação.</p>
+          <div class="login-hero-points">
+            <div class="login-hero-point"><div class="ico"><i class="bx bx-video" aria-hidden="true"></i></div><div><strong>Câmeras locais + RTSP</strong><span>Conversão MJPEG no backend e teste com timeout auditável.</span></div></div>
+            <div class="login-hero-point"><div class="ico"><i class="bx bx-shield" aria-hidden="true"></i></div><div><strong>Operação local e privada</strong><span>FastAPI + SQLite em 127.0.0.1. Nada sai da borda sem consentimento.</span></div></div>
+            <div class="login-hero-point"><div class="ico"><i class="bx bx-chip" aria-hidden="true"></i></div><div><strong>YOLO edgev1.pt + risco</strong><span>Detecção com ByteTrack e motor de risco. Sem detecções fictícias.</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="login-hero-foot"><span class="dot" aria-hidden="true"></span> Operando em 127.0.0.1 — privado por padrão · v6.7.2</div>
     </section>
 
-    <section class="login-card">
-      <h1 id="auth-title">Acesso Secure</h1>
-      <p id="auth-subtitle">Autenticação e controle de permissões</p>
+    <section class="login-panel" aria-label="Acesso ao sistema">
+      <div class="login-card">
+        <div class="login-card-head">
+          <h1 id="auth-title">Acesso Seguro</h1>
+          <span class="badge">v6.7.2</span>
+        </div>
+        <p id="auth-subtitle">Autenticação e controle de permissões</p>
 
-      <div id="setup-notice" class="form-notice" style="display:none">
-        Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.
+        <div id="setup-notice" class="form-notice" style="display:none">
+          Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.
+        </div>
+
+        <form id="login-form" novalidate>
+          <label class="login-field" for="username"><span>Identificação do usuário</span><input id="username" name="username" autocomplete="username" placeholder="seu usuário ou e-mail" required></label>
+          <label class="login-field" for="password"><span>Senha de acesso</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required></label>
+          <label class="login-field" id="name-field" for="name" style="display:none"><span>Nome completo</span><input id="name" name="name" autocomplete="name" placeholder="Nome do administrador"></label>
+          <label class="login-field" id="email-field" for="email" style="display:none"><span>E-mail</span><input id="email" name="email" type="email" autocomplete="email" placeholder="admin@exemplo.com"></label>
+          <div id="login-error" class="form-error" role="alert" aria-live="polite"></div>
+          <label class="check" id="remember-field" for="remember"><input id="remember" name="remember" type="checkbox"> Manter conectado</label>
+          <button class="btn btn-primary btn-full" type="submit" id="auth-submit">Iniciar sessão</button>
+        </form>
+        <button class="btn btn-secondary btn-full" type="button" id="toggle-setup" style="display:none;margin-top:10px">Voltar para login</button>
+        <div class="login-foot">EdgeSecurity <strong>© 2026</strong> · Operação local em 127.0.0.1:8000 / 5500</div>
       </div>
-
-      <form id="login-form">
-        <label>Identificação do Usuário<input id="username" autocomplete="username" required></label>
-        <label>Senha de Acesso<input id="password" type="password" autocomplete="current-password" required></label>
-        <label id="name-field" style="display:none">Nome<input id="name" autocomplete="name"></label>
-        <label id="email-field" style="display:none">E-mail<input id="email" type="email" autocomplete="email"></label>
-        <div id="login-error" class="form-error"></div>
-        <label class="check" id="remember-field"><input id="remember" type="checkbox"> Manter conectado</label>
-        <button class="btn btn-primary btn-full" type="submit" id="auth-submit">Iniciar sessão</button>
-      </form>
-      <button class="btn btn-secondary btn-full" type="button" id="toggle-setup" style="display:none;margin-top:10px">Voltar para login</button>
-      <small>EdgeSecurity © 2026</small>
     </section>
   </main>
   <script src="js/runtime-config.js"></script>
-    <script src="js/api.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/auth.js"></script>
   <script>
     async function renderMode(){
@@ -46,7 +66,8 @@
       try {
         const status=await EdgeAPI.get('/setup/status');
         const setup=status.needs_setup && !window._forceLogin;
-        title.textContent=setup?'Configuração inicial':'Acesso Secure';
+        const headTitle=document.querySelector('.login-card-head h1');
+        if(headTitle) headTitle.textContent=setup?'Configuração inicial':'Acesso Seguro';
         subtitle.textContent=setup?'Crie o administrador inicial do sistema':'Autenticação e controle de permissões';
         notice.style.display=setup?'block':'none'; nameField.style.display=setup?'flex':'none'; emailField.style.display=setup?'flex':'none'; rememberField.style.display=setup?'none':'flex'; submit.textContent=setup?'Criar administrador':'Iniciar sessão'; toggle.style.display=setup?'none':'block';
         window._setup=setup;
