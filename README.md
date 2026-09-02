@@ -1,56 +1,52 @@
-# EdgeSecurity v6.7
+# EdgeSecurity v6.7.2
 
-Versão demonstrativa para TCC, sem arquivos `.bat`.
+Plataforma local de segurança na borda — operação privada em `127.0.0.1`, sem dependência de cloud. Gestão unificada de câmeras locais + RTSP/HTTP, teste de stream com timeout, conversão MJPEG no backend e detecção YOLO `edgev1.pt` com ByteTrack.
 
 ## Inicialização
 
-Terminal 1:
+**Opção A — 1 clique (Windows):**
 ```cmd
-cd backend
-py -m pip install -r requirements.txt
-py run.py
+INICIAR_EDGESECURITY.bat
 ```
+Cria `.venv`, instala `backend/requirements.txt` e abre backend `:8000` + frontend `:5500`.
 
-Terminal 2:
+**Opção B — manual (raiz do projeto):**
 ```cmd
-py serve.py
+py -m venv .venv
+.venv\Scripts\activate
+py -m pip install -r backend\requirements.txt
+
+:: Terminal 1
+.\.venv\Scripts\python.exe backend\run.py
+
+:: Terminal 2
+.\.venv\Scripts\python.exe serve.py
 ```
+Abra `http://127.0.0.1:5500` · API `http://127.0.0.1:8000` · `GET /api/ai/status` deve retornar `ready: true` quando `backend/model/edgev1.pt` estiver presente.
 
-Abra `http://127.0.0.1:5500`.
-
-Copie `.env.example` para `.env` (ou exporte as mesmas variáveis) e ajuste conforme o ambiente antes de subir o backend — veja os comentários no próprio arquivo.
+Copie `.env.example` para `.env` e ajuste `DB_PATH`, `SESSION_IDLE_TIMEOUT`, `LOGIN_MAX_ATTEMPTS` conforme o ambiente.
 
 ## O que há nesta versão
 
-- FastAPI + SQLite.
-- Autenticação e hash de senha.
-- Permissões verificadas no backend.
-- Sessões persistidas em SQLite, com heartbeat e tempo acumulado, e expiração automática por inatividade em memória (`SESSION_IDLE_TIMEOUT`).
-- Proteção básica contra força bruta no login (`LOGIN_MAX_ATTEMPTS` / `LOGIN_WINDOW_SECONDS`).
-- Monitor de usuários online/offline.
-- Gerenciamento completo de usuários: criar, editar, bloquear/ativar e **excluir** permanentemente. Excluir uma conta de administrador só é permitido ao administrador primário (o que criou a instalação via `/api/setup`); ninguém pode excluir a própria conta.
-- Tamanho da fonte (Configurações) escala proporcionalmente todo o texto do sistema, não só o `<body>`.
-- URL da API configurável em runtime via `js/runtime-config.js` (`window.EDGE_API_BASE`).
-- Sidebar estreita por padrão e expansão automática somente ao passar o mouse, sem botão e sem texto/ícone ES.
-- Melhorias de responsividade e estados de erro/vazio.
-- Câmeras locais e câmeras IP/RTSP/HTTP.
-- Teste de stream com timeout.
-- Stream IP convertido pelo backend para MJPEG para exibição no navegador.
-- Status online/offline e última verificação da câmera.
-- Estrutura preparada para a etapa posterior de YOLO26.
+- **Login premium v6.7.2:** split hero (storytelling + benefícios) + card branco com badge `v6.7.2`, gradientes radiais navy, micro-animação `heroPulse` e foco acessível.
+- **Fonte corrigida:** `Configurações → Aparência → Tamanho da fonte` agora escala **todo** o sistema (`html{font-size:calc(16px*var(--font-scale))}` + classes `html.font-*`, não mais `body`).
+- FastAPI + SQLite, autenticação com hash, permissões no backend.
+- Sessões com heartbeat a cada 10s, expiração `SESSION_IDLE_TIMEOUT` (padrão 8h), proteção brute-force `LOGIN_MAX_ATTEMPTS`.
+- Monitor online/offline, CRUD completo de usuários com regra de admin primário.
+- Câmeras locais + IP/RTSP/HTTP, teste com timeout, stream convertido para MJPEG.
+- Sidebar hover + `focus-within` (teclado descobre labels), hierarquia tipográfica reforçada, `min-height:44px` nos controles.
+- Dark mode completo, `::selection` temático, `prefers-reduced-motion` respeitado.
 
 ## Câmera IP
 
-A câmera precisa fornecer RTSP ou HTTP. Exemplo:
-`rtsp://192.168.1.100:554/stream`
-
-O computador que executa o backend precisa alcançar a câmera pela rede.
+`rtsp://192.168.1.100:554/stream` — o host do backend precisa alcançar a câmera na rede local.
 
 ## IA
 
-O modelo esperado é `backend/model/edgev1.pt`. O backend carrega o YOLO com ByteTrack e aplica o motor inicial de risco.
+`backend/model/edgev1.pt` carregado pelo backend (YOLO + ByteTrack + `risk_engine`). Sem detecções fictícias — o protótipo usa distância em pixels e exige calibração física para uso industrial.
 
-## Próxima etapa
+## Histórico
 
-O modelo `edgev1.pt` é carregado diretamente pelo backend. A v6.4 não inventa detecções nem cria câmeras/alertas fictícios.
-
+- `CHANGELOG-v6.7.2.md` — login premium + fonte + otimizações audit/critique
+- `CHANGELOG-correcoes-v6.7.1.md` — correções do briefing técnico
+- Tags `v6.7.2`, `v6.7.1` ... `v1.0` e branch `backup/pre-reestruturacao` preservam versões antigas (ver `git tag -l`).

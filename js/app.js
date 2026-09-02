@@ -1,6 +1,6 @@
 function applyFontSize(size){
-  document.body.classList.remove('font-small','font-normal','font-large','font-xlarge');
-  document.body.classList.add('font-' + (size || 'normal'));
+  document.documentElement.classList.remove('font-small','font-normal','font-large','font-xlarge');
+  document.documentElement.classList.add('font-' + (size || 'normal'));
 }
 (function(){
 const page=document.body.dataset.page;
