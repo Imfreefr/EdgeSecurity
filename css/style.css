@@ -19,21 +19,21 @@
 .login-screen{min-height:100vh;display:grid;grid-template-columns:1.08fr 520px;background:#070a14;position:relative;overflow:hidden}
 .login-screen::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 600px at 18% 18%, rgba(47,111,237,.22), transparent 62%),radial-gradient(760px 520px at 92% 92%, rgba(34,211,238,.13), transparent 60%),linear-gradient(180deg,#070c1a 0%,#0a1226 55%,#070c1a 100%);pointer-events:none;z-index:0}
 .login-screen::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg, transparent 56%, rgba(248,250,252,.035) 100%);pointer-events:none;z-index:0}
-.login-hero{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;padding:46px 52px 34px;color:#e2e8f0;min-width:0}
+.login-hero{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:space-between;gap:28px;padding:52px 56px 36px;color:#e2e8f0;min-width:0}
 .login-hero-top{display:flex;align-items:center;gap:12px}
 .login-hero-mark{width:40px;height:40px;border-radius:12px;background:#0f1b33;border:1px solid rgba(255,255,255,.09);display:grid;place-items:center;box-shadow:0 8px 22px rgba(0,0,0,.28)}
 .login-hero-mark img{width:26px;height:26px;object-fit:contain}
 .login-hero-brand{font-size:.95rem;font-weight:800;letter-spacing:-.02em;color:#fff}
 .login-hero-brand span{color:#22d3ee}
-.login-hero-copy{max-width:520px;margin-top:36px}
-.login-hero-copy h2{font-size:clamp(2rem,3.2vw,2.75rem);line-height:.95;letter-spacing:-.04em;font-weight:800;color:#fff}
+.login-hero-copy{max-width:560px;margin-top:40px}
+.login-hero-copy h2{font-size:clamp(2.2rem,3.1vw,3.05rem);line-height:.93;letter-spacing:-.045em;font-weight:800;color:#fff}
 .login-hero-copy h2 i{font-style:normal;color:#7dd3fc}
-.login-hero-copy>p{margin-top:14px;color:#9fb0cc;line-height:1.6;font-size:.95rem;max-width:44ch}
-.login-hero-points{margin-top:28px;display:grid;gap:14px}
+.login-hero-copy>p{margin-top:16px;color:#a8bdd8;line-height:1.62;font-size:1rem;max-width:46ch}
+.login-hero-points{margin-top:30px;display:grid;gap:16px}
 .login-hero-point{display:flex;gap:12px;align-items:flex-start}
-.login-hero-point .ico{width:34px;height:34px;flex:0 0 34px;border-radius:10px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;color:#7dd3fc;font-size:1.05rem}
-.login-hero-point strong{display:block;color:#fff;font-size:.86rem;letter-spacing:-.01em}
-.login-hero-point span{display:block;color:#8ea3c0;font-size:.78rem;margin-top:2px;line-height:1.5}
+.login-hero-point .ico{width:38px;height:38px;flex:0 0 38px;border-radius:11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.09);display:grid;place-items:center;color:#7dd3fc;font-size:1.18rem;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.login-hero-point strong{display:block;color:#fff;font-size:.92rem;letter-spacing:-.015em;line-height:1.25}
+.login-hero-point span{display:block;color:#9fb0cc;font-size:.84rem;margin-top:3px;line-height:1.52}
 .login-hero-foot{display:flex;align-items:center;gap:14px;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.07);color:#7a8bae;font-size:.72rem}
 .login-hero-foot .dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 6px rgba(34,197,94,.14);animation:heroPulse 2.2s ease infinite}
 @keyframes heroPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.9}}
