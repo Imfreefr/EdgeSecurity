@@ -1,8 +1,32 @@
-async function initAlerts(){const sel=document.getElementById('alert-camera');
-EdgeDB.cameras.forEach(c=>sel.insertAdjacentHTML('beforeend',`<option value="${c.id}">${escapeHtml(c.nome)}</option>`));
-async function render(){try{const q=new URLSearchParams();
-if(sel.value)q.set('camera_id',sel.value);
-for(const [id,key] of [['alert-level','level'],['alert-status','status'],['alert-date','date']])if(document.getElementById(id).value)q.set(key,document.getElementById(id).value);
-const data=await EdgeAPI.get('/alerts?'+q.toString());
-document.getElementById('alerts-table').innerHTML=`<table><thead><tr><th>Data</th><th>Câmera</th><th>Tipo</th><th>Descrição</th><th>Nível</th><th>Status</th></tr></thead><tbody>${data.map(a=>`<tr><td>${formatDate(a.data_hora)}</td><td>${escapeHtml(cameraById(a.camera_id)?.nome||'—')}</td><td>${escapeHtml(a.tipo)}</td><td>${escapeHtml(a.descricao)}</td><td><span class="level ${a.nivel==='Crítico'?'critical':a.nivel==='Alto'?'high':'normal'}">${a.nivel}</span></td><td><span class="badge ${a.status==='Aberto'?'red':'green'}">${a.status}</span></td></tr>`).join('')||'<tr><td colspan="6"><div class="empty">Nenhum alerta encontrado.</div></td></tr>'}</tbody></table>`}catch(e){showToast(e.message)}}document.querySelectorAll('#alert-camera,#alert-level,#alert-status,#alert-date').forEach(e=>e.addEventListener('change',render));
-await render()}window.addEventListener('edge-data-ready',initAlerts);
+async function initAlerts() {
+  const sel = document.getElementById("alert-camera");
+  EdgeDB.cameras.forEach((c) =>
+    sel.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${c.id}">${escapeHtml(c.nome)}</option>`,
+    ),
+  );
+  async function render() {
+    try {
+      const q = new URLSearchParams();
+      if (sel.value) q.set("camera_id", sel.value);
+      for (const [id, key] of [
+        ["alert-level", "level"],
+        ["alert-status", "status"],
+        ["alert-date", "date"],
+      ])
+        if (document.getElementById(id).value)
+          q.set(key, document.getElementById(id).value);
+      const data = await EdgeAPI.get("/alerts?" + q.toString());
+      document.getElementById("alerts-table").innerHTML =
+        `<table><thead><tr><th>Data</th><th>Câmera</th><th>Tipo</th><th>Descrição</th><th>Nível</th><th>Status</th></tr></thead><tbody>${data.map((a) => `<tr><td>${formatDate(a.data_hora)}</td><td>${escapeHtml(cameraById(a.camera_id)?.nome || "—")}</td><td>${escapeHtml(a.tipo)}</td><td>${escapeHtml(a.descricao)}</td><td><span class="level ${a.nivel === "Crítico" ? "critical" : a.nivel === "Alto" ? "high" : "normal"}">${a.nivel}</span></td><td><span class="badge ${a.status === "Aberto" ? "red" : "green"}">${a.status}</span></td></tr>`).join("") || '<tr><td colspan="6"><div class="empty">Nenhum alerta encontrado.</div></td></tr>'}</tbody></table>`;
+    } catch (e) {
+      showToast(e.message);
+    }
+  }
+  document
+    .querySelectorAll("#alert-camera,#alert-level,#alert-status,#alert-date")
+    .forEach((e) => e.addEventListener("change", render));
+  await render();
+}
+window.addEventListener("edge-data-ready", initAlerts);

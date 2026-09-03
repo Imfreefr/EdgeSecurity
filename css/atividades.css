@@ -1,3 +1,108 @@
-/* Estilos específicos mantidos separados para evolução do módulo. */
+/* ==========================================================================
+   Atividades — tabela de usuários e histórico
+   ========================================================================== */
 
-.monitor-title{padding:18px 20px 8px;font-size:1rem}.monitor-table{border-bottom:1px solid var(--border);padding-bottom:6px}.monitor-table small{color:var(--muted)}
+/* Overdrive — animações de entrada e destaques */
+#activity-stats .stat {
+  animation: odStatIn 0.52s var(--od-ease) both;
+}
+#activity-stats .stat:nth-child(1) {
+  animation-delay: 0.02s;
+}
+#activity-stats .stat:nth-child(2) {
+  animation-delay: 0.06s;
+}
+#activity-stats .stat:nth-child(3) {
+  animation-delay: 0.1s;
+}
+#activity-stats .stat:nth-child(4) {
+  animation-delay: 0.14s;
+}
+#activities-table {
+  animation: odAlertTable 0.58s var(--od-ease) 0.08s both;
+}
+#activities-table tbody tr {
+  animation: odRowIn 0.42s var(--od-ease) both;
+}
+#activities-table tbody tr:nth-child(1) {
+  animation-delay: 0.02s;
+}
+#activities-table tbody tr:nth-child(2) {
+  animation-delay: 0.06s;
+}
+#activities-table tbody tr:nth-child(3) {
+  animation-delay: 0.1s;
+}
+#activities-table tbody tr:nth-child(4) {
+  animation-delay: 0.14s;
+}
+#activities-table tbody tr:nth-child(5) {
+  animation-delay: 0.18s;
+}
+#activities-table tbody tr:nth-child(6) {
+  animation-delay: 0.22s;
+}
+#activities-table tbody tr,
+.monitor-table tbody tr {
+  transition:
+    transform 0.22s var(--od-ease),
+    background-color 0.2s ease,
+    box-shadow 0.22s ease;
+  will-change: transform;
+}
+#activities-table tbody tr:hover,
+.monitor-table tbody tr:hover {
+  transform: translateX(3px);
+  background: rgba(47, 111, 237, 0.05);
+  box-shadow: inset 3px 0 0 rgba(47, 111, 237, 0.18);
+}
+.monitor-title {
+  padding: 18px 20px 8px;
+  font-size: 1rem;
+  animation: odAlertFilters 0.48s var(--od-ease) both;
+}
+.monitor-table {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  position: relative;
+  overflow: hidden;
+}
+.monitor-table small {
+  color: var(--muted);
+}
+.monitor-table::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(47, 111, 237, 0.18),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+.card:hover .monitor-table::after {
+  opacity: 1;
+}
+@keyframes odStatIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #activity-stats .stat,
+  #activities-table,
+  #activities-table tbody tr {
+    animation: none !important;
+  }
+}

@@ -13,12 +13,16 @@ class SafetyDetector:
         if not model_file.is_absolute():
             model_file = (Path(__file__).resolve().parents[1] / model_file).resolve()
         if not model_file.exists():
-            raise FileNotFoundError(f'Modelo YOLO não encontrado: {model_file}')
+            raise FileNotFoundError(f"Modelo YOLO não encontrado: {model_file}")
         self.model_path = str(model_file)
         self.model = YOLO(str(model_file))
 
         names = self.model.names
-        self.names = {int(k): str(v) for k, v in names.items()} if isinstance(names, dict) else dict(enumerate(names))
+        self.names = (
+            {int(k): str(v) for k, v in names.items()}
+            if isinstance(names, dict)
+            else dict(enumerate(names))
+        )
 
     def infer(self, frame):
         result = self.model.track(
@@ -35,7 +39,11 @@ class SafetyDetector:
             return detections
 
         boxes = result.boxes
-        ids = boxes.id.int().cpu().tolist() if boxes.id is not None else [None] * len(boxes)
+        ids = (
+            boxes.id.int().cpu().tolist()
+            if boxes.id is not None
+            else [None] * len(boxes)
+        )
         xyxy = boxes.xyxy.cpu().tolist()
         confs = boxes.conf.cpu().tolist()
         classes = boxes.cls.int().cpu().tolist()
@@ -43,19 +51,37 @@ class SafetyDetector:
         for bbox, conf, cls_id, track_id in zip(xyxy, confs, classes, ids):
             raw_name = self.names.get(cls_id, str(cls_id)).lower().strip()
             # O modelo treinado deve usar estas classes. Também aceitamos aliases comuns.
-            if raw_name in {"person", "pessoa", "human", "humano", "worker", "trabalhador"}:
+            if raw_name in {
+                "person",
+                "pessoa",
+                "human",
+                "humano",
+                "worker",
+                "trabalhador",
+            }:
                 class_name = "human"
-            elif raw_name in {"machine", "máquina", "maquina", "vehicle", "veiculo", "veículo", "forklift", "empilhadeira"}:
+            elif raw_name in {
+                "machine",
+                "máquina",
+                "maquina",
+                "vehicle",
+                "veiculo",
+                "veículo",
+                "forklift",
+                "empilhadeira",
+            }:
                 class_name = "forklift"
             else:
                 class_name = raw_name
 
-            detections.append({
-                "class_id": cls_id,
-                "class_name": class_name,
-                "label": raw_name,
-                "confidence": round(float(conf), 4),
-                "bbox": [round(float(v), 2) for v in bbox],
-                "track_id": track_id,
-            })
+            detections.append(
+                {
+                    "class_id": cls_id,
+                    "class_name": class_name,
+                    "label": raw_name,
+                    "confidence": round(float(conf), 4),
+                    "bbox": [round(float(v), 2) for v in bbox],
+                    "track_id": track_id,
+                }
+            )
         return detections
