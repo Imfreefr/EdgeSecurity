@@ -6,6 +6,7 @@ o sistema deve ser calibrado para cada câmera (homografia, zonas físicas,
 profundidade/estéreo ou outro método validado) antes de ser usado como barreira
 de segurança.
 """
+
 from math import hypot
 
 
@@ -44,14 +45,18 @@ def assess_risk(detections):
             else:
                 level = "safe"
 
-            risks.append({
-                "person_track_id": person.get("track_id"),
-                "machine_track_id": machine.get("track_id"),
-                "gap_pixels": round(gap, 1),
-                "center_distance_pixels": round(center_distance, 1),
-                "level": level,
-            })
+            risks.append(
+                {
+                    "person_track_id": person.get("track_id"),
+                    "machine_track_id": machine.get("track_id"),
+                    "gap_pixels": round(gap, 1),
+                    "center_distance_pixels": round(center_distance, 1),
+                    "level": level,
+                }
+            )
 
     priority = {"critical": 4, "high": 3, "medium": 2, "safe": 1}
-    overall = max((r["level"] for r in risks), key=lambda x: priority[x], default="safe")
+    overall = max(
+        (r["level"] for r in risks), key=lambda x: priority[x], default="safe"
+    )
     return {"level": overall, "pairs": risks}

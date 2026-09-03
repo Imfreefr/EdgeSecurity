@@ -5,12 +5,14 @@ print(f"Python: {sys.version.split()[0]}")
 
 try:
     import fastapi
+
     print(f"FastAPI: {fastapi.__version__}")
 except Exception:
     print("FastAPI: não instalado")
 
 try:
     import uvicorn
+
     print(f"Uvicorn: {uvicorn.__version__}")
 except Exception:
     print("Uvicorn: não instalado")

@@ -1,1 +1,86 @@
-/* Estilos específicos mantidos separados para evolução do módulo. */
+/* ==========================================================================
+   Painel (Dashboard) — cartões e palco da câmera
+   ========================================================================== */
+
+/* Overdrive — animações */
+.dashboard-grid .card {
+  animation: odCardIn 0.58s var(--od-ease) both;
+}
+.dashboard-grid .card:nth-child(1) {
+  animation-delay: 0.06s;
+}
+.dashboard-grid .card:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.camera-stage {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: filter 0.32s ease;
+}
+.camera-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(34, 211, 238, 0.06),
+    transparent 28%
+  );
+  opacity: 0;
+  transition: opacity 0.36s ease;
+  pointer-events: none;
+}
+.card:hover .camera-stage::after {
+  opacity: 1;
+}
+.camera-placeholder .camera-icon {
+  transition:
+    transform 0.42s var(--od-ease),
+    box-shadow 0.28s ease,
+    filter 0.28s ease;
+}
+.card:hover .camera-placeholder .camera-icon {
+  transform: scale(1.04) translateY(-2px);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.16);
+}
+#dashboard-camera-btn {
+  position: relative;
+  overflow: hidden;
+}
+#dashboard-camera-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.16),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.56s var(--od-ease);
+}
+#dashboard-camera-btn:hover::after {
+  transform: translateX(100%);
+}
+.stat-grid .stat {
+  transition:
+    transform 0.28s var(--od-ease),
+    box-shadow 0.28s ease;
+}
+@keyframes odCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-grid .card {
+    animation: none !important;
+  }
+}

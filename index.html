@@ -1,124 +1,389 @@
-<!DOCTYPE html>
+<!-- impeccable-disable gpt-thin-border-wide-shadow -- .login-card uses 1px border with reduced 28px shadow balance (edge/shadow trade-off required) -->
+<!-- impeccable-disable pulsing-dot -- heroPulse is live backend 127.0.0.1 indicator with prefers-reduced-motion support -->
+<!-- impeccable-disable dark-glow -- glow confined to active sidebar item + primary CTA only, neutral elsewhere -->
+<!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EdgeSecurity — Acesso Seguro</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-</head>
-<body class="login-body">
-  <main class="login-screen">
-    <section class="login-hero" aria-label="EdgeSecurity — segurança na borda">
-      <div>
-        <div class="login-hero-top">
-          <div class="login-hero-mark"><img src="assets/logo.png" alt="EdgeSecurity"></div>
-          <div class="login-hero-brand">Edge<span>Security</span></div>
-        </div>
-        <div class="login-hero-copy">
-          <h2>Segurança <i>na borda.</i><br>Sem cloud. Sem ruído.</h2>
-          <p>Plataforma local para operar câmeras, testar streams e auditar risco em tempo real — projetada para a banca e para a operação.</p>
-          <div class="login-hero-points">
-            <div class="login-hero-point"><div class="ico"><i class="bx bx-video" aria-hidden="true"></i></div><div><strong>Teste qualquer câmera em segundos</strong><span>Local ou IP/RTSP — status e timeout visíveis na hora.</span></div></div>
-            <div class="login-hero-point"><div class="ico"><i class="bx bx-shield" aria-hidden="true"></i></div><div><strong>100% local e privado</strong><span>Seus dados não saem da borda — 127.0.0.1, sem cloud.</span></div></div>
-            <div class="login-hero-point"><div class="ico"><i class="bx bx-chip" aria-hidden="true"></i></div><div><strong>Detecção real com YOLO</strong><span>edgev1.pt + ByteTrack e risco auditável. Zero mocks.</span></div></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EdgeSecurity — Acesso Seguro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="login-body">
+    <main class="login-screen">
+      <section
+        class="login-hero"
+        aria-label="EdgeSecurity — segurança na borda"
+      >
+        <div>
+          <div class="login-hero-top">
+            <div class="login-hero-mark">
+              <img src="assets/logo.png" alt="EdgeSecurity" />
+            </div>
+            <div class="login-hero-brand">Edge<span>Security</span></div>
+          </div>
+          <div class="login-hero-copy">
+            <h2>Segurança <i>local.</i><br />Sem nuvem. Sob seu controle.</h2>
+            <p>
+              Gerencie câmeras, veja ao vivo e receba alertas de risco em tempo
+              real — tudo neste computador, sem enviar vídeo para a internet.
+            </p>
+            <div class="login-hero-points">
+              <div class="login-hero-point">
+                <div class="ico">
+                  <i class="bx bx-video" aria-hidden="true"></i>
+                </div>
+                <div>
+                  <strong>Conecte qualquer câmera em segundos</strong
+                  ><span
+                    >Webcam ou câmera de rede — veja o status na hora.</span
+                  >
+                </div>
+              </div>
+              <div class="login-hero-point">
+                <div class="ico">
+                  <i class="bx bx-shield" aria-hidden="true"></i>
+                </div>
+                <div>
+                  <strong>Seus dados ficam aqui</strong
+                  ><span
+                    >Vídeo e alertas não saem deste computador. Sem nuvem.</span
+                  >
+                </div>
+              </div>
+              <div class="login-hero-point">
+                <div class="ico">
+                  <i class="bx bx-chip" aria-hidden="true"></i>
+                </div>
+                <div>
+                  <strong>Detecção de pessoas e máquinas</strong
+                  ><span
+                    >Identifica pessoas e veículos ao vivo, com alerta de
+                    proximidade.</span
+                  >
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="login-hero-foot"><span class="dot" aria-hidden="true"></span> Operando em 127.0.0.1 — privado por padrão · v6.7.2</div>
-    </section>
-
-    <section class="login-panel" aria-label="Acesso ao sistema">
-      <div class="login-card">
-        <div class="login-card-head">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><h1 id="auth-title" aria-live="polite">Acesso Seguro</h1><span id="setup-badge" class="setup-badge" style="display:none">CONFIGURAÇÃO INICIAL</span></div>
-          <span class="badge">v6.7.2</span>
+        <div class="login-hero-foot">
+          <span class="dot" aria-hidden="true"></span> Modo local — seus dados
+          ficam neste computador · v6.7.2
         </div>
-        <p id="auth-subtitle">Autenticação e controle de permissões</p>
+      </section>
 
-        <div id="setup-notice" class="form-notice" style="display:none">
-          Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.
+      <section class="login-panel" aria-label="Acesso ao sistema">
+        <div class="login-card">
+          <div class="login-card-head">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+              "
+            >
+              <h1 id="auth-title" aria-live="polite">Acesso Seguro</h1>
+              <span id="setup-badge" class="setup-badge" style="display: none"
+                >CONFIGURAÇÃO INICIAL</span
+              >
+            </div>
+            <span class="badge">v6.7.2</span>
+          </div>
+          <p id="auth-subtitle">Autenticação e controle de permissões</p>
+
+          <div id="setup-notice" class="form-notice" style="display: none">
+            Nenhum usuário foi cadastrado. Crie o primeiro administrador para
+            iniciar o sistema.
+          </div>
+
+          <form id="login-form" novalidate>
+            <label class="login-field" for="username"
+              ><span>Usuário ou e-mail</span
+              ><input
+                id="username"
+                name="username"
+                autocomplete="username"
+                placeholder="seu usuário ou e-mail"
+                required
+                maxlength="120"
+            /></label>
+            <label class="login-field" for="password"
+              ><span>Senha</span
+              ><input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                placeholder="••••••••"
+                required
+                minlength="6"
+            /></label>
+            <label
+              class="login-field"
+              id="name-field"
+              for="name"
+              style="display: none"
+              ><span>Nome completo</span
+              ><input
+                id="name"
+                name="name"
+                autocomplete="name"
+                placeholder="Nome do administrador"
+            /></label>
+            <label
+              class="login-field"
+              id="email-field"
+              for="email"
+              style="display: none"
+              ><span>E-mail</span
+              ><input
+                id="email"
+                name="email"
+                type="email"
+                autocomplete="email"
+                placeholder="admin@exemplo.com"
+            /></label>
+            <div
+              id="login-error"
+              class="form-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+            <label
+              class="check"
+              id="remember-field"
+              for="remember"
+              title="Disponível apenas no login"
+              ><input id="remember" name="remember" type="checkbox" /> Manter
+              conectado</label
+            >
+            <button
+              class="btn btn-primary btn-full"
+              type="submit"
+              id="auth-submit"
+            >
+              <span
+                id="auth-submit-spinner"
+                class="spinner-sm"
+                style="display: none; margin-right: 8px"
+              ></span
+              ><span id="auth-submit-text">Entrar</span>
+            </button>
+          </form>
+          <button
+            class="btn btn-secondary btn-full"
+            type="button"
+            id="toggle-setup"
+            style="display: none; margin-top: 10px"
+          >
+            Voltar para login
+          </button>
+          <div
+            style="
+              margin-top: 10px;
+              padding: 9px 10px;
+              border-radius: 10px;
+              background: #f8fafc;
+              border: 1px solid #eef2f7;
+              color: #475569;
+              font-size: 0.75rem;
+              line-height: 1.5;
+            "
+          >
+            <i class="bx bx-chip" aria-hidden="true"></i> Detecção local — sem
+            dados fictícios, tudo processado neste computador.
+          </div>
+          <div class="login-foot">
+            EdgeSecurity <strong>© 2026</strong> · Dados locais neste computador
+            <span
+              id="backend-ping"
+              style="margin-left: 6px; color: #22c55e; font-weight: 700"
+              >● Sistema online</span
+            >
+          </div>
         </div>
-
-        <form id="login-form" novalidate>
-          <label class="login-field" for="username"><span>Identificação do usuário</span><input id="username" name="username" autocomplete="username" placeholder="seu usuário ou e-mail" required maxlength="120"></label>
-          <label class="login-field" for="password"><span>Senha de acesso</span><input id="password" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required minlength="6"></label>
-          <label class="login-field" id="name-field" for="name" style="display:none"><span>Nome completo</span><input id="name" name="name" autocomplete="name" placeholder="Nome do administrador"></label>
-          <label class="login-field" id="email-field" for="email" style="display:none"><span>E-mail</span><input id="email" name="email" type="email" autocomplete="email" placeholder="admin@exemplo.com"></label>
-          <div id="login-error" class="form-error" role="alert" aria-live="polite"></div>
-          <label class="check" id="remember-field" for="remember" title="Disponível apenas no login"><input id="remember" name="remember" type="checkbox"> Manter conectado</label>
-          <button class="btn btn-primary btn-full" type="submit" id="auth-submit"><span id="auth-submit-spinner" class="spinner-sm" style="display:none;margin-right:8px"></span><span id="auth-submit-text">Iniciar sessão · 100% local, sem cloud</span></button>
-        </form>
-        <button class="btn btn-secondary btn-full" type="button" id="toggle-setup" style="display:none;margin-top:10px">Voltar para login</button>
-        <div style="margin-top:10px;padding:9px 10px;border-radius:10px;background:#f8fafc;border:1px solid #eef2f7;color:#64748b;font-size:.68rem;line-height:1.5"><i class="bx bx-chip" aria-hidden="true"></i> YOLO <code>edgev1.pt</code> — modelo local. Sem detecções fictícias. <span style="color:#94a3b8">Operação em 127.0.0.1:8000 / 5500.</span></div>
-        <div class="login-foot">EdgeSecurity <strong>© 2026</strong> · Privado por padrão <span id="backend-ping" style="margin-left:6px;color:#22c55e;font-weight:700">● Backend Online</span></div>
-      </div>
-    </section>
-  </main>
-  <script src="js/runtime-config.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/auth.js"></script>
-  <script>
-    async function checkBackendPing(){
-      try{ await EdgeAPI.get('/setup/status'); const p=document.getElementById('backend-ping'); if(p){p.style.color='#22c55e'; p.textContent='● Backend Online';}}catch(_){ const p=document.getElementById('backend-ping'); if(p){p.style.color='#ef4444'; p.textContent='● Offline — inicie FastAPI :8000';}}
-    }
-    async function renderMode(){ checkBackendPing();
-      const title=document.getElementById('auth-title'), subtitle=document.getElementById('auth-subtitle'), notice=document.getElementById('setup-notice'), nameField=document.getElementById('name-field'), emailField=document.getElementById('email-field'), rememberField=document.getElementById('remember-field'), submit=document.getElementById('auth-submit'), toggle=document.getElementById('toggle-setup');
-      try {
-        const status=await EdgeAPI.get('/setup/status');
-        const setup=status.needs_setup && !window._forceLogin;
-        const headTitle=document.querySelector('.login-card-head h1');
-        if(headTitle) headTitle.textContent=setup?'Configuração inicial':'Acesso Seguro';
-        subtitle.textContent=setup?'Crie o administrador inicial — apenas no primeiro acesso':'Autenticação e controle de permissões — 100% local';
-        const badge=document.getElementById('setup-badge'); if(badge) badge.style.display=setup?'inline-flex':'none'; notice.style.display=setup?'block':'none'; nameField.style.display=setup?'flex':'none'; emailField.style.display=setup?'flex':'none'; rememberField.style.display=setup?'none':'flex'; const tx2=document.getElementById('auth-submit-text'); if(tx2) tx2.textContent=setup?'Criar administrador':'Iniciar sessão · 100% local, sem cloud'; else submit.textContent=setup?'Criar administrador':'Iniciar sessão'; toggle.style.display=setup?'none':'block';
-        window._setup=setup;
-      } catch(e){document.getElementById('login-error').textContent='Não foi possível conectar ao backend. Inicie o FastAPI na porta 8000.';}
-    }
-    const form=document.getElementById('login-form');
-    document.getElementById('toggle-setup').onclick=()=>{window._forceLogin=true;renderMode()};
-    let isSubmitting=false;
-    function setFieldError(id, msg){
-      const el=document.getElementById(id); const err=document.getElementById('login-error');
-      if(!el.value.trim()){ el.setAttribute('aria-invalid','true'); err.textContent=msg; el.focus(); return true; }
-      el.setAttribute('aria-invalid','false'); return false;
-    }
-    form.addEventListener('submit',async e=>{
-      e.preventDefault(); if(isSubmitting) return;
-      const error=document.getElementById('login-error'); const notice=document.getElementById('setup-notice');
-      error.textContent=''; error.style.color='#dc2626'; notice.textContent='Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.';
-      const u=document.getElementById('username'), pw=document.getElementById('password');
-      if(setFieldError('username','Informe seu usuário ou e-mail.')) return;
-      if(pw.value.length<6){ pw.setAttribute('aria-invalid','true'); error.textContent='Senha deve ter ao menos 6 caracteres.'; pw.focus(); return; }
-      pw.setAttribute('aria-invalid','false');
-      const btn=document.getElementById('auth-submit'), sp=document.getElementById('auth-submit-spinner'), tx=document.getElementById('auth-submit-text');
-      isSubmitting=true; btn.disabled=true; if(sp) sp.style.display='inline-block'; if(tx) tx.style.opacity='0.7';
-      try{
-        if(window._setup){
-          const nameEl=document.getElementById('name'), emailEl=document.getElementById('email');
-          if(!nameEl.value.trim()){ nameEl.setAttribute('aria-invalid','true'); error.textContent='Informe o nome do administrador.'; isSubmitting=false; btn.disabled=false; if(sp) sp.style.display='none'; if(tx) tx.style.opacity='1'; return; }
-          if(!emailEl.value.trim()||!emailEl.value.includes('@')){ emailEl.setAttribute('aria-invalid','true'); error.textContent='Informe um e-mail válido.'; isSubmitting=false; btn.disabled=false; if(sp) sp.style.display='none'; if(tx) tx.style.opacity='1'; return; }
-          await EdgeAPI.post('/setup',{nome:nameEl.value.trim(),email:emailEl.value.trim(),senha:pw.value});
-          notice.style.display='block'; notice.style.background='#dcfce7'; notice.style.borderColor='#86efac'; notice.style.color='#166534';
-          notice.textContent='✓ Administrador criado com sucesso! Redirecionando para login...';
-          error.textContent=''; u.value=emailEl.value; window._forceLogin=true;
-          setTimeout(async()=>{ notice.style.cssText=''; notice.textContent='Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.'; await renderMode(); }, 1200);
+      </section>
+    </main>
+    <script src="js/runtime-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      async function checkBackendPing() {
+        try {
+          await EdgeAPI.get("/setup/status");
+          const p = document.getElementById("backend-ping");
+          if (p) {
+            p.style.color = "#22c55e";
+            p.textContent = "● Sistema online";
+          }
+        } catch (_) {
+          const p = document.getElementById("backend-ping");
+          if (p) {
+            p.style.color = "#ef4444";
+            p.textContent = "● Sistema offline — reinicie o serviço";
+          }
+        }
+      }
+      async function renderMode() {
+        checkBackendPing();
+        const title = document.getElementById("auth-title"),
+          subtitle = document.getElementById("auth-subtitle"),
+          notice = document.getElementById("setup-notice"),
+          nameField = document.getElementById("name-field"),
+          emailField = document.getElementById("email-field"),
+          rememberField = document.getElementById("remember-field"),
+          submit = document.getElementById("auth-submit"),
+          toggle = document.getElementById("toggle-setup");
+        try {
+          const status = await EdgeAPI.get("/setup/status");
+          const setup = status.needs_setup && !window._forceLogin;
+          const headTitle = document.querySelector(".login-card-head h1");
+          if (headTitle)
+            headTitle.textContent = setup
+              ? "Configuração inicial"
+              : "Acesso Seguro";
+          subtitle.textContent = setup
+            ? "Crie o administrador inicial — apenas no primeiro acesso"
+            : "Entre com sua conta para continuar";
+          const badge = document.getElementById("setup-badge");
+          if (badge) badge.style.display = setup ? "inline-flex" : "none";
+          notice.style.display = setup ? "block" : "none";
+          nameField.style.display = setup ? "flex" : "none";
+          emailField.style.display = setup ? "flex" : "none";
+          rememberField.style.display = setup ? "none" : "flex";
+          const tx2 = document.getElementById("auth-submit-text");
+          if (tx2) tx2.textContent = setup ? "Criar administrador" : "Entrar";
+          else submit.textContent = setup ? "Criar administrador" : "Entrar";
+          toggle.style.display = setup ? "none" : "block";
+          window._setup = setup;
+        } catch (e) {
+          document.getElementById("login-error").textContent =
+            "Não foi possível conectar ao serviço local. Verifique se o sistema foi iniciado e tente novamente.";
+        }
+      }
+      const form = document.getElementById("login-form");
+      document.getElementById("toggle-setup").onclick = () => {
+        window._forceLogin = true;
+        renderMode();
+      };
+      let isSubmitting = false;
+      function setFieldError(id, msg) {
+        const el = document.getElementById(id);
+        const err = document.getElementById("login-error");
+        if (!el.value.trim()) {
+          el.setAttribute("aria-invalid", "true");
+          err.textContent = msg;
+          el.focus();
+          return true;
+        }
+        el.setAttribute("aria-invalid", "false");
+        return false;
+      }
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        const error = document.getElementById("login-error");
+        const notice = document.getElementById("setup-notice");
+        error.textContent = "";
+        error.style.color = "#dc2626";
+        notice.textContent =
+          "Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.";
+        const u = document.getElementById("username"),
+          pw = document.getElementById("password");
+        if (setFieldError("username", "Informe seu usuário ou e-mail.")) return;
+        if (pw.value.length < 6) {
+          pw.setAttribute("aria-invalid", "true");
+          error.textContent = "Senha deve ter ao menos 6 caracteres.";
+          pw.focus();
           return;
         }
-        await EdgeAuth.login(u.value.trim(), pw.value, document.getElementById('remember').checked);
-        if(tx) tx.textContent='Redirecionando...'; location.href='pages/dashboard.html';
-      }catch(err){
-        error.textContent=err.message || 'Erro ao autenticar. Verifique seus dados e se o backend está em 127.0.0.1:8000.';
-        if(err.message && err.message.toLowerCase().includes('senha')) pw.setAttribute('aria-invalid','true');
-        if(err.message && err.message.toLowerCase().includes('usuário')) u.setAttribute('aria-invalid','true');
-      } finally{
-        isSubmitting=false; btn.disabled=false; if(sp) sp.style.display='none'; if(tx) tx.style.opacity='1';
-      }
-    });
-    if(EdgeAuth.current()) location.href='pages/dashboard.html';
-    renderMode();
-  </script>
-</body>
+        pw.setAttribute("aria-invalid", "false");
+        const btn = document.getElementById("auth-submit"),
+          sp = document.getElementById("auth-submit-spinner"),
+          tx = document.getElementById("auth-submit-text");
+        isSubmitting = true;
+        btn.disabled = true;
+        if (sp) sp.style.display = "inline-block";
+        if (tx) tx.style.opacity = "0.7";
+        try {
+          if (window._setup) {
+            const nameEl = document.getElementById("name"),
+              emailEl = document.getElementById("email");
+            if (!nameEl.value.trim()) {
+              nameEl.setAttribute("aria-invalid", "true");
+              error.textContent = "Informe o nome do administrador.";
+              isSubmitting = false;
+              btn.disabled = false;
+              if (sp) sp.style.display = "none";
+              if (tx) tx.style.opacity = "1";
+              return;
+            }
+            if (!emailEl.value.trim() || !emailEl.value.includes("@")) {
+              emailEl.setAttribute("aria-invalid", "true");
+              error.textContent = "Informe um e-mail válido.";
+              isSubmitting = false;
+              btn.disabled = false;
+              if (sp) sp.style.display = "none";
+              if (tx) tx.style.opacity = "1";
+              return;
+            }
+            await EdgeAPI.post("/setup", {
+              nome: nameEl.value.trim(),
+              email: emailEl.value.trim(),
+              senha: pw.value,
+            });
+            notice.style.display = "block";
+            notice.style.background = "#dcfce7";
+            notice.style.borderColor = "#86efac";
+            notice.style.color = "#166534";
+            notice.textContent =
+              "✓ Administrador criado com sucesso! Redirecionando para login...";
+            error.textContent = "";
+            u.value = emailEl.value;
+            window._forceLogin = true;
+            setTimeout(async () => {
+              notice.style.cssText = "";
+              notice.textContent =
+                "Nenhum usuário foi cadastrado. Crie o primeiro administrador para iniciar o sistema.";
+              await renderMode();
+            }, 1200);
+            return;
+          }
+          await EdgeAuth.login(
+            u.value.trim(),
+            pw.value,
+            document.getElementById("remember").checked,
+          );
+          if (tx) tx.textContent = "Redirecionando...";
+          location.href = "pages/dashboard.html";
+        } catch (err) {
+          error.textContent =
+            err.message ||
+            "Erro ao autenticar. Verifique usuário e senha e tente novamente.";
+          if (err.message && err.message.toLowerCase().includes("senha"))
+            pw.setAttribute("aria-invalid", "true");
+          if (err.message && err.message.toLowerCase().includes("usuário"))
+            u.setAttribute("aria-invalid", "true");
+        } finally {
+          isSubmitting = false;
+          btn.disabled = false;
+          if (sp) sp.style.display = "none";
+          if (tx) tx.style.opacity = "1";
+        }
+      });
+      if (EdgeAuth.current()) location.href = "pages/dashboard.html";
+      renderMode();
+    </script>
+  </body>
 </html>

@@ -1,27 +1,165 @@
-<!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Câmeras — EdgeSecurity</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../css/style.css"><link rel="stylesheet" href="../css/cameras.css"><link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-</head>
-<body data-page="cameras"><template id="page-template">
-<div class="page-head"><div><h1>Câmeras</h1><p>Use uma câmera disponível neste dispositivo, caso exista.</p></div><button class="btn btn-secondary" id="detect-cameras">Detectar câmeras</button><button class="btn btn-primary" id="register-camera" disabled>Cadastrar câmera selecionada</button></div>
-<div class="card camera-live-card">
-  <div class="card-head"><div><h2>Visualização</h2><p id="camera-device-label">Nenhuma câmera selecionada</p></div><span id="camera-live-status" class="status-pill">Sem transmissão</span></div>
-  <div class="camera-stage-real"><video id="camera-video" autoplay muted playsinline></video><canvas id="ai-overlay" class="ai-overlay"></canvas><div id="camera-empty" class="camera-empty-real"><strong>Nenhuma câmera em uso</strong><span>Conceda permissão ao navegador para acessar uma câmera disponível.</span><button class="btn btn-primary" id="start-camera">Usar câmera</button></div></div>
-  <div class="camera-controls"><label class="camera-picker">Câmera disponível<select id="camera-select" disabled><option>Nenhuma câmera detectada</option></select></label><button class="btn btn-secondary" id="stop-camera" disabled>Parar câmera</button><button class="btn btn-primary" id="start-ai" disabled>Iniciar análise YOLO26</button><button class="btn btn-secondary" id="stop-ai" disabled>Parar análise</button></div><div id="camera-error" class="camera-error" hidden></div>
-</div>
-<div class="card ip-camera-card">
-  <div class="card-head"><div><h2>Câmera IP / Wi-Fi</h2><p>Cadastre uma câmera de rede que forneça um stream RTSP ou HTTP.</p></div><span id="ip-status" class="status-pill">Não testada</span></div>
-  <div class="ip-form">
-    <label>Nome da câmera<input id="ip-name" placeholder="Ex.: Câmera do galpão"></label>
-    <label>Endereço do stream<input id="ip-url" placeholder="rtsp://192.168.1.100:554/stream"></label>
-    <label>Localização<input id="ip-location" placeholder="Ex.: Área de produção"></label>
-    <div class="ip-actions"><button class="btn btn-secondary" id="test-ip-camera">Testar conexão</button><button class="btn btn-primary" id="save-ip-camera" disabled>Cadastrar câmera IP</button></div>
-  </div>
-  <div id="ip-error" class="camera-error" hidden></div>
-</div>
-<div class="card ai-status-card"><div class="card-head"><div><h2>Análise de segurança</h2><p>O vídeo da câmera selecionada é enviado ao serviço de IA para detecção ao vivo de humanos e máquinas.</p></div><span id="ai-status" class="status-pill">IA desligada</span></div><div class="ai-metrics"><div><span>Humanos</span><strong id="ai-human-count">0</strong></div><div><span>Máquinas</span><strong id="ai-machine-count">0</strong></div><div><span>Risco</span><strong id="ai-risk-level">—</strong></div></div><p class="ai-warning">A classificação e o alerta de risco dependem do seu modelo treinado. O protótipo de risco usa distância em pixels; antes de uso industrial é necessária calibração física e validação de segurança.</p></div>
-<div class="card"><div class="card-head"><div><h2>Câmeras cadastradas</h2><p>Somente câmeras cadastradas podem ser associadas ao monitoramento do EdgeSecurity.</p></div></div><div id="registered-cameras" class="empty-state">Nenhuma câmera cadastrada.</div></div>
-<div class="card"><div class="card-head"><div><h2>Dispositivos disponíveis</h2><p id="camera-help">Use “Detectar câmeras” para conceder permissão e listar os dispositivos. O acesso exige localhost ou HTTPS.</p></div></div><div id="device-list" class="empty-state">Nenhuma câmera detectada ainda.</div></div>
-</template><div id="app"></div>
-<script src="../js/runtime-config.js"></script>
-    <script src="../js/api.js"></script><script src="../js/auth.js"></script><script src="../js/app.js"></script><script src="../js/camera-api.js"></script><script src="../js/ai-api.js"></script><script src="../js/cameras.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Câmeras — EdgeSecurity</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/cameras.css" />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-page="cameras">
+    <template id="page-template">
+      <div class="page-head">
+        <div>
+          <h1>Câmeras</h1>
+          <p>
+            Conecte webcams deste dispositivo e câmeras de rede para
+            monitoramento.
+          </p>
+        </div>
+        <button class="btn btn-secondary" id="detect-cameras">
+          Detectar câmeras</button
+        ><button class="btn btn-primary" id="register-camera" disabled>
+          Cadastrar câmera selecionada
+        </button>
+      </div>
+      <div class="card camera-live-card">
+        <div class="card-head">
+          <div>
+            <h2>Visualização</h2>
+            <p id="camera-device-label">Nenhuma câmera selecionada</p>
+          </div>
+          <span id="camera-live-status" class="status-pill"
+            >Sem transmissão</span
+          >
+        </div>
+        <div class="camera-stage-real">
+          <video id="camera-video" autoplay muted playsinline></video
+          ><canvas id="ai-overlay" class="ai-overlay"></canvas>
+          <div id="camera-empty" class="camera-empty-real">
+            <strong>Nenhuma câmera ativa</strong
+            ><span
+              >Clique em Detectar câmeras e autorize o acesso quando o navegador
+              pedir.</span
+            ><button class="btn btn-primary" id="start-camera">
+              Ativar câmera
+            </button>
+          </div>
+        </div>
+        <div class="camera-controls">
+          <label class="camera-picker"
+            >Câmera disponível<select id="camera-select" disabled>
+              <option>Nenhuma câmera encontrada</option>
+            </select></label
+          ><button class="btn btn-secondary" id="stop-camera" disabled>
+            Parar visualização</button
+          ><button class="btn btn-primary" id="start-ai" disabled>
+            Iniciar detecção</button
+          ><button class="btn btn-secondary" id="stop-ai" disabled>
+            Parar detecção
+          </button>
+        </div>
+        <div id="camera-error" class="camera-error" hidden></div>
+      </div>
+      <div class="card ip-camera-card">
+        <div class="card-head">
+          <div>
+            <h2>Câmera de rede</h2>
+            <p>Adicione câmeras IP ou Wi-Fi informando o endereço do vídeo.</p>
+          </div>
+          <span id="ip-status" class="status-pill">Não testada</span>
+        </div>
+        <div class="ip-form">
+          <label
+            >Nome da câmera<input
+              id="ip-name"
+              placeholder="Ex.: Câmera do galpão"
+          /></label>
+          <label
+            >Endereço do stream<input
+              id="ip-url"
+              placeholder="rtsp://192.168.1.100:554/stream"
+          /></label>
+          <label
+            >Localização<input
+              id="ip-location"
+              placeholder="Ex.: Área de produção"
+          /></label>
+          <div class="ip-actions">
+            <button class="btn btn-secondary" id="test-ip-camera">
+              Testar conexão</button
+            ><button class="btn btn-primary" id="save-ip-camera" disabled>
+              Cadastrar câmera IP
+            </button>
+          </div>
+        </div>
+        <div id="ip-error" class="camera-error" hidden></div>
+      </div>
+      <div class="card ai-status-card">
+        <div class="card-head">
+          <div>
+            <h2>Detecção ao vivo</h2>
+            <p>
+              Analisa o vídeo da câmera selecionada e destaca pessoas e máquinas
+              encontradas.
+            </p>
+          </div>
+          <span id="ai-status" class="status-pill">Detecção desligada</span>
+        </div>
+        <div class="ai-metrics">
+          <div><span>Pessoas</span><strong id="ai-human-count">0</strong></div>
+          <div>
+            <span>Máquinas</span><strong id="ai-machine-count">0</strong>
+          </div>
+          <div><span>Risco</span><strong id="ai-risk-level">—</strong></div>
+        </div>
+        <p class="ai-warning">
+          O nível de risco é estimado pela distância na imagem. Para uso real é
+          preciso calibrar com medidas físicas e validar a precisão.
+        </p>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>Câmeras cadastradas</h2>
+            <p>Só câmeras cadastradas aparecem no monitoramento.</p>
+          </div>
+        </div>
+        <div id="registered-cameras" class="empty-state">
+          Nenhuma câmera cadastrada.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <h2>Câmeras encontradas</h2>
+            <p id="camera-help">
+              Clique em Detectar câmeras e autorize o acesso. O navegador só
+              libera câmeras quando aberto em modo local ou HTTPS.
+            </p>
+          </div>
+        </div>
+        <div id="device-list" class="empty-state">
+          Nenhuma câmera encontrada. Clique em Detectar câmeras.
+        </div>
+      </div>
+    </template>
+    <div id="app"></div>
+    <script src="../js/runtime-config.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/camera-api.js"></script>
+    <script src="../js/ai-api.js"></script>
+    <script src="../js/cameras.js"></script>
+  </body>
+</html>

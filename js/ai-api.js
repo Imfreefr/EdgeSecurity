@@ -1,75 +1,80 @@
-/* Cliente WebSocket da análise YOLO26. O backend executa a inferência. */
+/* Cliente WebSocket da detecção ao vivo. O backend executa a análise. */
 window.EdgeAI = (() => {
-    function httpBase() {
-        return 'http://127.0.0.1:8000';
-    }
-    let socket = null;
+  function httpBase() {
+    return "http://127.0.0.1:8000";
+  }
+  let socket = null;
 
-    function connect(cameraId, onResult, onError, onReady) {
-        close();
+  function connect(cameraId, onResult, onError, onReady) {
+    close();
 
-        const base = httpBase();
-        const wsBase = base
-            .replace(/^http:/, 'ws:')
-            .replace(/^https:/, 'wss:')
-            .replace(/\/$/, '');
+    const base = httpBase();
+    const wsBase = base
+      .replace(/^http:/, "ws:")
+      .replace(/^https:/, "wss:")
+      .replace(/\/$/, "");
 
-        socket = new WebSocket(`${wsBase}/ws/detection`);
+    socket = new WebSocket(`${wsBase}/ws/detection`);
 
-        socket.onopen = () => {};
+    socket.onopen = () => {};
 
-        socket.onmessage = event => {
-            try {
-                const data = JSON.parse(event.data);
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
 
-                if (data.type === 'ready') onReady?.(data);
-                else if (data.type === 'result') onResult?.(data);
-                else if (data.type === 'error') onError?.(data.message);
-            } catch (_) {
-                onError?.('Resposta inválida do serviço de IA.');
-            }
-        };
-
-        socket.onerror = () => onError?.('Não foi possível conectar ao serviço YOLO26.');
-        socket.onclose = () => {};
-    }
-
-    function sendFrame(canvas, cameraId, quality = 0.65) {
-        if (!socket || socket.readyState !== WebSocket.OPEN) return false;
-
-        socket.send(JSON.stringify({
-            camera_id: cameraId,
-            image: canvas.toDataURL('image/jpeg', quality)
-        }));
-
-        return true;
-    }
-
-    function close() {
-        if (!socket) return;
-
-        try {
-            socket.close();
-        } catch (_) {
-            // Ignore close errors during navigation.
-        }
-
-        socket = null;
-    }
-
-    function isConnected() {
-        return !!socket && socket.readyState === WebSocket.OPEN;
-    }
-
-    function endpoint() {
-        return httpBase();
-    }
-
-    return {
-        connect,
-        sendFrame,
-        close,
-        isConnected,
-        endpoint
+        if (data.type === "ready") onReady?.(data);
+        else if (data.type === "result") onResult?.(data);
+        else if (data.type === "error") onError?.(data.message);
+      } catch (_) {
+        onError?.("Resposta inesperada do serviço de detecção.");
+      }
     };
+
+    socket.onerror = () =>
+      onError?.(
+        "Não foi possível conectar ao serviço de detecção. Verifique se o serviço está ativo.",
+      );
+    socket.onclose = () => {};
+  }
+
+  function sendFrame(canvas, cameraId, quality = 0.65) {
+    if (!socket || socket.readyState !== WebSocket.OPEN) return false;
+
+    socket.send(
+      JSON.stringify({
+        camera_id: cameraId,
+        image: canvas.toDataURL("image/jpeg", quality),
+      }),
+    );
+
+    return true;
+  }
+
+  function close() {
+    if (!socket) return;
+
+    try {
+      socket.close();
+    } catch (_) {
+      // Ignora erros ao fechar durante a navegação.
+    }
+
+    socket = null;
+  }
+
+  function isConnected() {
+    return !!socket && socket.readyState === WebSocket.OPEN;
+  }
+
+  function endpoint() {
+    return httpBase();
+  }
+
+  return {
+    connect,
+    sendFrame,
+    close,
+    isConnected,
+    endpoint,
+  };
 })();
