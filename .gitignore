@@ -13,4 +13,7 @@ Thumbs.db
 node_modules/
 dist/
 *.log
+.impeccable/
+PRODUCT.md
+DESIGN.md
 
