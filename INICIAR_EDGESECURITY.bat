@@ -29,8 +29,8 @@ start "EdgeSecurity Frontend" cmd /k ".\.venv\Scripts\python.exe serve.py"
 
 timeout /t 3 /nobreak >nul
 
-echo Abrindo interface no navegador...
-start http://127.0.0.1:5500
+echo Abrindo landing page no navegador...
+start http://127.0.0.1:5500/landing.html
 
 echo.
 echo EdgeSecurity executando com sucesso!
