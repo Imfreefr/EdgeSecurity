@@ -11,34 +11,41 @@
 <header class="lp-top" role="banner"><div class="lp-wrap lp-top__inner"><a class="lp-brand" href="../landing.html" aria-label="EdgeSecurity inicio"><span class="lp-brand__mark" aria-hidden="true"><img src="../assets/logo.png" alt=""/></span><span class="lp-brand__word">Edge<span>Security</span></span></a><nav class="lp-nav" aria-label="Acoes"><a class="lp-link" href="../index.html">Já sou cliente — Entrar</a><a class="lp-cta" href="../landing.html">Voltar ao site</a></nav></div></header>
 <div class="cadastro-wrap">
   <div class="cadastro-card">
-    <h1>Cadastre sua empresa</h1>
-    <p>Assinatura mensal R$ 149,90 por empresa. Um administrador primário será criado e a assinatura inicia como <b>pendente</b> até o pagamento.</p>
-    <form id="cad-form">
-      <h3>Dados da empresa</h3>
-      <div class="cad-grid">
-        <label>Razão social<input id="razao" required maxlength="120"/></label>
-        <label>Nome fantasia<input id="fantasia" required maxlength="120"/></label>
-        <label>CNPJ (14 dígitos)<input id="cnpj" required maxlength="18" placeholder="00.000.000/0000-00"/></label>
-        <label>E-mail da empresa<input id="cnpj_email" type="email" required/></label>
-        <label>Telefone<input id="telefone" placeholder="(11) 99999-0000"/></label>
-        <label>Estado<input id="estado" maxlength="2" placeholder="SP"/></label>
-        <label style="grid-column:1/-1">Endereço<input id="endereco" placeholder="Rua, número, bairro"/></label>
-        <label>Cidade<input id="cidade"/></label>
-      </div>
-      <h3 style="margin-top:22px;font-size:.95rem">Administrador primário</h3>
-      <div class="cad-grid">
-        <label>Nome<input id="adm_nome" required/></label>
-        <label>E-mail<input id="adm_email" type="email" required/></label>
-        <label>Senha<input id="adm_senha" type="password" required minlength="8"/></label>
-        <label>Confirmar senha<input id="adm_senha2" type="password" required minlength="8"/></label>
-      </div>
+    <div class="cadastro-head">
+      <h1>Cadastre sua empresa</h1>
+      <p>Assinatura mensal <strong>R$ 149,90</strong> por empresa. Criamos um administrador primário e sua assinatura começa como <b>pendente</b> até a confirmação do pagamento.</p>
+    </div>
+    <form id="cad-form" novalidate>
+      <fieldset class="cad-fieldset">
+        <legend><i class="bx bx-buildings" aria-hidden="true"></i> Dados da empresa</legend>
+        <div class="cad-grid">
+          <label>Razão social<input id="razao" required maxlength="120" placeholder="Ex.: EdgeSecurity Tecnologia LTDA" autocomplete="organization"/></label>
+          <label>Nome fantasia<input id="fantasia" required maxlength="120" placeholder="Ex.: EdgeSecurity" autocomplete="organization"/></label>
+          <label>CNPJ<input id="cnpj" required maxlength="18" placeholder="00.000.000/0000-00" inputmode="numeric"/></label>
+          <label>E-mail da empresa<input id="cnpj_email" type="email" required placeholder="contato@suaempresa.com" autocomplete="email"/></label>
+          <label>Telefone<input id="telefone" placeholder="(11) 99999-0000" autocomplete="tel" inputmode="tel"/></label>
+          <label>Estado<input id="estado" maxlength="2" placeholder="SP" autocomplete="address-level1" style="text-transform:uppercase"/></label>
+          <label style="grid-column:1/-1">Endereço<input id="endereco" placeholder="Rua, número, bairro" autocomplete="street-address"/></label>
+          <label>Cidade<input id="cidade" placeholder="São Paulo" autocomplete="address-level2"/></label>
+        </div>
+      </fieldset>
+      <fieldset class="cad-fieldset">
+        <legend><i class="bx bx-user-pin" aria-hidden="true"></i> Administrador primário</legend>
+        <p class="cad-hint">Quem recebe acesso total para gerir usuários, câmeras e assinatura. Você poderá trocar depois.</p>
+        <div class="cad-grid">
+          <label>Nome completo<input id="adm_nome" required placeholder="Ex.: Ana Silva" autocomplete="name"/></label>
+          <label>E-mail<input id="adm_email" type="email" required placeholder="ana@suaempresa.com" autocomplete="email"/></label>
+          <label>Senha<input id="adm_senha" type="password" required minlength="8" placeholder="Mínimo 8 caracteres" autocomplete="new-password"/></label>
+          <label>Confirmar senha<input id="adm_senha2" type="password" required minlength="8" placeholder="Repita a senha" autocomplete="new-password"/></label>
+        </div>
+      </fieldset>
       <input type="text" name="website" id="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"/>
-      <div id="cad-error" class="form-error" style="margin-top:12px"></div>
+      <div id="cad-error" class="form-error" role="alert" aria-live="polite"></div>
       <div class="cad-actions">
-        <button class="btn btn-primary" type="submit" id="cad-submit"><i class="bx bx-check"></i> Criar empresa e gerar cobrança</button>
+        <button class="btn btn-primary" type="submit" id="cad-submit"><i class="bx bx-check" aria-hidden="true"></i> Criar empresa e gerar cobrança</button>
         <a class="btn btn-secondary" href="../landing.html">Voltar</a>
       </div>
-      <p style="margin-top:10px;color:#64748b;font-size:.72rem">Ao continuar você concorda com a assinatura mensal. O acesso só é liberado após confirmação do pagamento no back-end.</p>
+      <p class="cad-footnote">Ao continuar você concorda com a assinatura mensal. O acesso só é liberado após confirmação do pagamento no back-end. Seus dados permanecem na sua empresa.</p>
     </form>
   </div>
 </div>
