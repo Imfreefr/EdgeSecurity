@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Master — EdgeSecurity</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/><link rel="stylesheet" href="../css/landing.css"/>
+<style>
+.admin-hero{background:#0f172a;color:#e2e8f0;padding:18px 0;border-bottom:1px solid #1e293b}
+.admin-hero .lp-wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}
+.admin-stat-grid .stat{padding:14px}
+@media(max-width:900px){.admin-stat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.admin-stat-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-page="admin">
+<div class="admin-hero">
+  <div class="lp-wrap">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:800"><img src="../assets/logo.png" style="width:26px;height:26px;border-radius:8px;object-fit:contain"/> Edge<span style="color:#22d3ee">Security</span> <span style="margin-left:8px;padding:4px 8px;border-radius:999px;background:#1e293b;border:1px solid #334155;font-size:.68rem;letter-spacing:.06em">MASTER</span></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span id="admin-user" style="color:#94a3b8;font-size:.78rem"></span>
+      <button class="btn btn-secondary btn-small" onclick="EdgeAuth.logout()">Sair</button>
+    </div>
+  </div>
+</div>
+<div class="admin-wrap">
+  <div id="admin-stats" class="admin-stat-grid"></div>
+  <div class="admin-card">
+    <div class="admin-toolbar">
+      <input id="admin-q" placeholder="Buscar empresa, CNPJ, e-mail"/>
+      <select id="admin-status"><option value="">Todas empresas</option><option value="ativa">Ativas</option><option value="bloqueada">Bloqueadas</option><option value="pendente">Pendentes</option></select>
+      <select id="admin-sub"><option value="">Todas assinaturas</option><option value="ativa">Assinatura ativa</option><option value="pendente">Pendente</option><option value="atrasada">Atrasada</option><option value="cancelada">Cancelada</option><option value="bloqueada">Bloqueada</option></select>
+      <button class="btn btn-primary btn-small" id="admin-search">Buscar</button>
+      <button class="btn btn-secondary btn-small" id="admin-refresh"><i class="bx bx-refresh"></i></button>
+    </div>
+    <div id="admin-companies" class="table-wrap"></div>
+  </div>
+  <div class="admin-card">
+    <h3 style="font-size:.95rem;font-weight:700;margin-bottom:10px">Pagamentos recentes</h3>
+    <div id="admin-payments" class="table-wrap"></div>
+  </div>
+</div>
+<div id="admin-modal" class="modal hidden"></div>
+<script src="../js/runtime-config.js"></script>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/admin.js"></script>
+</body>
+</html>

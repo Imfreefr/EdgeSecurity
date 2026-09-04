@@ -5,9 +5,13 @@ __pycache__/
 .venv/
 venv/
 .env
+.env.local
 *.db
 *.sqlite
 *.sqlite3
+*.pem
+*.key
+*.bak
 .DS_Store
 Thumbs.db
 node_modules/
@@ -16,4 +20,5 @@ dist/
 .impeccable/
 PRODUCT.md
 DESIGN.md
+backend/app.py.bak
 

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cadastrar empresa — EdgeSecurity</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/><link rel="stylesheet" href="../css/landing.css"/>
+</head>
+<body class="landing">
+<header class="lp-top"><div class="lp-wrap"><a class="lp-brand" href="../landing.html"><img src="../assets/logo.png" alt=""/>Edge<span>Security</span></a><a class="btn btn-secondary btn-small" href="../index.html">Já sou cliente — Entrar</a></div></header>
+<div class="cadastro-wrap">
+  <div class="cadastro-card">
+    <h1>Cadastre sua empresa</h1>
+    <p>Assinatura mensal R$ 149,90 por empresa. Um administrador primário será criado e a assinatura inicia como <b>pendente</b> até o pagamento.</p>
+    <form id="cad-form">
+      <h3 style="margin-top:18px;font-size:.95rem">Dados da empresa</h3>
+      <div class="cad-grid">
+        <label>Razão social<input id="razao" required maxlength="120"/></label>
+        <label>Nome fantasia<input id="fantasia" required maxlength="120"/></label>
+        <label>CNPJ (14 dígitos)<input id="cnpj" required maxlength="18" placeholder="00.000.000/0000-00"/></label>
+        <label>E-mail da empresa<input id="cnpj_email" type="email" required/></label>
+        <label>Telefone<input id="telefone" placeholder="(11) 99999-0000"/></label>
+        <label>Estado<input id="estado" maxlength="2" placeholder="SP"/></label>
+        <label style="grid-column:1/-1">Endereço<input id="endereco" placeholder="Rua, número, bairro"/></label>
+        <label>Cidade<input id="cidade"/></label>
+        <label style="display:none"><input id="dummy"/></label>
+      </div>
+      <h3 style="margin-top:18px;font-size:.95rem">Administrador primário</h3>
+      <div class="cad-grid">
+        <label>Nome<input id="adm_nome" required/></label>
+        <label>E-mail<input id="adm_email" type="email" required/></label>
+        <label>Senha<input id="adm_senha" type="password" required minlength="8"/></label>
+        <label>Confirmar senha<input id="adm_senha2" type="password" required minlength="8"/></label>
+        <input type="text" name="website" id="website" style="display:none" tabindex="-1" autocomplete="off"/>
+      </div>
+      <div id="cad-error" class="form-error" style="margin-top:12px"></div>
+      <div class="cad-actions">
+        <button class="btn btn-primary" type="submit" id="cad-submit"><i class="bx bx-check"></i> Criar empresa e gerar cobrança</button>
+        <a class="btn btn-secondary" href="../landing.html">Voltar</a>
+      </div>
+      <p style="margin-top:10px;color:#64748b;font-size:.72rem">Ao continuar você concorda com a assinatura mensal. O acesso só é liberado após confirmação do pagamento no back-end.</p>
+    </form>
+  </div>
+</div>
+<script src="../js/runtime-config.js"></script>
+<script src="../js/api.js"></script>
+<script>
+document.getElementById('cad-form').addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const err=document.getElementById('cad-error');
+  err.textContent='';
+  const btn=document.getElementById('cad-submit'); btn.disabled=true; btn.textContent='Enviando...';
+  const payload={
+    razao_social:document.getElementById('razao').value.trim(),
+    nome_fantasia:document.getElementById('fantasia').value.trim(),
+    cnpj:document.getElementById('cnpj').value.trim(),
+    email:document.getElementById('cnpj_email').value.trim(),
+    telefone:document.getElementById('telefone').value.trim(),
+    endereco:document.getElementById('endereco').value.trim(),
+    cidade:document.getElementById('cidade').value.trim(),
+    estado:document.getElementById('estado').value.trim(),
+    admin_nome:document.getElementById('adm_nome').value.trim(),
+    admin_email:document.getElementById('adm_email').value.trim(),
+    admin_senha:document.getElementById('adm_senha').value,
+    admin_senha_confirm:document.getElementById('adm_senha2').value,
+    website:document.getElementById('website').value
+  };
+  if(payload.admin_senha.length<8){ err.textContent='Senha deve ter 8+ caracteres com letras e números.'; btn.disabled=false; btn.textContent='Criar empresa e gerar cobrança'; return; }
+  if(payload.admin_senha!==payload.admin_senha_confirm){ err.textContent='Senhas não conferem.'; btn.disabled=false; btn.textContent='Criar empresa e gerar cobrança'; return; }
+  try{
+    const r=await EdgeAPI.post('/companies/signup', payload);
+    localStorage.setItem('edge_pending_pay', JSON.stringify(r));
+    location.href='pagamento.html?tid='+encodeURIComponent(r.transacao_id);
+  }catch(ex){ err.textContent=ex.message; btn.disabled=false; btn.textContent='Criar empresa e gerar cobrança'; }
+});
+</script>
+</body>
+</html>

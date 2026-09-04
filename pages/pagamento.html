@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Pagamento — EdgeSecurity</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="../css/style.css"/><link rel="stylesheet" href="../css/landing.css"/>
+</head>
+<body class="landing">
+<header class="lp-top"><div class="lp-wrap"><a class="lp-brand" href="../landing.html"><img src="../assets/logo.png" alt=""/>Edge<span>Security</span></a><a class="btn btn-secondary btn-small" href="../index.html">Entrar</a></div></header>
+<div class="pay-card">
+  <div style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:.72rem;font-weight:700">ASSINATURA PENDENTE</div>
+  <h1 style="margin-top:14px">Finalize sua assinatura</h1>
+  <p class="pay-meta">Sua empresa foi criada, mas o acesso só é liberado após confirmação do pagamento no back-end.</p>
+  <div class="pay-amount">R$ <span id="pay-valor">149,90</span><span style="font-size:.9rem;color:#64748b">/mês</span></div>
+  <div id="pay-tid" class="pay-meta" style="word-break:break-all"></div>
+  <div id="pay-status" class="pay-meta" style="margin-top:10px;padding:10px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0"></div>
+  <div id="pay-mp" style="margin-top:10px"></div>
+  <div style="margin-top:16px;display:grid;gap:10px">
+    <button id="btn-mp" class="btn btn-primary btn-full" style="display:none"><i class="bx bxl-paypal"></i> Pagar com Mercado Pago (preapproval)</button>
+    <button id="btn-mock" class="btn btn-secondary btn-full" style="font-size:.78rem">Simular pagamento (apenas teste local — desabilitado em produção)</button>
+    <button id="btn-webhook" class="btn btn-secondary btn-full" style="font-size:.78rem">Confirmar via webhook (HMAC)</button>
+    <a class="btn btn-secondary btn-full" href="../index.html">Ir para login</a>
+  </div>
+  <p style="margin-top:12px;color:#64748b;font-size:.72rem">Em produção o Mercado Pago usa <code>https://api.mercadopago.com/preapproval</code> com <code>MP_ACCESS_TOKEN</code>. O mock é bloqueado quando <code>MP_ACCESS_TOKEN</code> está definido.</p>
+  <div id="pay-error" class="form-error" style="margin-top:10px"></div>
+</div>
+<script src="../js/runtime-config.js"></script>
+<script src="../js/api.js"></script>
+<script>
+const tid=new URLSearchParams(location.search).get('tid')||(JSON.parse(localStorage.getItem('edge_pending_pay')||'{}').transacao_id||'');
+document.getElementById('pay-tid').textContent=tid?('Referência: '+tid):'Transação não encontrada. Volte ao cadastro.';
+try{ const p=JSON.parse(localStorage.getItem('edge_pending_pay')||'null'); if(p&&p.valor) document.getElementById('pay-valor').textContent=Number(p.valor).toFixed(2).replace('.',','); if(p&&p.mp_init_point){ document.getElementById('pay-mp').innerHTML='<a class="btn btn-primary btn-full" href="'+p.mp_init_point+'" target="_blank" rel="noopener"><i class="bx bx-link-external"></i> Abrir checkout Mercado Pago</a>'; document.getElementById('btn-mp').style.display=''; document.getElementById('btn-mp').onclick=()=>window.open(p.mp_init_point,'_blank'); } }catch(_){}
+async function refreshStatus(){
+  const el=document.getElementById('pay-status');
+  if(!tid){ el.textContent='Sem transação.'; return; }
+  el.textContent='Status: pendente — aguardando confirmação.';
+}
+refreshStatus();
+document.getElementById('btn-mock').onclick=async()=>{
+  const err=document.getElementById('pay-error'); err.textContent='';
+  if(!tid){ err.textContent='Sem transação.'; return; }
+  try{
+    const r=await EdgeAPI.post('/payments/'+encodeURIComponent(tid)+'/confirm-mock', {});
+    document.getElementById('pay-status').textContent='Pagamento confirmado! Assinatura ativa. Você já pode entrar.';
+    document.getElementById('pay-status').style.background='#dcfce7';
+    document.getElementById('pay-status').style.borderColor='#86efac';
+    setTimeout(()=>location.href='../index.html', 900);
+  }catch(e){ err.textContent=e.message; }
+};
+document.getElementById('btn-webhook').onclick=async()=>{
+  const err=document.getElementById('pay-error'); err.textContent='';
+  if(!tid){ err.textContent='Sem transação.'; return; }
+  try{
+    const r=await EdgeAPI.post('/payments/webhook', {transacao_id:tid, gateway_payload:'manual_webhook'});
+    document.getElementById('pay-status').textContent='Webhook confirmado! Assinatura ativa.';
+    document.getElementById('pay-status').style.background='#dcfce7';
+    setTimeout(()=>location.href='../index.html', 900);
+  }catch(e){ err.textContent=e.message; }
+};
+document.getElementById('btn-mp').onclick=async()=>{
+  const err=document.getElementById('pay-error'); err.textContent='';
+  try{
+    const headers={}; const tok=EdgeAPI.token(); if(tok) headers.Authorization='Bearer '+tok;
+    const r=await fetch(EdgeAPI.base()+'/payments/create-preapproval',{method:'POST',headers:{'Content-Type':'application/json',...headers}});
+    const j=await r.json();
+    if(!r.ok) throw new Error(j.detail||'Falha Mercado Pago');
+    if(j.init_point) window.open(j.init_point,'_blank');
+    document.getElementById('pay-status').textContent='Preapproval criado: '+j.mp_id;
+  }catch(e){ err.textContent=e.message; }
+};
+</script>
+</body>
+</html>

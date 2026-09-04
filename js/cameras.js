@@ -313,11 +313,13 @@
       ] || risk;
     riskLevel.dataset.level = risk;
   }
+  const AI = window.EdgeAILocal || window.EdgeAI;
   function stopAIAnalysis() {
     aiRunning = false;
     if (frameTimer) clearInterval(frameTimer);
     frameTimer = null;
-    EdgeAI.close();
+    try { window.EdgeAI && window.EdgeAI.close(); } catch {}
+    try { window.EdgeAILocal && window.EdgeAILocal.close(); } catch {}
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     startAI.disabled = !stream;
     stopAIButton.disabled = true;
@@ -340,18 +342,37 @@
       return;
     }
     const cameraId = registered.id;
-    setAIStatus("Conectando…");
-    EdgeAI.connect(
+    setAIStatus(window.EdgeAILocal ? "Carregando IA local…" : "Conectando…");
+    AI.connect(
       cameraId,
       drawResults,
       (msg) => {
+        if (AI === window.EdgeAILocal && window.EdgeAI) {
+          setAIStatus("Tentando IA no servidor…");
+          window.EdgeAI.connect(cameraId, drawResults, (m) => { stopAIAnalysis(); showToast(m); setAIStatus("Erro na detecção"); }, () => {
+            aiRunning = true;
+            setAIStatus("Detecção ao vivo", true);
+            startAI.disabled = true;
+            stopAIButton.disabled = false;
+            const frameCanvas = document.createElement("canvas");
+            const interval = Math.max(100, Math.round(1000 / 8));
+            frameTimer = setInterval(() => {
+              if (!aiRunning || !video.videoWidth) return;
+              frameCanvas.width = 640;
+              frameCanvas.height = Math.round(video.videoHeight * (640 / video.videoWidth));
+              frameCanvas.getContext("2d").drawImage(video, 0, 0, frameCanvas.width, frameCanvas.height);
+              window.EdgeAI.sendFrame(frameCanvas, cameraId, 0.62);
+            }, interval);
+          });
+          return;
+        }
         stopAIAnalysis();
         showToast(msg);
         setAIStatus("Erro na detecção");
       },
       () => {
         aiRunning = true;
-        setAIStatus("Detecção ao vivo", true);
+        setAIStatus(window.EdgeAILocal ? "IA local ao vivo" : "Detecção ao vivo", true);
         startAI.disabled = true;
         stopAIButton.disabled = false;
         const frameCanvas = document.createElement("canvas");
@@ -365,7 +386,7 @@
           frameCanvas
             .getContext("2d")
             .drawImage(video, 0, 0, frameCanvas.width, frameCanvas.height);
-          EdgeAI.sendFrame(frameCanvas, cameraId, 0.62);
+          AI.sendFrame(frameCanvas, cameraId, 0.62);
         }, interval);
       },
     );

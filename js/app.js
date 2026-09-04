@@ -13,6 +13,7 @@ function applyFontSize(size) {
   const original = template ? template.innerHTML : "";
   const s = EdgeAuth.require();
   if (!s) return;
+  if (s.cargo === "super_admin") { location.href = "admin.html"; return; }
   const nav = [
     ["dashboard", "bx bx-grid-alt", "Visão geral"],
     ["cameras", "bx bx-video", "Câmeras"],
@@ -23,8 +24,10 @@ function applyFontSize(size) {
   ];
   if (s.cargo === "administrador")
     nav.splice(2, 0, ["usuarios", "bx bx-group", "Usuários e Permissões"]);
+  const companyLabel = s.company ? escapeHtml(s.company.nome_fantasia) : "";
+  const subLabel = s.subscription ? `<span style="font-size:.62rem;color:#94a3b8">${escapeHtml(s.subscription.status)}${s.subscription.proximo_vencimento ? " • " + formatDate(s.subscription.proximo_vencimento) : ""}</span>` : "";
   document.getElementById("app").innerHTML =
-    `<div class="app-shell"><aside class="sidebar collapsed" id="sidebar"><div class="sb-top" aria-hidden="true"></div><nav class="sb-nav">${nav.map((n) => `<button class="sb-item ${page === n[0] ? "active" : ""}" data-go="${n[0]}" title="${n[2]}" aria-label="${n[2]}"><i class="ico ${n[1]}" aria-hidden="true"></i><span class="sb-label">${n[2]}</span></button>`).join("")}</nav><div class="sb-user"><strong>${escapeHtml(s.nome)}</strong><span>${s.cargo === "administrador" ? "Administrador" : "Usuário"}</span></div><button class="sb-logout" id="logout" title="Sair" aria-label="Sair"><i class="bx bx-log-out ico" aria-hidden="true"></i><span class="sb-label">Sair</span></button></aside><main class="content">${original}</main></div><div id="toast" class="toast"></div>`;
+    `<div class="app-shell"><aside class="sidebar collapsed" id="sidebar"><div class="sb-top" aria-hidden="true"></div><nav class="sb-nav">${nav.map((n) => `<button class="sb-item ${page === n[0] ? "active" : ""}" data-go="${n[0]}" title="${n[2]}" aria-label="${n[2]}"><i class="ico ${n[1]}" aria-hidden="true"></i><span class="sb-label">${n[2]}</span></button>`).join("")}</nav><div class="sb-user"><strong>${escapeHtml(s.nome)}</strong><span>${s.cargo === "administrador" ? "Administrador" : "Usuário"}</span>${companyLabel ? `<span style="margin-top:4px;color:#7dd3fc;font-weight:700">${companyLabel}</span>` : ""}${subLabel}</div><button class="sb-logout" id="logout" title="Sair" aria-label="Sair"><i class="bx bx-log-out ico" aria-hidden="true"></i><span class="sb-label">Sair</span></button></aside><main class="content">${original}</main></div><div id="toast" class="toast"></div>`;
   document
     .querySelectorAll("[data-go]")
     .forEach(
