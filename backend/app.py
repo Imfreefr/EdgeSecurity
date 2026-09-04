@@ -58,7 +58,7 @@ COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() in ("1", "true", "ye
 if PAYMENT_MOCK and MP_ACCESS_TOKEN:
     print("AVISO: PAYMENT_MOCK=true com MP_ACCESS_TOKEN definido — mock deve ser false em producao.")
 
-app = FastAPI(title="EdgeSecurity API", version="1.0.0")
+app = FastAPI(title="EdgeSecurity API", version="6.7.4")
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type", "X-Requested-With", "X-Webhook-Signature"])
 
 

@@ -795,6 +795,41 @@ tr:last-child td {
     0 2px 8px rgba(15, 23, 42, 0.06),
     inset 0 1px 0 rgba(34, 211, 238, 0.14);
   animation: loginIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) both;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.login-card-head {
+  gap: 14px;
+  align-items: flex-start;
+}
+.login-card-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+#auth-subtitle {
+  margin: 0;
+  line-height: 1.4;
+}
+#login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#login-form .login-field {
+  margin-bottom: 0;
+}
+#login-form .form-error {
+  min-height: 0;
+  margin: -4px 0 2px;
+}
+#login-form .check {
+  margin: 2px 0 2px;
+}
+.login-card .login-foot {
+  margin-top: 2px;
 }
 @keyframes loginIn {
   from {
