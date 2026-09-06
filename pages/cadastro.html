@@ -39,7 +39,7 @@
           <label>Confirmar senha<input id="adm_senha2" type="password" required minlength="8" placeholder="Repita a senha" autocomplete="new-password"/></label>
         </div>
       </fieldset>
-      <input type="text" name="website" id="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"/>
+      
       <div id="cad-error" class="form-error" role="alert" aria-live="polite"></div>
       <div class="cad-actions">
         <button class="btn btn-primary" type="submit" id="cad-submit"><i class="bx bx-check" aria-hidden="true"></i> Criar empresa e gerar cobrança</button>
@@ -69,8 +69,7 @@ document.getElementById('cad-form').addEventListener('submit', async (e)=>{
     admin_nome:document.getElementById('adm_nome').value.trim(),
     admin_email:document.getElementById('adm_email').value.trim(),
     admin_senha:document.getElementById('adm_senha').value,
-    admin_senha_confirm:document.getElementById('adm_senha2').value,
-    website:document.getElementById('website').value
+    admin_senha_confirm:document.getElementById('adm_senha2').value
   };
   if(payload.admin_senha.length<8){ err.textContent='Senha deve ter 8+ caracteres com letras e números.'; btn.disabled=false; btn.textContent='Criar empresa e gerar cobrança'; return; }
   if(payload.admin_senha!==payload.admin_senha_confirm){ err.textContent='Senhas não conferem.'; btn.disabled=false; btn.textContent='Criar empresa e gerar cobrança'; return; }
