@@ -76,7 +76,7 @@ export default function LandingPage() {
     const bodyStyle = document.body.getAttribute("style"),
       htmlStyle = document.documentElement.getAttribute("style");
     document.body.style.margin = "0";
-    document.body.style.background = "#efede7";
+    document.body.style.background = "#080d1a";
     document.documentElement.style.scrollBehavior = "auto";
     const dialog = menu.current,
       previousOverflow = document.body.style.overflow;
@@ -101,11 +101,9 @@ export default function LandingPage() {
     if (reduced) return;
     let lenis;
     const tick = (time) => lenis?.raf(time * 1000);
-    if (desktop) {
-      lenis = new Lenis({ duration: 1.05, anchors: true });
-      lenis.on("scroll", ScrollTrigger.update);
-      gsap.ticker.add(tick);
-    }
+    lenis = new Lenis({ duration: 1.05, anchors: true });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add(tick);
     const ctx = gsap.context(() => {
       gsap.set(".hero-word span", { transformOrigin: "left bottom" });
       gsap
@@ -218,6 +216,90 @@ export default function LandingPage() {
             },
           ),
         );
+
+      ScrollTrigger.create({
+        start: 0,
+        end: "max",
+        onUpdate: (self) =>
+          gsap.set(".scroll-progress", { scaleX: self.progress }),
+      });
+
+      const rise = (selector, distance = 46) => {
+        gsap.utils.toArray(selector).forEach((el, i) => {
+          if (el.closest(".risk-stage")) return;
+          gsap.fromTo(
+            el,
+            { y: distance, opacity: 0 },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 1,
+              ease: "expo.out",
+              delay: Math.min(i * 0.07, 0.42),
+              scrollTrigger: { trigger: el, start: "top 90%", once: true },
+            },
+          );
+        });
+      };
+
+      rise(".section-meta", 26);
+      rise(".section-label", 26);
+      rise("main h2", 72);
+      rise(".hero-bottom", 30);
+      rise(".hero-title > p", 24);
+      rise(".manifesto-bottom p");
+      rise(".feed-composition > p");
+      rise(".detect-copy p");
+      rise(".detect-copy .detect-sequence", 30);
+      rise(".detect-copy small");
+      rise(".local-bottom", 55);
+      rise(".control-copy p");
+      rise(".control-copy .role-switch", 30);
+      rise(".control-copy small");
+      rise(".trace > div > p");
+      rise(".trace > div > small");
+      rise(".event-list li", 34);
+      rise(".feature-list details", 34);
+      rise(".faq details", 34);
+      rise(".price-block", 55);
+      rise(".pricing-grid > div:first-child > p");
+      rise(".connection-person", 30);
+      rise(".camera-nodes > span", 40);
+      rise(".detect-sequence span", 20);
+      rise(".footer", 30);
+
+      const flow = document.querySelector(".local-flow");
+      if (flow)
+        gsap.fromTo(
+          flow,
+          { scaleX: 0.8, opacity: 0, transformOrigin: "left center" },
+          {
+            scaleX: 1,
+            opacity: 1,
+            duration: 1.2,
+            ease: "expo.out",
+            scrollTrigger: { trigger: flow, start: "top 88%", once: true },
+          },
+        );
+
+      const wire = document.querySelector(".connections svg path");
+      if (wire) {
+        const length = wire.getTotalLength();
+        gsap.fromTo(
+          wire,
+          { strokeDasharray: length, strokeDashoffset: length },
+          {
+            strokeDashoffset: 0,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".connections",
+              start: "top 92%",
+              end: "bottom 70%",
+              scrub: 1,
+            },
+          },
+        );
+      }
     }, root);
     let active = true;
     document.fonts.ready.then(() => {
@@ -275,6 +357,7 @@ export default function LandingPage() {
   }
   return (
     <div ref={root} className="edge-landing">
+      <div className="scroll-progress" aria-hidden="true" />
       <a className="skip" href="#manifesto">
         Pular para o conteúdo
       </a>

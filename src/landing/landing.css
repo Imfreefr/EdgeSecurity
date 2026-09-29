@@ -18,11 +18,12 @@
   font-display: swap;
 }
 .edge-landing {
-  --paper: #efede7;
-  --ink: #252822;
-  --muted: #62645c;
-  --line: #cfcec5;
-  --accent: #247b88;
+  --paper: #080d1a;
+  --ink: #eaf0ff;
+  --muted: #8fa3c2;
+  --line: #1e2c4a;
+  --accent: #2f6fed;
+  --cyan: #22d3ee;
   background: var(--paper);
   color: var(--ink);
   font-family: Manrope, Arial, sans-serif;
@@ -48,7 +49,7 @@
   outline-offset: 6px;
 }
 .edge-landing ::selection {
-  color: var(--paper);
+  color: #fff;
   background: var(--accent);
 }
 .edge-landing a {
@@ -213,12 +214,12 @@
   padding: 35px 7vw 60px;
   margin: 0;
   border: 0;
-  background: var(--ink);
-  color: var(--paper);
+  background: #050a16;
+  color: var(--ink);
   z-index: 100;
 }
 .edge-landing .menu::backdrop {
-  background: var(--ink);
+  background: rgba(4, 8, 18, 0.92);
 }
 .edge-landing .menu-head {
   display: flex;
@@ -245,10 +246,10 @@
   line-height: 1.2;
   padding: 8px 0;
   letter-spacing: -0.04em;
-  border-bottom: 1px solid #52564d;
+  border-bottom: 1px solid #1e2c4a;
 }
 .edge-landing .menu nav a:hover {
-  color: #a3d4d7;
+  color: #7fb2ff;
 }
 .edge-landing .menu nav small {
   font-size: 12px;
@@ -304,13 +305,25 @@
   position: relative;
   overflow: hidden;
   margin-top: 5px;
-  background: #55574e;
+  background: #0c1526;
 }
 .edge-landing .hero-photo img {
   object-position: 50% 47%;
   filter: saturate(0.28);
   height: 115%;
   margin-top: -4%;
+}
+.edge-landing .hero-photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 13, 26, 0.45),
+    rgba(47, 111, 237, 0.28)
+  );
+  pointer-events: none;
 }
 .edge-landing .hero-photo::after {
   content: "";
@@ -373,7 +386,7 @@
   font-style: italic;
   font-size: clamp(85px, 13vw, 230px);
   line-height: 1;
-  color: #797d70;
+  color: #24437d;
 }
 .edge-landing .manifesto-bottom p {
   max-width: 370px;
@@ -381,8 +394,8 @@
   padding-bottom: 15px;
 }
 .edge-landing .risk {
-  background: #242822;
-  color: var(--paper);
+  background: #050a16;
+  color: var(--ink);
 }
 .edge-landing .risk-stage {
   min-height: 850px;
@@ -390,17 +403,17 @@
   padding: 35px 5vw;
   display: flex;
   flex-direction: column;
-  --state: #a9c1a7;
+  --state: #34d399;
 }
 .edge-landing .risk-stage[data-status="ATENÇÃO"] {
-  --state: #e5bd7a;
+  --state: #fbbf24;
 }
 .edge-landing .risk-stage[data-status="CRÍTICO"] {
-  --state: #ffb6a5;
+  --state: #fb7185;
 }
 .edge-landing .risk .section-meta {
   margin-bottom: 35px;
-  border-color: #5a5e53;
+  border-color: #1e2c4a;
 }
 .edge-landing .risk-heading {
   display: flex;
@@ -469,7 +482,7 @@
 .edge-landing .diagram-person svg {
   width: 65px;
   height: 100%;
-  fill: #deded0;
+  fill: #cfe0ff;
 }
 .edge-landing .diagram-zone {
   position: absolute;
@@ -477,7 +490,7 @@
   top: 15%;
   width: 38%;
   height: 70%;
-  border: 1px dashed #9ea68c;
+  border: 1px dashed #2f6fed;
   transform: skewY(-8deg);
 }
 .edge-landing .diagram-machine {
@@ -486,9 +499,9 @@
   top: 20%;
   height: 60%;
   width: 22%;
-  background: #686d5e;
+  background: #101d33;
   transform: skewY(-8deg);
-  border: 1px solid #a2a895;
+  border: 1px solid #3b64c4;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
@@ -496,7 +509,7 @@
 .edge-landing .diagram-machine i {
   height: 50%;
   width: 17%;
-  border: 1px solid #bcc2b3;
+  border: 1px solid #4a6bb5;
 }
 .edge-landing .vision-label {
   position: absolute;
@@ -555,7 +568,7 @@
   align-items: center;
   gap: 30px;
   padding-top: 20px;
-  border-top: 1px solid #5a5e53;
+  border-top: 1px solid #1e2c4a;
   font-size: 12px;
 }
 .edge-landing .risk-controls p {
@@ -570,7 +583,7 @@
   width: 210px;
 }
 .edge-landing .distance-control input {
-  accent-color: #c7dbbf;
+  accent-color: #2f6fed;
   width: 100%;
   height: 25px;
   cursor: pointer;
@@ -580,12 +593,12 @@
   align-items: center;
   justify-content: space-between;
   gap: 15px;
-  border-bottom: 1px solid #929789;
+  border-bottom: 1px solid #2b3f68;
   font-size: 12px;
 }
 .edge-landing .risk-note {
   font-size: 10px;
-  color: #bbc0b4;
+  color: #7e93b5;
   margin-top: 20px;
   max-width: 850px;
 }
@@ -679,7 +692,7 @@
   color: var(--muted);
 }
 .edge-landing .local {
-  background: #d8ddd1;
+  background: #0c1526;
   padding-bottom: 90px;
 }
 .edge-landing .local h2 {
@@ -707,13 +720,13 @@
   align-items: center;
   gap: 15px;
   padding: 35px 20px;
-  border: 1px solid #777f6f;
+  border: 1px solid #1e2c4a;
   font-size: 11px;
 }
 .edge-landing .local-flow i {
   flex: 1;
   height: 1px;
-  background: #6c7564;
+  background: #2f6fed;
   position: relative;
 }
 .edge-landing .local-flow i:after {
@@ -739,7 +752,7 @@
   margin-bottom: 18px;
 }
 .edge-landing .local-bottom small {
-  color: #525a4b;
+  color: #7e93b5;
 }
 .edge-landing .control,
 .edge-landing .trace {
@@ -769,7 +782,7 @@
   margin-bottom: 15px;
 }
 .edge-landing .role-switch button {
-  border: 1px solid #a3a69b;
+  border: 1px solid #24344f;
   padding: 10px 18px;
   font-size: 12px;
 }
@@ -784,7 +797,7 @@
   align-items: center;
 }
 .edge-landing .connection-person {
-  border: 1px solid #7b8174;
+  border: 1px solid #24344f;
   padding: 20px 30px;
   font-size: 13px;
   min-width: 160px;
@@ -794,7 +807,7 @@
   width: 100%;
   height: 180px;
   fill: none;
-  stroke: #a5ac9d;
+  stroke: #3f6bd6;
   stroke-width: 1;
 }
 .edge-landing .camera-nodes {
@@ -837,7 +850,7 @@
   top: 6px;
 }
 .edge-landing .trace {
-  background: #e4e2da;
+  background: #0a1226;
 }
 .edge-landing .event-list {
   list-style: none;
@@ -848,7 +861,7 @@
   align-items: center;
   gap: 28px;
   padding: 23px 0;
-  border-bottom: 1px solid #c2c3b9;
+  border-bottom: 1px solid #1a2742;
   font-size: 13px;
 }
 .edge-landing .event-list time {
@@ -868,13 +881,13 @@
 .edge-landing .event-dot {
   width: 7px;
   height: 7px;
-  border: 1px solid #626b58;
+  border: 1px solid #3f6bd6;
   border-radius: 50%;
   margin-left: auto;
 }
 .edge-landing .event-list li:nth-child(3) .event-dot {
-  background: #9c4e32;
-  border-color: #9c4e32;
+  background: #f43f5e;
+  border-color: #f43f5e;
 }
 .edge-landing .product-grid,
 .edge-landing .pricing-grid,
@@ -933,11 +946,11 @@
   transform: rotate(0);
 }
 .edge-landing .pricing {
-  background: var(--ink);
-  color: var(--paper);
+  background: #0c1526;
+  color: var(--ink);
 }
 .edge-landing .pricing .section-meta {
-  border-color: #606657;
+  border-color: #24344f;
 }
 .edge-landing .pricing-grid > div > p {
   margin-top: 28px;
@@ -969,16 +982,23 @@
   display: flex;
   align-items: center;
   gap: 45px;
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--accent);
+  color: #fff;
   padding: 19px 25px;
   margin: 35px 0 25px;
   font-size: 13px;
   font-weight: 600;
+  transition:
+    background 0.25s,
+    transform 0.25s;
+}
+.edge-landing .subscribe:hover {
+  background: #1d54c9;
+  transform: translateY(-2px);
 }
 .edge-landing .price-block > small {
   display: block;
-  color: #bfc3b7;
+  color: #8ea6cc;
   font-size: 11px;
 }
 .edge-landing .faq h2 {
@@ -990,7 +1010,7 @@
 .edge-landing .finale {
   height: 780px;
   position: relative;
-  background: #252822;
+  background: #050a16;
   color: #fff;
   display: flex;
   align-items: center;
@@ -1451,6 +1471,44 @@
   .edge-landing .menu nav svg {
     width: 25px;
   }
+}
+/* ---- Scroll personalizado ---- */
+.edge-landing {
+  scrollbar-color: #2f6fed #060a14;
+  scrollbar-width: thin;
+  scroll-behavior: smooth;
+}
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: #060a14;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2f6fed 0%, #22d3ee 100%);
+  border: 3px solid #060a14;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22d3ee;
+}
+::-webkit-scrollbar-corner {
+  background: #060a14;
+}
+.edge-landing .scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 140;
+  display: block;
+  background: linear-gradient(90deg, #2f6fed, #22d3ee);
+  box-shadow: 0 0 14px rgba(47, 111, 237, 0.75);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .edge-landing *,
