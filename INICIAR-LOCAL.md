@@ -31,6 +31,18 @@ Backend: `http://127.0.0.1:8000`
 
 ## 4. Iniciar frontend
 
+A landing usa uma entrada React isolada. Antes de abri-la pelo servidor Python,
+instale Node.js e execute na raiz do repositório:
+
+```cmd
+npm ci
+npm run build
+```
+
+Para editar a landing com recarga automática, use `npm run dev` e abra
+`http://127.0.0.1:5173/landing.html`. Login e páginas internas continuam usando
+seus arquivos HTML, CSS e JavaScript originais.
+
 Terminal 2:
 
 ```cmd
