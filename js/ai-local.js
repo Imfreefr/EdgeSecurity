@@ -6,14 +6,19 @@ window.EdgeAILocal = (() => {
   let cbReady = null;
   let currentCamera = null;
   let lastBeep = 0;
-  const MODEL_URLS = ["../backend/model/edgev1-int8.onnx", "backend/model/edgev1-int8.onnx", "/backend/model/edgev1-int8.onnx"];
+  const MODEL_URLS = [
+    "../backend/model/edgev1-int8.onnx",
+    "backend/model/edgev1-int8.onnx",
+    "/backend/model/edgev1-int8.onnx",
+  ];
   let audioCtx = null;
   function beep(level) {
     const now = Date.now();
     if (now - lastBeep < 4000) return;
     lastBeep = now;
     try {
-      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      audioCtx =
+        audioCtx || new (window.AudioContext || window.webkitAudioContext)();
       const o = audioCtx.createOscillator();
       const g = audioCtx.createGain();
       o.type = "sine";
@@ -32,16 +37,36 @@ window.EdgeAILocal = (() => {
       const { type, detections, cameraId, message, model } = e.data;
       if (type === "ready") {
         ready = true;
-        cbReady?.({ model: model || "edgev1-int8.onnx", classes: ["human", "forklift"] });
+        cbReady?.({
+          model: model || "edgev1-int8.onnx",
+          classes: ["human", "forklift"],
+        });
       } else if (type === "result") {
-        const risk = window.RiskEngine ? window.RiskEngine.assess(detections || []) : { level: "safe", pairs: [] };
-        if (risk.level === "high" || risk.level === "critical") beep(risk.level);
+        const risk = window.RiskEngine
+          ? window.RiskEngine.assess(detections || [])
+          : { level: "safe", pairs: [] };
+        if (risk.level === "high" || risk.level === "critical")
+          beep(risk.level);
         if (risk.level === "high" || risk.level === "critical") {
           try {
-            EdgeAPI.post("/alerts", { camera_id: cameraId, tipo: "IA - Aproximação", nivel: risk.level === "critical" ? "Crítico" : "Alto", descricao: risk.level === "critical" ? "RISCO CRÍTICO: pessoa e máquina muito próximas." : "Risco de colisão detectado pela IA.", status: "Aberto" }).catch(() => {});
+            EdgeAPI.post("/alerts", {
+              camera_id: cameraId,
+              tipo: "IA - Aproximação",
+              nivel: risk.level === "critical" ? "Crítico" : "Alto",
+              descricao:
+                risk.level === "critical"
+                  ? "RISCO CRÍTICO: pessoa e máquina muito próximas."
+                  : "Risco de colisão detectado pela IA.",
+              status: "Aberto",
+            }).catch(() => {});
           } catch {}
         }
-        cbResult?.({ camera_id: cameraId, detections: detections || [], risk, alert_created: null });
+        cbResult?.({
+          camera_id: cameraId,
+          detections: detections || [],
+          risk,
+          alert_created: null,
+        });
       } else if (type === "error") {
         cbError?.(message || "Falha na IA local.");
       }
@@ -60,11 +85,18 @@ window.EdgeAILocal = (() => {
   function sendFrame(canvas, cameraId, quality = 0.62) {
     if (!worker || !ready) return false;
     try {
-      const w = canvas.width, h = canvas.height;
+      const w = canvas.width,
+        h = canvas.height;
       const ctx = canvas.getContext("2d");
       const imageData = ctx.getImageData(0, 0, w, h);
       const buffer = imageData.data.buffer.slice(0);
-      worker.postMessage({ type: "infer", payload: { buffer, width: w, height: h, cameraId, confidence: 0.4 } }, [buffer]);
+      worker.postMessage(
+        {
+          type: "infer",
+          payload: { buffer, width: w, height: h, cameraId, confidence: 0.4 },
+        },
+        [buffer],
+      );
       return true;
     } catch {
       return false;
@@ -72,11 +104,15 @@ window.EdgeAILocal = (() => {
   }
   function close() {
     if (worker) {
-      try { worker.terminate(); } catch {}
+      try {
+        worker.terminate();
+      } catch {}
       worker = null;
       ready = false;
     }
   }
-  function isConnected() { return ready; }
+  function isConnected() {
+    return ready;
+  }
   return { connect, sendFrame, close, isConnected, beep };
 })();

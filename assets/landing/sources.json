@@ -1,0 +1,50 @@
+[
+  {
+    "file": "factory.webp",
+    "credit": "Collab Media",
+    "source": "https://www.pexels.com/photo/a-worker-welding-metal-with-sparks-15059760/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  },
+  {
+    "file": "robotics.webp",
+    "credit": "Freek Wolsink",
+    "source": "https://www.pexels.com/photo/industrial-robot-arm-in-a-manufacturing-facility-34207359/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  },
+  {
+    "file": "warehouse.webp",
+    "credit": "Tiger Lily",
+    "source": "https://www.pexels.com/photo/shelves-on-a-warehouse-4483608/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  },
+  {
+    "file": "machine.webp",
+    "credit": "Pexels",
+    "source": "https://www.pexels.com/photo/an-industrial-machine-in-a-factory-5953729/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  },
+  {
+    "file": "camera.webp",
+    "credit": "Pexels",
+    "source": "https://www.pexels.com/photo/monochrome-photo-of-a-surveillance-camera-on-a-brick-wall-7463021/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  },
+  {
+    "file": "worker.webp",
+    "credit": "Sergey Sergeev",
+    "source": "https://www.pexels.com/photo/industrial-worker-operating-machinery-in-factory-32845696/",
+    "license": "https://www.pexels.com/license/",
+    "treatment": "WebP compression; grayscale/saturation and crop applied in CSS",
+    "accessed": "2026-09-29"
+  }
+]
