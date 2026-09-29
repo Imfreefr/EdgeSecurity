@@ -8,16 +8,16 @@ export function mountScene(host) {
   renderer.domElement.setAttribute("aria-hidden", "true");
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  scene.add(new THREE.HemisphereLight(0xf0efdf, 0x3e4838, 3));
+  scene.add(new THREE.HemisphereLight(0xdfe9ff, 0x0a1428, 3));
   const light = new THREE.DirectionalLight(0xffffff, 3);
   light.position.set(-4, 8, 5);
   scene.add(light);
   const mat = (color) =>
     new THREE.MeshStandardMaterial({ color, roughness: 0.68, metalness: 0.22 });
-  const steel = mat(0x8c9682),
-    dark = mat(0x444c3e),
-    pale = mat(0xdadac9),
-    accent = mat(0xc8a367);
+  const steel = mat(0x7e93b5),
+    dark = mat(0x16233f),
+    pale = mat(0xdfe7f7),
+    accent = mat(0xf0b429);
   const add = (parent, geometry, material, x, y, z) => {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(x, y, z);
@@ -29,7 +29,7 @@ export function mountScene(host) {
   const ground = add(
     scene,
     new THREE.PlaneGeometry(13, 7),
-    mat(0x30382c),
+    mat(0x0e1a33),
     0,
     -0.03,
     0,
@@ -89,14 +89,14 @@ export function mountScene(host) {
     box(person, 0.2, 0.12, 0.35, dark, side * 0.13, 0.09, 0.06);
   }
   const bounds = [
-    new THREE.BoxHelper(person, 0xb7c39f),
-    new THREE.BoxHelper(machine, 0xb7c39f),
+    new THREE.BoxHelper(person, 0x34d399),
+    new THREE.BoxHelper(machine, 0x34d399),
   ];
   bounds.forEach((bound) => scene.add(bound));
   const ring = add(
     scene,
     new THREE.RingGeometry(1.7, 1.73, 80),
-    new THREE.MeshBasicMaterial({ color: 0xb7c39f, side: THREE.DoubleSide }),
+    new THREE.MeshBasicMaterial({ color: 0x34d399, side: THREE.DoubleSide }),
     2.6,
     0.015,
     0,
@@ -120,7 +120,7 @@ export function mountScene(host) {
     person.rotation.y = -0.2 + p * 0.35;
     camera.position.set(-0.5 + p * 0.65, 4.6 - p * 0.7, 10.8 - p * 0.4);
     camera.lookAt(0.3, 1, 0);
-    const color = p < 0.45 ? 0xb7c39f : p < 0.82 ? 0xd8ad62 : 0xdb8066;
+    const color = p < 0.45 ? 0x34d399 : p < 0.82 ? 0xfbbf24 : 0xfb7185;
     ring.material.color.set(color);
     bounds.forEach((bound) => {
       bound.update();
