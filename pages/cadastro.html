@@ -5,11 +5,53 @@
 <title>Cadastrar empresa — EdgeSecurity</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet"/>
-<link rel="stylesheet" href="../css/style.css"/><link rel="stylesheet" href="../css/legacy-public.css"/>
+<link rel="stylesheet" href="../css/style.css"/><link rel="stylesheet" href="../css/legacy-public.css"/><link rel="stylesheet" href="../css/edge.css"/>
 </head>
 <body class="landing">
+<div class="rt-static" id="route-reveal" aria-hidden="true">
+  <div class="rt-layer" style="background:#0a1430"></div>
+  <div class="rt-layer" style="background:#2f6fed"></div>
+  <div class="rt-layer" style="background:#0e1626"></div>
+  <div class="rt-brand">EDGE<span>SECURITY</span></div>
+</div>
+<script>
+(function () {
+  var ov = document.getElementById("route-reveal");
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var small = matchMedia("(max-width: 700px)").matches;
+  var mode = null;
+  try { mode = sessionStorage.getItem("edge_fx"); sessionStorage.removeItem("edge_fx"); } catch (_) {}
+  function hide() { if (ov) ov.classList.remove("on", "reveal", "cover"); }
+  if ((mode === "enter" || mode === "enter-fast") && !reduced && ov) {
+    ov.classList.add("on", "reveal");
+    setTimeout(hide, small ? 650 : mode === "enter-fast" ? 800 : 1100);
+  }
+  document.addEventListener("click", function (e) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest ? e.target.closest('a[href="../landing.html"], a[href="../index.html"]') : null;
+    if (!a || reduced) return;
+    e.preventDefault();
+    var exit = a.getAttribute("href") !== "../index.html";
+    try { sessionStorage.setItem("edge_fx", exit ? "exit" : "enter-fast"); } catch (_) {}
+    if (!ov) { location.href = a.href; return; }
+    ov.classList.add("on", "cover");
+    setTimeout(function () { location.href = a.href; }, small ? 550 : 900);
+  });
+})();
+</script>
 <header class="lp-top" role="banner"><div class="lp-wrap lp-top__inner"><a class="lp-brand" href="../landing.html" aria-label="EdgeSecurity inicio"><span class="lp-brand__mark" aria-hidden="true"><img src="../assets/logo.png" alt=""/></span><span class="lp-brand__word">Edge<span>Security</span></span></a><nav class="lp-nav" aria-label="Acoes"><a class="lp-link" href="../index.html">Já sou cliente — Entrar</a><a class="lp-cta" href="../landing.html">Voltar ao site</a></nav></div></header>
 <div class="cadastro-wrap">
+  <aside class="cad-rail" aria-label="Sobre a assinatura">
+    <div>
+      <h2>Cadastre sua empresa.<br /><em>Comece a proteger.</em></h2>
+      <ol>
+        <li><b>01</b> Dados da empresa</li>
+        <li><b>02</b> Administrador primário</li>
+        <li><b>03</b> Pagamento e ativação</li>
+      </ol>
+    </div>
+    <p style="color:#b9c7e4;font-size:.8rem;line-height:1.6">Uma assinatura por empresa.<br />R$ 149,90/mês.</p>
+  </aside>
   <div class="cadastro-card">
     <div class="cadastro-head">
       <h1>Cadastre sua empresa</h1>

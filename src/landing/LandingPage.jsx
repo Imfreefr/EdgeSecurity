@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Magnet from "./Magnet";
 import StaggeredMenu from "./StaggeredMenu";
+import RouteTransition, { beginRouteTransition } from "./RouteTransition";
 import { distanceAt, riskState } from "./riskState";
 gsap.registerPlugin(ScrollTrigger);
 const Arrow = () => (
@@ -315,6 +316,43 @@ export default function LandingPage() {
       cleanup?.();
     };
   }, [desktop, reduced]);
+  // Navbar adaptativa: lê a luminância do conteúdo atrás da barra
+  // e informa data-nav="dark|light" (contraste garantido em toda a página).
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    let raf = 0;
+    const probe = () => {
+      let node = document.elementFromPoint(
+        Math.min(innerWidth / 2, innerWidth - 20),
+        112,
+      );
+      let theme = "dark";
+      while (node && node !== el && node !== document.documentElement) {
+        const bg = getComputedStyle(node).backgroundColor;
+        const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+        if (m && Number(m[4] ?? 1) > 0.6) {
+          const lum = (0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 255;
+          theme = lum > 0.55 ? "dark" : "light";
+          break;
+        }
+        node = node.parentElement;
+      }
+      el.setAttribute("data-nav", theme);
+    };
+    const schedule = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(probe);
+    };
+    probe();
+    addEventListener("scroll", schedule, { passive: true });
+    addEventListener("resize", schedule);
+    return () => {
+      removeEventListener("scroll", schedule);
+      removeEventListener("resize", schedule);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
   function manualDistance(value) {
     const n = Number(value);
     setDistance(n);
@@ -325,6 +363,23 @@ export default function LandingPage() {
     if (open) lenisRef.current?.stop();
     else lenisRef.current?.start();
   }
+  // Transição cinematográfica landing → auth: intercepta ENTRAR/cadastro,
+  // executa o cover e só então troca a rota (handoff via sessionStorage).
+  useEffect(() => {
+    const el = root.current;
+    const onClick = (e) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)
+        return;
+      const a = e.target.closest?.(
+        'a[href="/index.html"], a[href="/pages/cadastro.html"]',
+      );
+      if (!a || !el.contains(a)) return;
+      e.preventDefault();
+      beginRouteTransition(a.getAttribute("href"), "enter");
+    };
+    el.addEventListener("click", onClick);
+    return () => el.removeEventListener("click", onClick);
+  }, []);
   return (
     <div ref={root} className="edge-landing">
       <div className="scroll-progress" aria-hidden="true" />
@@ -337,6 +392,11 @@ export default function LandingPage() {
         displaySocials={false}
         logo={{ src: "/assets/logo.png", alt: "EdgeSecurity" }}
         onToggle={onMenuToggle}
+      />
+      <RouteTransition
+        onCover={() => {
+          lenisRef.current?.stop();
+        }}
       />
       <main id="top">
         <section className="hero" aria-labelledby="hero-title">

@@ -1,450 +1,202 @@
-
-
 <!doctype html>
-
 <html lang="pt-BR">
-
   <head>
-
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>EdgeSecurity Acesso Seguro</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-
     <link
-
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap"
-
       rel="stylesheet"
-
     />
-
     <link rel="stylesheet" href="css/style.css" />
-
+    <link rel="stylesheet" href="css/edge.css" />
     <link
-
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
-
       rel="stylesheet"
-
     />
-
   </head>
-
   <body class="login-body">
-
-    <main class="login-screen">
-
-      <section
-
-        class="login-hero"
-
-        aria-label="EdgeSecurity — segurança na borda"
-
-      >
-
-        <div class="login-visual" aria-hidden="true">
-
-          <img src="assets/factory.webp" alt="" />
-
-          <span class="login-visual-shade"></span>
-
-          <span class="login-visual-grid"></span>
-
-        </div>
-
-        <div>
-
-          <div class="login-hero-top">
-
-            <div class="login-hero-mark">
-
-              <img src="assets/logo.png" alt="EdgeSecurity" />
-
-            </div>
-
-            <div class="login-hero-brand">Edge<span>Security</span></div>
-
-          </div>
-
-          <div class="login-hero-copy">
-
-            <h2>Segurança <i>local.</i><br />Sem nuvem. Sob seu controle.</h2>
-
-            <p>
-
-              Gerencie câmeras, veja ao vivo e receba alertas de risco em tempo
-
-              real e tudo neste computador, sem enviar vídeo para a internet.
-
-            </p>
-
-            <div class="login-hero-points">
-
-              <div class="login-hero-point">
-
-                <div class="ico">
-
-                  <i class="bx bx-video" aria-hidden="true"></i>
-
-                </div>
-
-                <div>
-
-                  <strong>Conecte qualquer câmera em segundos</strong
-
-                  ><span
-
-                    >Webcam ou câmera de rede e veja o status na hora.</span
-
-                  >
-
-                </div>
-
-              </div>
-
-              <div class="login-hero-point">
-
-                <div class="ico">
-
-                  <i class="bx bx-shield" aria-hidden="true"></i>
-
-                </div>
-
-                <div>
-
-                  <strong>Seus dados ficam aqui</strong
-
-                  ><span
-
-                    >Vídeo e alertas não saem deste computador. Sem nuvem.</span
-
-                  >
-
-                </div>
-
-              </div>
-
-              <div class="login-hero-point">
-
-                <div class="ico">
-
-                  <i class="bx bx-chip" aria-hidden="true"></i>
-
-                </div>
-
-                <div>
-
-                  <strong>Detecção de pessoas e máquinas</strong
-
-                  ><span
-
-                    >Identifica pessoas e veículos ao vivo, com alerta de
-
-                    proximidade.</span
-
-                  >
-
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div class="login-hero-foot">
-
-          <span class="dot" aria-hidden="true"></span> Modo Remoto — Veja de Qualquer lugar · v6.7.4
-
-        </div>
-
-      </section>
-
-
-
-      <section class="login-panel" aria-label="Acesso ao sistema">
-
-        <div class="login-backrow"><a class="login-back" href="landing.html">← Voltar ao site</a></div>
-
-        <div class="login-card">
-
-          <div class="login-card-head">
-
-            <div>
-
-              <h1 id="auth-title">Acesso Seguro</h1>
-
-              <p id="auth-subtitle">Entre com sua conta para acessar o sistema</p>
-
-            </div>
-
-            <span class="badge">v6.7.4</span>
-
-          </div>
-
-
-
-          <form id="login-form" novalidate>
-
-            <label class="login-field" for="username"
-
-              ><span>Usuário ou e-mail</span
-
-              ><input
-
-                id="username"
-
-                name="username"
-
-                autocomplete="username"
-
-                placeholder="seu e-mail ou usuário"
-
-                required
-
-                maxlength="120"
-
-            /></label>
-
-            <label class="login-field" for="password"
-
-              ><span>Senha</span
-
-              ><input
-
-                id="password"
-
-                name="password"
-
-                type="password"
-
-                autocomplete="current-password"
-
-                placeholder="••••••••"
-
-                required
-
-                minlength="6"
-
-            /></label>
-
-            <div
-
-              id="login-error"
-
-              class="form-error"
-
-              role="alert"
-
-              aria-live="polite"
-
-            ></div>
-
-            <label
-
-              class="check"
-
-              id="remember-field"
-
-              for="remember"
-
-              ><input id="remember" name="remember" type="checkbox" /> Manter
-
-              conectado</label
-
-            >
-
-            <button
-
-              class="btn btn-primary btn-full"
-
-              type="submit"
-
-              id="auth-submit"
-
-            >
-
-              <span
-
-                id="auth-submit-spinner"
-
-                class="spinner-sm"
-
-                style="display: none; margin-right: 8px"
-
-              ></span
-
-              ><span id="auth-submit-text">Entrar</span>
-
-            </button>
-
-          </form>
-
-          <div
-
-            style="
-
-              margin-top: 14px;
-
-              padding: 10px 12px;
-
-              border-radius: 10px;
-
-              background: #f8fafc;
-
-              border: 1px solid #eef2f7;
-
-              color: #475569;
-
-              font-size: 0.75rem;
-
-              line-height: 1.5;
-
-              display: flex;
-
-              gap: 8px;
-
-              align-items: center;
-
-            "
-
-          >
-
-            <i class="bx bx-shield-quarter" aria-hidden="true" style="color: #2f6fed; font-size: 1.1rem"></i> 
-
-            <span>Operação local — vídeo e dados permanecem no computador.</span>
-
-          </div>
-
-          <div class="login-foot">
-
-            EdgeSecurity <strong>v6.7.4</strong> · Dados locais
-
-            <span
-
-              id="backend-ping"
-
-              style="margin-left: 6px; color: #22c55e; font-weight: 700"
-
-              > Sistema online</span
-
-            >
-
-          </div>
-
-          <div style="margin-top:14px;text-align:center;font-size:.78rem;color:#64748b">
-
-            Ainda não tem conta? <a href="pages/cadastro.html" style="color:#2f6fed;font-weight:700">Assinar agora</a>
-
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-
-    <script src="js/runtime-config.js"></script>
-
-    <script src="js/api.js"></script>
-
-    <script src="js/auth.js"></script>
-
+    <div class="rt-static" id="route-reveal" aria-hidden="true">
+      <div class="rt-layer" style="background:#0a1430"></div>
+      <div class="rt-layer" style="background:#2f6fed"></div>
+      <div class="rt-layer" style="background:#0e1626"></div>
+      <div class="rt-brand">EDGE<span>SECURITY</span></div>
+    </div>
     <script>
-
-      async function checkBackendPing() {
-
-        try {
-
-          await EdgeAPI.get("/setup/status");
-
-          const p = document.getElementById("backend-ping");
-
-          if (p) { p.style.color = "#22c55e"; p.textContent = "● Sistema online"; }
-
-        } catch (_) {
-
-          const p = document.getElementById("backend-ping");
-
-          if (p) { p.style.color = "#ef4444"; p.textContent = "● Sistema offline — reinicie o serviço"; }
-
+      (function () {
+        var ov = document.getElementById("route-reveal");
+        var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var small = matchMedia("(max-width: 700px)").matches;
+        var mode = null;
+        try { mode = sessionStorage.getItem("edge_fx"); sessionStorage.removeItem("edge_fx"); } catch (_) {}
+        function hide() { if (ov) ov.classList.remove("on", "reveal", "cover"); }
+        if ((mode === "enter" || mode === "enter-fast") && !reduced && ov) {
+          ov.classList.add("on", "reveal");
+          setTimeout(hide, small ? 650 : mode === "enter-fast" ? 800 : 1100);
         }
-
-      }
-
-      checkBackendPing();
-
-      const form = document.getElementById("login-form");
-
-      let isSubmitting = false;
-
-      function setFieldError(id, msg) {
-
-        const el = document.getElementById(id);
-
-        const err = document.getElementById("login-error");
-
-        if (!el.value.trim()) { el.setAttribute("aria-invalid","true"); err.textContent = msg; el.focus(); return true; }
-
-        el.setAttribute("aria-invalid","false"); return false;
-
-      }
-
-      form.addEventListener("submit", async (e) => {
-
-        e.preventDefault();
-
-        if (isSubmitting) return;
-
-        const error = document.getElementById("login-error");
-
-        error.textContent = "";
-
-        const u = document.getElementById("username"), pw = document.getElementById("password");
-
-        if (setFieldError("username", "Informe seu usuário ou e-mail.")) return;
-
-        if (pw.value.length < 6) { pw.setAttribute("aria-invalid","true"); error.textContent = "Senha deve ter ao menos 6 caracteres."; pw.focus(); return; }
-
-        pw.setAttribute("aria-invalid","false");
-
-        const btn = document.getElementById("auth-submit"), sp = document.getElementById("auth-submit-spinner"), tx = document.getElementById("auth-submit-text");
-
-        isSubmitting = true; btn.disabled = true; if (sp) sp.style.display = "inline-block"; if (tx) tx.style.opacity = "0.7";
-
-        try {
-
-          await EdgeAuth.login(u.value.trim(), pw.value, document.getElementById("remember").checked);
-
-          if (tx) tx.textContent = "Redirecionando...";
-
-          location.href = "pages/dashboard.html";
-
-        } catch (err) {
-
-          error.textContent = err.message || "Erro ao autenticar. Verifique usuário e senha e tente novamente.";
-
-          if (String(err.message).toLowerCase().includes("senha")) pw.setAttribute("aria-invalid","true");
-
-          if (String(err.message).toLowerCase().includes("usuário")) u.setAttribute("aria-invalid","true");
-
-        } finally { isSubmitting = false; btn.disabled = false; if (sp) sp.style.display = "none"; if (tx) tx.style.opacity = "1"; }
-
-      });
-
-      if (EdgeAuth.current()) location.href = "pages/dashboard.html";
-
+        document.addEventListener("click", function (e) {
+          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          var a = e.target.closest ? e.target.closest('a[href="landing.html"], a[href="pages/cadastro.html"]') : null;
+          if (!a || reduced) return;
+          e.preventDefault();
+          var fast = a.getAttribute("href") !== "landing.html";
+          try { sessionStorage.setItem("edge_fx", fast ? "enter-fast" : "exit"); } catch (_) {}
+          if (!ov) { location.href = a.href; return; }
+          ov.classList.add("on", "cover");
+          setTimeout(function () { location.href = a.href; }, small ? 550 : 900);
+        });
+      })();
     </script>
-
+    <div class="lg-viewport">
+      <div class="lg-shell">
+        <section class="lg-visual" aria-label="EdgeSecurity — visão computacional">
+          <div class="lg-mesh" aria-hidden="true"></div>
+          <div class="lg-dots" aria-hidden="true"></div>
+          <svg class="lg-waves" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0,120 C100,60 200,180 300,120 C400,60 500,170 600,110 L600,220 L0,220 Z" fill="rgba(47,111,237,0.35)" />
+            <path d="M0,150 C120,100 240,200 360,140 C440,105 520,175 600,140 L600,220 L0,220 Z" fill="rgba(34,211,238,0.16)" />
+          </svg>
+          <div class="lg-grain" aria-hidden="true"></div>
+          <div class="lg-word" aria-hidden="true">EDGE<br />SECURITY</div>
+          <div class="lg-top">
+            <img src="assets/logo.png" alt="EdgeSecurity" />
+            <b>EDGE<span>SECURITY</span></b>
+          </div>
+          <div class="lg-copy">
+            <div class="eyebrow">Visão computacional industrial</div>
+            <h2>Perceber. Antecipar. <em>Proteger.</em></h2>
+            <p>
+              Câmeras, alertas de proximidade e controle local — tudo neste
+              computador, sem enviar vídeo para a internet.
+            </p>
+          </div>
+        </section>
+        <section class="lg-form-side" aria-label="Acesso ao sistema">
+          <form class="lg-form" id="login-form" novalidate>
+            <a class="lg-back" href="landing.html">← Voltar ao site</a>
+            <h1 id="auth-title">Acesso Seguro</h1>
+            <p class="sub" id="auth-subtitle">Entre com sua conta para acessar o sistema</p>
+            <label class="lg-field" for="username"
+              >Usuário ou e-mail
+              <input
+                id="username"
+                name="username"
+                autocomplete="username"
+                placeholder="seu e-mail ou usuário"
+                required
+                maxlength="120"
+            /></label>
+            <label class="lg-field" for="password"
+              >Senha
+              <span class="lg-input-wrap">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                  required
+                  minlength="6"
+                />
+                <button type="button" class="lg-eye" id="pw-toggle" aria-label="Mostrar senha" aria-pressed="false">
+                  <i class="bx bx-show" aria-hidden="true"></i>
+                </button>
+              </span>
+            </label>
+            <div
+              id="login-error"
+              class="lg-error"
+              role="alert"
+              aria-live="polite"
+            ></div>
+            <div class="lg-row">
+              <label class="lg-check" for="remember"
+                ><input id="remember" name="remember" type="checkbox" /> Manter
+                conectado</label
+              >
+            </div>
+            <button
+              class="lg-submit"
+              type="submit"
+              id="auth-submit"
+            >
+              <span
+                id="auth-submit-spinner"
+                class="spinner-sm"
+                style="display: none; margin-right: 8px"
+              ></span
+              ><span id="auth-submit-text">Entrar</span>
+            </button>
+            <div class="lg-foot">
+              <span>Ainda não tem conta? <a href="pages/cadastro.html">Assinar agora</a></span>
+              <span
+                id="backend-ping"
+                class="lg-status"
+                style="color: #4ade80"
+                > Sistema online</span
+              >
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+    <script src="js/runtime-config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      async function checkBackendPing() {
+        try {
+          await EdgeAPI.get("/setup/status");
+          const p = document.getElementById("backend-ping");
+          if (p) { p.style.color = "#4ade80"; p.textContent = "● Sistema online"; }
+        } catch (_) {
+          const p = document.getElementById("backend-ping");
+          if (p) { p.style.color = "#f87171"; p.textContent = "● Sistema offline — reinicie o serviço"; }
+        }
+      }
+      checkBackendPing();
+      const form = document.getElementById("login-form");
+      let isSubmitting = false;
+      function setFieldError(id, msg) {
+        const el = document.getElementById(id);
+        const err = document.getElementById("login-error");
+        if (!el.value.trim()) { el.setAttribute("aria-invalid","true"); err.textContent = msg; el.focus(); return true; }
+        el.setAttribute("aria-invalid","false"); return false;
+      }
+      document.getElementById("pw-toggle").addEventListener("click", () => {
+        const pw = document.getElementById("password");
+        const t = document.getElementById("pw-toggle");
+        const show = pw.type === "password";
+        pw.type = show ? "text" : "password";
+        t.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
+        t.setAttribute("aria-pressed", String(show));
+        t.querySelector("i").className = show ? "bx bx-hide" : "bx bx-show";
+        pw.focus();
+      });
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        const error = document.getElementById("login-error");
+        error.textContent = "";
+        const u = document.getElementById("username"), pw = document.getElementById("password");
+        if (setFieldError("username", "Informe seu usuário ou e-mail.")) return;
+        if (pw.value.length < 6) { pw.setAttribute("aria-invalid","true"); error.textContent = "Senha deve ter ao menos 6 caracteres."; pw.focus(); return; }
+        pw.setAttribute("aria-invalid","false");
+        const btn = document.getElementById("auth-submit"), sp = document.getElementById("auth-submit-spinner"), tx = document.getElementById("auth-submit-text");
+        isSubmitting = true; btn.disabled = true; if (sp) sp.style.display = "inline-block"; if (tx) tx.style.opacity = "0.7";
+        try {
+          await EdgeAuth.login(u.value.trim(), pw.value, document.getElementById("remember").checked);
+          if (tx) tx.textContent = "Redirecionando...";
+          location.href = "pages/dashboard.html";
+        } catch (err) {
+          error.textContent = err.message || "Erro ao autenticar. Verifique usuário e senha e tente novamente.";
+          if (String(err.message).toLowerCase().includes("senha")) pw.setAttribute("aria-invalid","true");
+          if (String(err.message).toLowerCase().includes("usuário")) u.setAttribute("aria-invalid","true");
+        } finally { isSubmitting = false; btn.disabled = false; if (sp) sp.style.display = "none"; if (tx) tx.style.opacity = "1"; }
+      });
+      if (EdgeAuth.current()) location.href = "pages/dashboard.html";
+    </script>
   </body>
-
 </html>
-
