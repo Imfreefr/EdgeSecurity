@@ -35,9 +35,9 @@ try:
             db.execute("INSERT INTO companies(id,razao_social,nome_fantasia,cnpj,email,telefone,endereco,cidade,estado,status,criado_em,atualizado_em) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                 (cid, "Empresa Teste Vercel LTDA", "Empresa Teste", cnpj_store, "contato@empresateste.com", "(11) 99999-0000", "Rua Teste, 123", "Sao Paulo", "SP", "ativa", n, n))
             db.execute("INSERT INTO usuarios(id,nome,email,senha_hash,cargo,status,criado_em,administrador_primario,company_id) VALUES(?,?,?,?,?,?,?,?,?)",
-                (uid, "Admin Teste", "teste@empresateste.com", _m.hash_password("Teste1234"), "administrador", "ativo", n, 1, cid))
+                (uid, "Admin Teste", "teste@empresateste.com", _m.hash_password("Teste1234"), "administrador", "ativo", n, True, cid))
             perms = _m.default_permissions("administrador")
-            db.execute("INSERT INTO permissoes(usuario_id," + ",".join(_m.PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(_m.PERMISSION_KEYS) + ")", (uid, *[int(perms[k]) for k in _m.PERMISSION_KEYS]))
+            db.execute("INSERT INTO permissoes(usuario_id," + ",".join(_m.PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(_m.PERMISSION_KEYS) + ")", (uid, *[bool(perms[k]) for k in _m.PERMISSION_KEYS]))
             db.execute("INSERT INTO subscriptions(id,company_id,status,valor,data_inicio,data_vencimento,ultimo_pagamento,proximo_vencimento,transacao_id,criado_em,atualizado_em) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                 (sid, cid, "ativa", _m.SUBSCRIPTION_VALUE, n, venc, n, venc, tid, n, n))
             db.execute("INSERT INTO payments(id,company_id,subscription_id,valor,status,data_cobranca,data_pagamento,transacao_id,metodo,criado_em) VALUES(?,?,?,?,?,?,?,?,?,?)",

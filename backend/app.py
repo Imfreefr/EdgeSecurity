@@ -825,9 +825,9 @@ def setup(data: SetupIn, request: Request):
             raise HTTPException(409, "O administrador master já foi criado.")
         uid = secrets.token_hex(12)
         db.execute("INSERT INTO usuarios(id,nome,email,senha_hash,cargo,status,criado_em,administrador_primario,company_id) VALUES(?,?,?,?,?,?,?,?,NULL)",
-            (uid, data.nome.strip(), data.email.strip().lower(), hash_password(data.senha), "super_admin", "ativo", now(), 0))
+            (uid, data.nome.strip(), data.email.strip().lower(), hash_password(data.senha), "super_admin", "ativo", now(), False))
         p = default_permissions("administrador")
-        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[int(p[k]) for k in PERMISSION_KEYS]))
+        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[bool(p[k]) for k in PERMISSION_KEYS]))
         audit(db, None, uid, "criacao_super_admin", "Super admin criado via setup", request.client.host if request.client else "", "ok")
     return {"ok": True}
 
@@ -895,9 +895,9 @@ def company_signup(data: CompanySignupIn, request: Request):
             (cid, data.razao_social.strip()[:120], data.nome_fantasia.strip()[:120], cnpj_store, data.email.strip().lower()[:120], (data.telefone or "")[:20], (data.endereco or "")[:200], (data.cidade or "")[:80], (data.estado or "")[:2], "ativa", now(), now()))
         uid = secrets.token_hex(12)
         db.execute("INSERT INTO usuarios(id,nome,email,senha_hash,cargo,status,criado_em,administrador_primario,company_id) VALUES(?,?,?,?,?,?,?,?,?)",
-            (uid, data.admin_nome.strip()[:80], data.admin_email.strip().lower()[:120], hash_password(data.admin_senha), "administrador", "ativo", now(), 1, cid))
+            (uid, data.admin_nome.strip()[:80], data.admin_email.strip().lower()[:120], hash_password(data.admin_senha), "administrador", "ativo", now(), True, cid))
         p = default_permissions("administrador")
-        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[int(p[k]) for k in PERMISSION_KEYS]))
+        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[bool(p[k]) for k in PERMISSION_KEYS]))
         sid = secrets.token_hex(12)
         db.execute("INSERT INTO subscriptions(id,company_id,status,valor,criado_em,atualizado_em) VALUES(?,?,?,?,?,?)",
             (sid, cid, "pendente", SUBSCRIPTION_VALUE, now(), now()))
@@ -1237,7 +1237,6 @@ def record_session_time(db, session: dict[str, Any]) -> int:
         db.execute("UPDATE sessoes SET ultimo_heartbeat=? WHERE id=? AND status='online'", (now(), session.get("session_id")))
     return delta
 
-@app.post("/api/auth/heartbeat")
 def _set_auth_cookie(resp: Response, token: str):
     resp.set_cookie("edge_token", token, httponly=True, secure=COOKIE_SECURE, samesite="strict", max_age=SESSION_IDLE_TIMEOUT, path="/")
 
@@ -1283,7 +1282,7 @@ def refresh_token(request: Request, response: Response, authorization: str | Non
         
         # Check idle timeout
         try:
-            last_seen = datetime.fromisoformat(row["ultimo_heartbeat"].replace("Z", "+00:00")).timestamp()
+            last_seen = _to_timestamp(row["ultimo_heartbeat"])
         except Exception:
             last_seen = time.time()
         
@@ -1363,10 +1362,10 @@ def create_user(data: UserIn, request: Request, authorization: str | None = Head
         perms.update({k: bool(v) for k, v in data.permissoes.items() if k in PERMISSION_KEYS})
         if data.cargo == "administrador":
             perms = {k: True for k in PERMISSION_KEYS}
-        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[int(perms[k]) for k in PERMISSION_KEYS]))
+        db.execute("INSERT INTO permissoes(usuario_id," + ",".join(PERMISSION_KEYS) + ") VALUES(?" + ",?" * len(PERMISSION_KEYS) + ")", (uid, *[bool(perms[k]) for k in PERMISSION_KEYS]))
         for cid in data.cameras:
             if db.execute("SELECT 1 FROM cameras WHERE id=? AND company_id=?", (cid, admin["company_id"])).fetchone():
-                db.execute("INSERT OR IGNORE INTO usuario_cameras VALUES(?,?)", (uid, cid))
+                db.execute("INSERT INTO usuario_cameras VALUES(?,?) ON CONFLICT DO NOTHING", (uid, cid))
         activity(db, admin["id"], "criação de usuário", f"Usuário {data.email.strip().lower()} criado", admin["company_id"])
         audit(db, admin["company_id"], admin["id"], "create_user", f"Criou usuario {data.email}", "", "ok")
         return user_dict(db.execute("SELECT * FROM usuarios WHERE id=?", (uid,)).fetchone(), db)
@@ -1394,12 +1393,12 @@ def update_user(uid: str, data: UserIn, request: Request, authorization: str | N
         perms.update({k: bool(v) for k, v in data.permissoes.items() if k in PERMISSION_KEYS})
         if data.cargo == "administrador":
             perms = {k: True for k in PERMISSION_KEYS}
-        db.execute("UPDATE permissoes SET " + ",".join(f"{k}=?" for k in PERMISSION_KEYS) + " WHERE usuario_id=?", (*[int(perms[k]) for k in PERMISSION_KEYS], uid))
+        db.execute("UPDATE permissoes SET " + ",".join(f"{k}=?" for k in PERMISSION_KEYS) + " WHERE usuario_id=?", (*[bool(perms[k]) for k in PERMISSION_KEYS], uid))
         db.execute("DELETE FROM usuario_cameras WHERE usuario_id=?", (uid,))
         for cid in data.cameras:
             cam = db.execute("SELECT company_id FROM cameras WHERE id=?", (cid,)).fetchone()
             if cam and cam["company_id"] == admin["company_id"]:
-                db.execute("INSERT OR IGNORE INTO usuario_cameras VALUES(?,?)", (uid, cid))
+                db.execute("INSERT INTO usuario_cameras VALUES(?,?) ON CONFLICT DO NOTHING", (uid, cid))
         activity(db, admin["id"], "alteração de usuário", f"Usuário {data.email.strip().lower()} atualizado", admin["company_id"])
         return user_dict(db.execute("SELECT * FROM usuarios WHERE id=?", (uid,)).fetchone(), db)
 
