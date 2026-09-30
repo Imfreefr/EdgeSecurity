@@ -65,7 +65,7 @@ const Magnet = ({
         style={{
           transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
           transition: transitionStyle,
-          willChange: "transform",
+          willChange: isActive && !disabled ? "transform" : "auto",
         }}
       >
         {children}

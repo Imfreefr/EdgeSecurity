@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { distanceAt, riskState } from "./riskState";
 
 // A spatial explanation, rendered only on changes. No permanent animation loop.
 export function mountScene(host) {
@@ -8,15 +9,15 @@ export function mountScene(host) {
   renderer.domElement.setAttribute("aria-hidden", "true");
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-  scene.add(new THREE.HemisphereLight(0xdfe9ff, 0x0a1428, 3));
+  scene.add(new THREE.HemisphereLight(0xf3f0e9, 0x252925, 3));
   const light = new THREE.DirectionalLight(0xffffff, 3);
   light.position.set(-4, 8, 5);
   scene.add(light);
   const mat = (color) =>
     new THREE.MeshStandardMaterial({ color, roughness: 0.68, metalness: 0.22 });
-  const steel = mat(0x7e93b5),
-    dark = mat(0x16233f),
-    pale = mat(0xdfe7f7),
+  const steel = mat(0x89928d),
+    dark = mat(0x303733),
+    pale = mat(0xe4e3dc),
     accent = mat(0xf0b429);
   const add = (parent, geometry, material, x, y, z) => {
     const mesh = new THREE.Mesh(geometry, material);
@@ -29,7 +30,7 @@ export function mountScene(host) {
   const ground = add(
     scene,
     new THREE.PlaneGeometry(13, 7),
-    mat(0x0e1a33),
+    mat(0x292e2b),
     0,
     -0.03,
     0,
@@ -120,13 +121,19 @@ export function mountScene(host) {
     person.rotation.y = -0.2 + p * 0.35;
     camera.position.set(-0.5 + p * 0.65, 4.6 - p * 0.7, 10.8 - p * 0.4);
     camera.lookAt(0.3, 1, 0);
-    const color = p < 0.45 ? 0x34d399 : p < 0.82 ? 0xfbbf24 : 0xfb7185;
+    const color = riskState(distanceAt(p)).color;
     ring.material.color.set(color);
+    ring.visible = host.classList.contains("vision-on");
     bounds.forEach((bound) => {
       bound.update();
       bound.material.color.set(color);
       bound.visible = host.classList.contains("vision-on");
     });
+    camera.updateMatrixWorld();
+    const personAnchor = new THREE.Vector3(person.position.x, 0, 0).project(camera);
+    const machineAnchor = new THREE.Vector3(1.5, 0, 0).project(camera);
+    host.style.setProperty("--person-left", `${(personAnchor.x + 1) * 50}%`);
+    host.style.setProperty("--machine-left", `${(machineAnchor.x + 1) * 50}%`);
     requestRender();
   }
   const visionObserver = new MutationObserver(() => update(current));
@@ -148,16 +155,16 @@ export function mountScene(host) {
   const onVisibility = () => requestRender();
   const onLost = (e) => {
     e.preventDefault();
-    host.classList.remove("has-webgl");
+    delete host.dataset.webgl;
   };
   const onRestored = () => {
-    host.classList.add("has-webgl");
+    host.dataset.webgl = "ready";
     requestRender();
   };
   renderer.domElement.addEventListener("webglcontextlost", onLost);
   renderer.domElement.addEventListener("webglcontextrestored", onRestored);
   host.appendChild(renderer.domElement);
-  host.classList.add("has-webgl");
+  host.dataset.webgl = "ready";
   resize.observe(host);
   visibility.observe(host);
   document.addEventListener("visibilitychange", onVisibility);
@@ -184,7 +191,9 @@ export function mountScene(host) {
       materials.forEach((m) => m.dispose());
       renderer.dispose();
       renderer.domElement.remove();
-      host.classList.remove("has-webgl");
+      delete host.dataset.webgl;
+      host.style.removeProperty("--person-left");
+      host.style.removeProperty("--machine-left");
     },
   };
 }

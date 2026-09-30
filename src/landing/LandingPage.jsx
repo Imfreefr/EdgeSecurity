@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Magnet from "./Magnet";
+import { distanceAt, riskState } from "./riskState";
 gsap.registerPlugin(ScrollTrigger);
 const Arrow = () => (
   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -61,8 +62,8 @@ export default function LandingPage() {
   const [vision, setVision] = useState(true),
     [distance, setDistance] = useState(4.8),
     [role, setRole] = useState("admin");
-  const status =
-    distance > 3 ? "SEGURO" : distance > 1.5 ? "ATENÇÃO" : "CRÍTICO";
+  const status = riskState(distance).label;
+  const phase = distance > 4 ? 0 : distance > 3 ? 1 : distance > 1.5 ? 2 : 3;
   useEffect(() => {
     const motion = matchMedia("(prefers-reduced-motion: reduce)"),
       pointer = matchMedia("(min-width: 900px) and (pointer: fine)");
@@ -76,7 +77,7 @@ export default function LandingPage() {
     const bodyStyle = document.body.getAttribute("style"),
       htmlStyle = document.documentElement.getAttribute("style");
     document.body.style.margin = "0";
-    document.body.style.background = "#080d1a";
+    document.body.style.background = "#eeede8";
     document.documentElement.style.scrollBehavior = "auto";
     const dialog = menu.current,
       previousOverflow = document.body.style.overflow;
@@ -101,9 +102,11 @@ export default function LandingPage() {
     if (reduced) return;
     let lenis;
     const tick = (time) => lenis?.raf(time * 1000);
-    lenis = new Lenis({ duration: 1.05, anchors: true });
-    lenis.on("scroll", ScrollTrigger.update);
-    gsap.ticker.add(tick);
+    if (desktop) {
+      lenis = new Lenis({ duration: 1.05, anchors: true });
+      lenis.on("scroll", ScrollTrigger.update);
+      gsap.ticker.add(tick);
+    }
     const ctx = gsap.context(() => {
       gsap.set(".hero-word span", { transformOrigin: "left bottom" });
       gsap
@@ -145,15 +148,16 @@ export default function LandingPage() {
             },
           },
         );
-        ScrollTrigger.create({
+        if (innerHeight >= 800) ScrollTrigger.create({
           trigger: ".risk-stage",
           start: "top top",
-          end: "+=1800",
+          end: () => `+=${Math.min(innerHeight * 1.6, 1600)}`,
+          invalidateOnRefresh: true,
           pin: true,
           scrub: true,
           onUpdate: (self) => {
             progress.current = self.progress;
-            setDistance(Math.round((4.8 - self.progress * 4) * 10) / 10);
+            setDistance(distanceAt(self.progress));
             sceneUpdate.current?.(self.progress);
           },
         });
@@ -244,31 +248,13 @@ export default function LandingPage() {
 
       rise(".section-meta", 26);
       rise(".section-label", 26);
-      rise("main h2", 72);
+      // Major chapters own their choreography; do not double-animate headings.
+      rise(".detect h2, .control h2, .trace h2", 40);
       rise(".hero-bottom", 30);
       rise(".hero-title > p", 24);
-      rise(".manifesto-bottom p");
-      rise(".feed-composition > p");
-      rise(".detect-copy p");
-      rise(".detect-copy .detect-sequence", 30);
-      rise(".detect-copy small");
-      rise(".local-bottom", 55);
-      rise(".control-copy p");
-      rise(".control-copy .role-switch", 30);
-      rise(".control-copy small");
-      rise(".trace > div > p");
-      rise(".trace > div > small");
       rise(".event-list li", 34);
-      rise(".feature-list details", 34);
-      rise(".faq details", 34);
-      rise(".price-block", 55);
-      rise(".pricing-grid > div:first-child > p");
-      rise(".connection-person", 30);
-      rise(".camera-nodes > span", 40);
-      rise(".detect-sequence span", 20);
-      rise(".footer", 30);
 
-      const flow = document.querySelector(".local-flow");
+      const flow = root.current.querySelector(".local-flow");
       if (flow)
         gsap.fromTo(
           flow,
@@ -282,7 +268,7 @@ export default function LandingPage() {
           },
         );
 
-      const wire = document.querySelector(".connections svg path");
+      const wire = root.current.querySelector(".connections svg path");
       if (wire) {
         const length = wire.getTotalLength();
         gsap.fromTo(
@@ -428,6 +414,9 @@ export default function LandingPage() {
               a segurança industrial.
               <br />
               <strong>Perceber. Antecipar. Proteger.</strong>
+              <a className="hero-action" href="#risk">
+                Veja como funciona <Arrow />
+              </a>
             </p>
           </div>
           <figure className="hero-photo">
@@ -451,7 +440,7 @@ export default function LandingPage() {
               Inteligência que antecipa.
             </p>
             <a className="text-link" href="/pages/cadastro.html">
-              Conheça sua próxima proteção <Arrow />
+              Cadastrar minha empresa <Arrow />
             </a>
           </div>
         </section>
@@ -493,16 +482,17 @@ export default function LandingPage() {
                 <em>O olhar se antecipa.</em>
               </h2>
               <div className="distance">
-                <output aria-label="Distância ilustrativa">
+                  <output aria-label="Distância ilustrativa" aria-live="off">
                   {distance.toFixed(1)}
                   <small>m</small>
                 </output>
-                <span className="risk-state">{status}</span>
+                <span className="risk-state" aria-live="polite">{status}</span>
               </div>
             </div>
             <div
               className={`risk-model ${vision ? "vision-on" : ""}`}
               ref={scene}
+              style={{ "--approach": (4.8 - distance) / 4 }}
             >
               <div
                 className="risk-fallback"
@@ -535,6 +525,13 @@ export default function LandingPage() {
                 ZONE / ÁREA DE ATENÇÃO
               </div>
             </div>
+            <ol className="risk-sequence" aria-label="Etapas da prevenção">
+              {["Observar", "Identificar", "Medir", "Alertar"].map((label, i) => (
+                <li key={label} data-active={i <= phase} aria-current={i === phase ? "step" : undefined}>
+                  <span aria-hidden="true">0{i + 1}</span>{label}
+                </li>
+              ))}
+            </ol>
             <div className="risk-controls">
               <p>
                 Ao reduzir a distância, a atenção muda de nível.
@@ -817,6 +814,10 @@ export default function LandingPage() {
                 Crie sua empresa e o administrador primário.
                 <br />O acesso é liberado após a confirmação do pagamento.
               </small>
+              <p className="installation-note">
+                A análise de risco requer instalação local, câmeras e equipamento
+                compatível. A demonstração web tem recursos de IA limitados.
+              </p>
             </div>
           </div>
         </section>
@@ -842,7 +843,7 @@ export default function LandingPage() {
               ],
               [
                 "Como minha assinatura é ativada?",
-                "Após o cadastro, você segue para o pagamento. O acesso é liberado quando o back-end recebe a confirmação do gateway. A simulação de pagamento é exclusiva do ambiente de teste.",
+                "Cadastre sua empresa e siga para o pagamento. Assim que o pagamento for confirmado, o acesso dos usuários da empresa será liberado, conforme as permissões definidas pelo administrador.",
               ],
               [
                 "Posso acessar pela internet?",
