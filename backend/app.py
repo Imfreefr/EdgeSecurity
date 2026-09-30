@@ -189,23 +189,9 @@ def init_db():
     
     if db_config.use_postgres:
         # For PostgreSQL, migrations are applied separately via SQL files
-        # Just verify connection and tables exist
-        with conn() as db:
-            # Check if core tables exist
-            tables = db.execute("""
-                SELECT table_name FROM information_schema.tables 
-                WHERE table_schema = 'public' 
-                AND table_name IN ('companies', 'usuarios', 'cameras', 'alertas')
-            """).fetchall()
-            if len(tables) < 4:
-                print("AVISO: Tabelas PostgreSQL nao encontradas. Execute as migrations SQL em migrations/")
-            else:
-                print("PostgreSQL schema verificado")
-        
-        # Ensure super_admin exists (handled by migration 002, but double-check)
-        with conn() as db:
-            if not db.execute("SELECT 1 FROM usuarios WHERE cargo='super_admin' LIMIT 1").fetchone():
-                print("AVISO: Super admin nao encontrado. Execute migration 002.")
+        # (migrations/). No network I/O here: serverless cold starts must
+        # not depend on DB connectivity at import time.
+        print("PostgreSQL configurado (schema gerenciado via migrations/)")
         return
     
     # SQLite path - full migration logic

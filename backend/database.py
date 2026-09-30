@@ -73,13 +73,18 @@ class Database:
         return conn
     
     def _init_postgres_pool(self) -> ConnectionPool:
-        """Initialize PostgreSQL connection pool"""
+        """Initialize PostgreSQL connection pool.
+
+        prepare_threshold=None disables server-side prepared statements,
+        required for Supavisor/pgbouncer transaction mode (serverless).
+        """
         if not self._pool:
             self._pool = ConnectionPool(
                 self.config.postgres_url,
                 min_size=self.config.postgres_pool_min,
                 max_size=self.config.postgres_pool_max,
-                kwargs={"row_factory": dict_row},
+                kwargs={"row_factory": dict_row, "prepare_threshold": None,
+                        "connect_timeout": 10},
                 open=False
             )
             self._pool.open()
@@ -143,7 +148,12 @@ class Database:
         if self.config.use_postgres:
             pool = self._init_postgres_pool()
             with pool.connection() as conn:
-                yield self._ConnectionWrapper(conn, self._convert_params)
+                try:
+                    yield self._ConnectionWrapper(conn, self._convert_params)
+                    conn.commit()
+                except Exception:
+                    conn.rollback()
+                    raise
         else:
             conn = self._init_sqlite()
             try:
