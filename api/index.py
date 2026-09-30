@@ -19,8 +19,11 @@ from backend.app import app
 try:
     import backend.app as _m
     _m.init_db()
+    # Seed de teste SOMENTE no SQLite efêmero (Vercel sem DATABASE_URL).
+    # Com PostgreSQL/Supabase configurado, nunca criar fixtures de teste.
+    _use_pg = bool(os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL"))
     with _m.conn() as db:
-        if not db.execute("SELECT 1 FROM usuarios WHERE lower(email)=?", ("teste@empresateste.com",)).fetchone():
+        if not _use_pg and not db.execute("SELECT 1 FROM usuarios WHERE lower(email)=?", ("teste@empresateste.com",)).fetchone():
             import secrets
             from datetime import datetime, timezone, timedelta
             cid = secrets.token_hex(12)
