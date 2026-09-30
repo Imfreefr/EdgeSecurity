@@ -10,6 +10,13 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
+# Load .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+except ImportError:
+    pass
+
 from fastapi import FastAPI, HTTPException, Header, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, StreamingResponse
 import cv2
@@ -69,6 +76,11 @@ if _db_config.use_postgres:
     print("Using PostgreSQL/Supabase")
 else:
     print("Using SQLite (local development)")
+
+# Parameter placeholder style for current backend
+def ph() -> str:
+    """Get parameter placeholder for current database backend"""
+    return "%s" if _db_config.use_postgres else "?"
 
 
 @app.middleware("http")
@@ -155,6 +167,15 @@ def _read_auth_token(token: str) -> tuple[str, str, int] | None:
         return user_id, session_id, int(issued_at)
     except (ValueError, TypeError, UnicodeError):
         return None
+
+
+def _to_timestamp(dt) -> float:
+    """Convert datetime or ISO string to timestamp"""
+    if isinstance(dt, datetime):
+        return dt.timestamp()
+    if isinstance(dt, str):
+        return datetime.fromisoformat(dt.replace("Z", "+00:00")).timestamp()
+    return time.time()
 
 
 def default_permissions(cargo: str) -> dict[str, bool]:
@@ -340,11 +361,11 @@ def init_db():
         # garante exatamente um administrador_primario por empresa (para empresas com users mas sem flag)
         for comp in db.execute("SELECT id FROM companies").fetchall():
             cid = comp["id"]
-            has = db.execute("SELECT 1 FROM usuarios WHERE company_id=? AND administrador_primario=1 LIMIT 1", (cid,)).fetchone()
+            has = db.execute("SELECT 1 FROM usuarios WHERE company_id=? AND administrador_primario=true LIMIT 1", (cid,)).fetchone()
             if not has:
                 oldest = db.execute("SELECT id FROM usuarios WHERE company_id=? AND cargo='administrador' ORDER BY criado_em ASC LIMIT 1", (cid,)).fetchone()
                 if oldest:
-                    db.execute("UPDATE usuarios SET administrador_primario=1 WHERE id=?", (oldest["id"],))
+                    db.execute("UPDATE usuarios SET administrador_primario=true WHERE id=?", (oldest["id"],))
         # atualiza assinaturas vencidas para atrasada
         try:
             for s in db.execute("SELECT id,proximo_vencimento,status FROM subscriptions WHERE status='ativa'").fetchall():
@@ -483,15 +504,13 @@ def get_session_for_token(token: str) -> dict[str, Any] | None:
         row = db.execute("SELECT u.*, s.inicio, s.ultimo_heartbeat, s.status FROM usuarios u JOIN sessoes s ON s.usuario_id=u.id WHERE u.id=? AND s.id=? AND s.status='online'", (user_id, session_id)).fetchone()
     if not row:
         return None
-    try:
-        last_seen = datetime.fromisoformat(row["ultimo_heartbeat"].replace("Z", "+00:00")).timestamp()
-    except Exception:
-        last_seen = now_ts
+    last_seen = _to_timestamp(row["ultimo_heartbeat"])
+    login_at = _to_timestamp(row["inicio"])
     if now_ts - last_seen > SESSION_IDLE_TIMEOUT:
         return None
     return {
         "id": row["id"], "nome": row["nome"], "email": row["email"], "cargo": row["cargo"],
-        "company_id": row["company_id"], "login_at": datetime.fromisoformat(row["inicio"].replace("Z", "+00:00")).timestamp(),
+        "company_id": row["company_id"], "login_at": login_at,
         "last_recorded": last_seen, "last_seen": now_ts, "session_id": session_id,
         "administrador_primario": bool(row["administrador_primario"]), "_token": token,
     }
@@ -505,8 +524,8 @@ def subscription_status(db, company_id: str) -> dict | None:
     # auto-check vencimento
     if d["status"] == "ativa" and d["proximo_vencimento"]:
         try:
-            venc = datetime.fromisoformat(d["proximo_vencimento"].replace("Z", "+00:00"))
-            if venc < datetime.now(timezone.utc):
+            venc = _to_timestamp(d["proximo_vencimento"])
+            if venc < datetime.now(timezone.utc).timestamp():
                 db.execute("UPDATE subscriptions SET status='atrasada', atualizado_em=? WHERE id=?", (now(), d["id"]))
                 d["status"] = "atrasada"
         except Exception:
@@ -1052,7 +1071,7 @@ def admin_companies(request: Request, authorization: str | None = Header(default
     require_super_admin(authorization, request)
     q = (q or "")[:80]
     with conn() as db:
-        sql = "SELECT c.id,c.razao_social,c.nome_fantasia,c.cnpj,c.email,c.status,c.criado_em,s.status as sub_status, s.valor, s.proximo_vencimento, s.ultimo_pagamento, u.nome as admin_nome, u.email as admin_email FROM companies c LEFT JOIN subscriptions s ON s.company_id=c.id LEFT JOIN usuarios u ON u.company_id=c.id AND u.administrador_primario=1 WHERE 1=1"
+        sql = "SELECT DISTINCT ON (c.id) c.id,c.razao_social,c.nome_fantasia,c.cnpj,c.email,c.status,c.criado_em,s.status as sub_status, s.valor, s.proximo_vencimento, s.ultimo_pagamento, u.nome as admin_nome, u.email as admin_email FROM companies c LEFT JOIN subscriptions s ON s.company_id=c.id LEFT JOIN usuarios u ON u.company_id=c.id AND u.administrador_primario=true WHERE 1=1"
         params = []
         if q:
             like = f"%{q}%"
@@ -1064,7 +1083,7 @@ def admin_companies(request: Request, authorization: str | None = Header(default
         if sub_status and sub_status in ("pendente","ativa","atrasada","cancelada","bloqueada"):
             sql += " AND s.status=?"
             params.append(sub_status)
-        sql += " GROUP BY c.id ORDER BY c.criado_em DESC LIMIT 100"
+        sql += " ORDER BY c.id, c.criado_em DESC LIMIT 100"
         rows = db.execute(sql, params).fetchall()
         out = []
         for r in rows:
@@ -1081,7 +1100,7 @@ def admin_company_detail(cid: str, request: Request, authorization: str | None =
         comp = db.execute("SELECT id,razao_social,nome_fantasia,cnpj,email,telefone,cidade,estado,status,criado_em FROM companies WHERE id=?", (cid,)).fetchone()
         if not comp:
             raise HTTPException(404, "Empresa não encontrada.")
-        admin = db.execute("SELECT id,nome,email,cargo,status FROM usuarios WHERE company_id=? AND administrador_primario=1 LIMIT 1", (cid,)).fetchone()
+        admin = db.execute("SELECT id,nome,email,cargo,status FROM usuarios WHERE company_id=? AND administrador_primario=true LIMIT 1", (cid,)).fetchone()
         users = [dict(r) for r in db.execute("SELECT id,nome,email,cargo,status,criado_em FROM usuarios WHERE company_id=? ORDER BY nome LIMIT 100", (cid,)).fetchall()]
         for u in users:
             u["permissoes"] = {}

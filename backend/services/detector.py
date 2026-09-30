@@ -11,7 +11,9 @@ class SafetyDetector:
         self.iou = iou
         model_file = Path(model_path)
         if not model_file.is_absolute():
-            model_file = (Path(__file__).resolve().parents[1] / model_file).resolve()
+            # Resolve relative to project root (where .env is)
+            project_root = Path(__file__).resolve().parents[2]
+            model_file = (project_root / model_file).resolve()
         if not model_file.exists():
             raise FileNotFoundError(f"Modelo YOLO não encontrado: {model_file}")
         self.model_path = str(model_file)

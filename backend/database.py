@@ -57,6 +57,11 @@ class Database:
         self._pool: Optional[ConnectionPool] = None
         self._async_pool: Optional[asyncpg.Pool] = None
     
+    @property
+    def param_style(self) -> str:
+        """Return parameter placeholder style for current backend"""
+        return "%s" if self.config.use_postgres else "?"
+    
     def _init_sqlite(self):
         """Initialize SQLite connection"""
         self.config.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
@@ -91,18 +96,59 @@ class Database:
             )
         return self._async_pool
     
+    class _ConnectionWrapper:
+        """Wrapper that converts ? to %s for PostgreSQL"""
+        def __init__(self, conn, convert_params):
+            self._conn = conn
+            self._convert = convert_params
+        
+        def execute(self, query: str, params: tuple = ()):
+            query = self._convert(query)
+            return self._conn.execute(query, params)
+        
+        def executemany(self, query: str, params_list: list):
+            query = self._convert(query)
+            return self._conn.executemany(query, params_list)
+        
+        def fetchone(self, query: str, params: tuple = ()):
+            query = self._convert(query)
+            return self._conn.execute(query, params).fetchone()
+        
+        def fetchall(self, query: str, params: tuple = ()):
+            query = self._convert(query)
+            return self._conn.execute(query, params).fetchall()
+        
+        def fetchval(self, query: str, params: tuple = ()):
+            query = self._convert(query)
+            return self._conn.execute(query, params).fetchone()[0] if self._conn.execute(query, params).fetchone() else None
+        
+        def executescript(self, script: str):
+            return self._conn.executescript(script)
+        
+        def commit(self):
+            return self._conn.commit()
+        
+        def rollback(self):
+            return self._conn.rollback()
+        
+        def close(self):
+            return self._conn.close()
+        
+        def __getattr__(self, name):
+            return getattr(self._conn, name)
+    
     @contextmanager
     def conn(self):
         """Get a database connection (context manager)"""
         if self.config.use_postgres:
             pool = self._init_postgres_pool()
             with pool.connection() as conn:
-                yield conn
+                yield self._ConnectionWrapper(conn, self._convert_params)
         else:
             conn = self._init_sqlite()
             try:
-                yield conn
-                conn.commit()  # Ensure SQLite transactions are committed
+                yield self._ConnectionWrapper(conn, self._convert_params)
+                conn.commit()
             except Exception:
                 conn.rollback()
                 raise
@@ -117,8 +163,15 @@ class Database:
         async with pool.acquire() as conn:
             yield conn
     
+    def _convert_params(self, query: str) -> str:
+        """Convert ? placeholders to %s for PostgreSQL"""
+        if self.config.use_postgres:
+            return query.replace("?", "%s")
+        return query
+    
     def execute(self, query: str, params: tuple = ()) -> Any:
         """Execute a query (non-SELECT)"""
+        query = self._convert_params(query)
         with self.conn() as conn:
             if self.config.use_postgres:
                 with conn.cursor() as cur:
@@ -129,6 +182,7 @@ class Database:
     
     def execute_many(self, query: str, params_list: list) -> Any:
         """Execute multiple queries"""
+        query = self._convert_params(query)
         with self.conn() as conn:
             if self.config.use_postgres:
                 with conn.cursor() as cur:
@@ -139,6 +193,7 @@ class Database:
     
     def fetchone(self, query: str, params: tuple = ()) -> Optional[dict]:
         """Fetch single row"""
+        query = self._convert_params(query)
         with self.conn() as conn:
             if self.config.use_postgres:
                 with conn.cursor() as cur:
@@ -151,6 +206,7 @@ class Database:
     
     def fetchall(self, query: str, params: tuple = ()) -> list[dict]:
         """Fetch all rows"""
+        query = self._convert_params(query)
         with self.conn() as conn:
             if self.config.use_postgres:
                 with conn.cursor() as cur:
@@ -162,6 +218,7 @@ class Database:
     
     def fetchval(self, query: str, params: tuple = ()) -> Any:
         """Fetch single value"""
+        query = self._convert_params(query)
         with self.conn() as conn:
             if self.config.use_postgres:
                 with conn.cursor() as cur:
@@ -173,15 +230,13 @@ class Database:
                 return row[0] if row else None
     
     def executescript(self, script: str):
-        """Execute multiple statements (SQLite only)"""
+        """Execute multiple statements"""
         if self.config.use_postgres:
-            # Split by semicolon for PostgreSQL
-            statements = [s.strip() for s in script.split(';') if s.strip()]
+            # Use psycopg's ability to execute multiple statements
+            # This handles dollar-quoted strings correctly
             with self.conn() as conn:
                 with conn.cursor() as cur:
-                    for stmt in statements:
-                        if stmt:
-                            cur.execute(stmt)
+                    cur.execute(script)
         else:
             with self.conn() as conn:
                 conn.executescript(script)
