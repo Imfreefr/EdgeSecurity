@@ -17,6 +17,69 @@
   font-weight: 400;
   font-display: swap;
 }
+.typo-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: grid;
+  place-items: center;
+  padding: clamp(22px, 4vw, 56px);
+  overflow: hidden;
+  background: #080d1a;
+  color: #eeede8;
+  clip-path: inset(0);
+}
+.typo-intro-top,
+.typo-intro-bottom {
+  position: absolute;
+  left: clamp(22px, 4vw, 56px);
+  right: clamp(22px, 4vw, 56px);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  color: #8fa0b5;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.typo-intro-top { top: clamp(22px, 4vw, 56px); }
+.typo-intro-bottom { bottom: clamp(22px, 4vw, 56px); }
+.typo-intro-window {
+  width: 100%;
+  overflow: hidden;
+  text-align: center;
+  line-height: 0.88;
+}
+.typo-intro-word {
+  display: block;
+  color: #fff;
+  font-family: Manrope, sans-serif;
+  font-size: clamp(4rem, 13vw, 12rem);
+  font-weight: 800;
+  letter-spacing: -0.07em;
+  white-space: nowrap;
+}
+.typo-intro-word:last-child { color: #7fb2ff; }
+.typo-intro-wordmark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #fff;
+  font-size: clamp(0.95rem, 1.5vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transform: translate(-50%, 14px);
+}
+.typo-intro-wordmark span { color: #7fb2ff; font-weight: 400; }
+@media (max-width: 560px) {
+  .typo-intro-word { font-size: clamp(3.1rem, 15vw, 6rem); letter-spacing: -0.08em; }
+  .typo-intro-top, .typo-intro-bottom { font-size: 0.52rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .typo-intro { display: none; }
+}
 .edge-landing {
   --paper: #eeede8;
   --ink: #242824;
