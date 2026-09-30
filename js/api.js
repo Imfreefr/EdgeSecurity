@@ -14,6 +14,37 @@ window.EdgeAPI = {
       ""
     );
   },
+  setToken(token, remember) {
+    localStorage.removeItem("edge_token");
+    sessionStorage.removeItem("edge_token");
+    (remember ? localStorage : sessionStorage).setItem("edge_token", token);
+  },
+  clearToken() {
+    localStorage.removeItem("edge_token");
+    sessionStorage.removeItem("edge_token");
+  },
+  async refreshToken() {
+    try {
+      const result = await fetch(`${API_BASE}/auth/refresh`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${this.token()}`,
+        },
+        credentials: "include",
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data.token) {
+        const hasLocal = Boolean(localStorage.getItem("edge_session"));
+        this.setToken(data.token, hasLocal);
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  },
   async request(path, options = {}) {
     const headers = {
       "Content-Type": "application/json",
@@ -22,7 +53,7 @@ window.EdgeAPI = {
     const token = this.token();
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const res = await fetch(`${API_BASE}${path}`, {
+    let res = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers,
       credentials: "include",
@@ -33,6 +64,24 @@ window.EdgeAPI = {
       body = await res.json();
     } catch (_) {
       // Algumas respostas de streaming ou não-JSON não possuem corpo JSON.
+    }
+
+    // Auto-refresh on 401 (session expired but refresh possible)
+    if (res.status === 401 && path !== "/auth/refresh" && path !== "/auth/login") {
+      const refreshed = await this.refreshToken();
+      if (refreshed) {
+        // Retry original request with new token
+        const newToken = this.token();
+        headers.Authorization = `Bearer ${newToken}`;
+        res = await fetch(`${API_BASE}${path}`, {
+          ...options,
+          headers,
+          credentials: "include",
+        });
+        try {
+          body = await res.json();
+        } catch (_) {}
+      }
     }
 
     if (!res.ok) {
