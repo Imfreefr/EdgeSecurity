@@ -129,13 +129,21 @@ body[data-page] .sb-item.active {
   box-shadow: none;
 }
 body[data-page] .sb-item .ico, body[data-page] .sb-logout .ico {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
   flex: 0 0 20px;
   min-width: 20px;
+  line-height: 20px;
   visibility: visible;
   opacity: 1;
   transform: none;
   color: currentColor;
   font-family: boxicons !important;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
 }
 body[data-page] .sb-item.active .ico { color: var(--edge-blue-light); opacity: 1; }
 body[data-page] .sb-user {
@@ -167,17 +175,35 @@ body[data-page] .sb-user span + span { margin-top: 4px; }
   body[data-page] .sidebar:hover .sb-live, body[data-page] .sidebar:focus-within .sb-live { justify-content: flex-start; padding: 0 10px 14px; }
   body[data-page] .sb-label, body[data-page] .sb-brand b, body[data-page] .sb-brand small,
   body[data-page] .sb-user, body[data-page] .sb-live span {
-    opacity: 0; visibility: hidden; transform: translateX(-6px); white-space: nowrap;
-    transition: opacity 0.2s ease, transform 0.28s var(--edge-ease), visibility 0.2s;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-6px);
+    white-space: nowrap;
+    transition: max-width 0.28s var(--edge-ease), opacity 0.2s ease, transform 0.28s var(--edge-ease), visibility 0.2s;
   }
   body[data-page] .sidebar:hover .sb-label, body[data-page] .sidebar:focus-within .sb-label,
   body[data-page] .sidebar:hover .sb-brand b, body[data-page] .sidebar:focus-within .sb-brand b,
   body[data-page] .sidebar:hover .sb-brand small, body[data-page] .sidebar:focus-within .sb-brand small,
   body[data-page] .sidebar:hover .sb-user, body[data-page] .sidebar:focus-within .sb-user,
   body[data-page] .sidebar:hover .sb-live span, body[data-page] .sidebar:focus-within .sb-live span {
-    opacity: 1; visibility: visible; transform: none;
+    max-width: 240px;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
   }
   body[data-page] .sb-item, body[data-page] .sb-logout { justify-content: center; }
+  body[data-page] .sidebar:not(:hover):not(:focus-within) .sb-item .ico,
+  body[data-page] .sidebar:not(:hover):not(:focus-within) .sb-logout .ico {
+    display: inline-block;
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    color: currentColor;
+  }
   body[data-page] .sidebar:hover .sb-item, body[data-page] .sidebar:focus-within .sb-item,
   body[data-page] .sidebar:hover .sb-logout, body[data-page] .sidebar:focus-within .sb-logout { justify-content: flex-start; }
 }
