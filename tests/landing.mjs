@@ -1,6 +1,12 @@
 import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
+import { distanceAt, riskState } from "../src/landing/riskState.js";
+
+for (const [distance, label] of [[4.8, "SEGURO"], [3.1, "SEGURO"], [3, "ATENÇÃO"], [1.6, "ATENÇÃO"], [1.5, "CRÍTICO"], [0.8, "CRÍTICO"]]) {
+  assert.equal(riskState(distance).label, label);
+  assert.equal(distanceAt((4.8 - distance) / 4), distance);
+}
 
 const base = process.env.EDGE_TEST_URL || "http://127.0.0.1:5174";
 const browser = await chromium.launch({
@@ -24,7 +30,13 @@ try {
     });
     await page.goto(`${base}/landing.html`);
     await page.waitForTimeout(2000);
+    if (width < 900) {
+      assert.equal(await page.locator("html.lenis").count(), 0, "native mobile scroll");
+      assert.equal(await page.locator("canvas, .pin-spacer").count(), 0);
+    }
     await page.screenshot({ path: `${out}/landing-${width}.png` });
+    await page.keyboard.press("Tab");
+    assert.equal(await page.locator(".skip").evaluate(e => e === document.activeElement), true);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth > innerWidth,
     );
@@ -84,6 +96,10 @@ try {
     await page
       .getByRole("button", { name: "Ativar visão computacional" })
       .click();
+    if (width >= 900) {
+      assert.equal(await page.locator('.risk-model[data-webgl="ready"]').count(), 1);
+      assert.equal(await page.locator('.risk-fallback').isVisible(), false, "no duplicate fallback after React update");
+    }
     for (const value of ["4.8", "2.1", "0.8"]) {
       await page.locator("input[type=range]").fill(value);
       await page.locator("input[type=range]").dispatchEvent("input");
@@ -94,6 +110,13 @@ try {
       );
     }
     assert.equal(await page.locator(".risk-state").textContent(), "CRÍTICO");
+    if (width === 1440 || width === 390) {
+      for (const section of ["manifesto", "observe", "detect", "local", "control", "trace", "pricing", "faq", "finale"]) {
+        await page.locator(`.${section}`).scrollIntoViewIfNeeded();
+        await page.waitForTimeout(1000);
+        await page.screenshot({ path: `${out}/${section}-${width}.png` });
+      }
+    }
     await page.evaluate(() => scrollTo(0, 0));
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${out}/full-${width}.png`, fullPage: true });
@@ -110,6 +133,12 @@ try {
   await reduced.waitForTimeout(500);
   assert.equal(await reduced.locator("canvas").count(), 0);
   assert.equal(await reduced.locator(".pin-spacer").count(), 0);
+  assert.equal(await reduced.locator("html.lenis").count(), 0);
+  await reduced.emulateMedia({ reducedMotion: "no-preference" });
+  await reduced.locator('.risk-model[data-webgl="ready"]').waitFor();
+  await reduced.emulateMedia({ reducedMotion: "reduce" });
+  await reduced.locator("canvas").waitFor({ state: "detached" });
+  assert.equal(await reduced.locator(".pin-spacer, html.lenis").count(), 0, "live preference cleanup");
   await reduced.close();
   report.push({ surface: "reduced-motion", passed: true });
 
@@ -157,6 +186,7 @@ try {
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
       );
+      assert.equal(overflow, false, `${name}: horizontal overflow at ${width}`);
       report.push({ surface: name, width, overflow });
       await page.screenshot({
         path: `${out}/${name}-${width}.png`,
@@ -192,6 +222,23 @@ try {
     report.push({ surface: "dashboard", width, errors });
     await page.close();
   }
+  const navigation = await browser.newPage();
+  await navigation.route("**/api/**", route => route.fulfill({ json: {} }));
+  await navigation.goto(`${base}/landing.html`);
+  await navigation.getByRole("link", { name: "Cadastrar minha empresa", exact: true }).first().click();
+  await navigation.waitForURL("**/pages/cadastro.html");
+  assert.equal(await navigation.locator(".cad-grid").first().evaluate(e => getComputedStyle(e).display), "grid");
+  assert.equal(await navigation.locator("canvas, .pin-spacer, html.lenis").count(), 0);
+  await navigation.getByRole("link", { name: "Voltar ao site", exact: true }).click();
+  await navigation.waitForURL("**/landing.html");
+  await navigation.getByRole("link", { name: "Entrar", exact: true }).click();
+  await navigation.waitForURL("**/index.html");
+  assert.equal(await navigation.locator("canvas, .pin-spacer, html.lenis").count(), 0);
+  assert.equal(await navigation.locator("body").getAttribute("style"), null);
+  await navigation.goBack();
+  await navigation.waitForURL("**/landing.html");
+  await navigation.close();
+  report.push({ surface: "landing-signup-landing-login-landing", passed: true });
   await writeFile(`${out}/test-results.json`, JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 } finally {
