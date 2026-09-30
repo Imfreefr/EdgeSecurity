@@ -1558,21 +1558,47 @@
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
+.edge-landing {
+  --nav-safe: 132px;
+}
+.edge-landing .hero {
+  padding-top: var(--nav-safe);
+}
 .edge-landing .sm-bar {
   position: fixed;
-  inset: 0 0 auto 0;
+  top: 14px;
+  left: 4vw;
+  right: 4vw;
   z-index: 146;
-  height: 100px;
-  padding: 0 4vw;
+  min-height: 62px;
+  padding: 8px 8px 8px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   color: var(--ink);
-  transition: color 0.3s ease;
+  background: rgba(238, 237, 232, 0.72);
+  border-color: rgba(36, 40, 36, 0.12);
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease;
+}
+.edge-landing[data-nav="dark"] .sm-bar {
+  color: #f4f6fb;
+  background: rgba(14, 18, 16, 0.55);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.edge-landing[data-nav="light"] .sm-bar {
+  color: var(--ink);
+  background: rgba(238, 237, 232, 0.72);
+  border-color: rgba(36, 40, 36, 0.12);
 }
 .edge-landing .sm-scope[data-open] .sm-bar {
-  color: #f4f6fb;
+  color: var(--ink);
+  background: var(--paper);
+  border-color: var(--line);
 }
 .edge-landing .sm-brand {
   display: flex;
@@ -1587,6 +1613,9 @@
   width: 30px;
   height: 30px;
   object-fit: contain;
+  background: #eeede8;
+  border-radius: 9px;
+  padding: 2px;
 }
 .edge-landing .sm-brand strong {
   font-weight: 400;
@@ -1773,9 +1802,42 @@
 .edge-landing .sm-login:hover {
   color: var(--accent);
 }
+
+/* ============ RouteTransition — acima do menu (z 160), fora das páginas ============ */
+.edge-landing .rt-scope {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  pointer-events: none;
+}
+.edge-landing .rt-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.edge-landing .rt-brand {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  opacity: 0;
+}
+.edge-landing .rt-brand span {
+  font-weight: 400;
+}
 @media (max-width: 700px) {
+  .edge-landing {
+    --nav-safe: 104px;
+  }
   .edge-landing .sm-bar {
-    height: 76px;
+    top: 10px;
+    left: 12px;
+    right: 12px;
   }
   .edge-landing .sm-panel {
     width: 100%;

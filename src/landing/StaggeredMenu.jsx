@@ -101,7 +101,15 @@ export default function StaggeredMenu({
     [onToggle, position],
   );
 
-  // ESC fecha + click-away fecha (camada de backdrop).
+  // Fecha/reset quando a PageTransition assume a navegação.
+  useEffect(() => {
+    window.__edgeMenuClose = () => {
+      if (openRef.current) toggle(false);
+    };
+    return () => {
+      if (window.__edgeMenuClose) delete window.__edgeMenuClose;
+    };
+  }, [toggle]);
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape" && openRef.current) toggle(false);

@@ -51,6 +51,11 @@ try {
         .evaluate((e) => e === document.activeElement),
       true,
     );
+    await page.getByRole("button", { name: "Abrir menu" }).click();
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: `${out}/menu-open-${width}.png` });
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(500);
     // Visit the full scroll narrative so lazy images, WebGL and reveal timelines run.
     const total = await page.evaluate(
       () => document.documentElement.scrollHeight,
@@ -124,6 +129,37 @@ try {
     report.push({ surface: "landing", width, errors, overflow });
     await page.close();
   }
+  const contrast = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await contrast.goto(`${base}/landing.html`);
+  await contrast.waitForTimeout(1500);
+  for (const [name, sel] of [["hero", "#top"], ["dark", "#risk"], ["photo", ".finale"], ["foot", ".footer"]]) {
+    await contrast.locator(sel).scrollIntoViewIfNeeded();
+    await contrast.waitForTimeout(800);
+    const theme = await contrast.locator(".edge-landing").getAttribute("data-nav");
+    assert.ok(["dark", "light"].includes(theme), `nav theme at ${name}`);
+    await contrast.getByRole("button", { name: "Abrir menu" }).click();
+    await contrast.waitForTimeout(900);
+    assert.equal(await contrast.locator("#staggered-panel").getAttribute("aria-hidden"), "false");
+    const box = await contrast.getByRole("button", { name: "Fechar menu" }).boundingBox();
+    assert.ok(box && box.width > 0 && box.height > 0, `close visible at ${name}`);
+    const pill = await contrast.locator(".sm-bar").evaluate((e) => {
+      const m = getComputedStyle(e).backgroundColor.match(/,\s*([\d.]+)\)/);
+      return m ? Number(m[1]) : 1;
+    });
+    assert.ok(pill > 0.3, `pill surface at ${name}`);
+    await contrast.screenshot({ path: `${out}/menu-${name}-1440.png` });
+    await contrast.keyboard.press("Escape");
+    await contrast.waitForTimeout(500);
+  }
+  const gap = await contrast.evaluate(() => {
+    scrollTo(0, 0);
+    const bar = document.querySelector(".sm-bar").getBoundingClientRect();
+    const h1 = document.querySelector(".hero-title h1").getBoundingClientRect();
+    return h1.top >= bar.bottom - 4;
+  });
+  assert.ok(gap, "hero headline abaixo da navbar");
+  await contrast.close();
+  report.push({ surface: "nav-contrast", passed: true });
   const reduced = await browser.newPage({
     viewport: { width: 1440, height: 900 },
     reducedMotion: "reduce",
