@@ -135,10 +135,24 @@ body[data-page] .sb-item .ico, body[data-page] .sb-logout .ico {
   opacity: 1;
   transform: none;
   color: currentColor;
+  font-family: boxicons !important;
 }
 body[data-page] .sb-item.active .ico { color: var(--edge-blue-light); opacity: 1; }
-body[data-page] .sb-user { border-top: 1px solid rgba(255, 255, 255, 0.07); }
+body[data-page] .sb-user {
+  min-width: 0;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+body[data-page] .sb-user strong,
+body[data-page] .sb-user span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 body[data-page] .sb-user strong { font-size: 0.8rem; }
+body[data-page] .sb-user span + span { margin-top: 4px; }
 @media (min-width: 768px) {
   /* OPÇÃO A — rail 80px, expande sobre o conteúdo (sem layout shift) */
   body[data-page] .sidebar { width: 80px; transition: width 0.3s var(--edge-ease), box-shadow 0.3s ease; }
