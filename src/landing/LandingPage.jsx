@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import Magnet from "./Magnet";
 import StaggeredMenu from "./StaggeredMenu";
 import RouteTransition, { beginRouteTransition } from "./RouteTransition";
+import TypographicIntro from "./TypographicIntro";
 import { distanceAt, riskState } from "./riskState";
 gsap.registerPlugin(ScrollTrigger);
 const Arrow = () => (
@@ -51,8 +52,13 @@ export default function LandingPage() {
   const lenisRef = useRef(null);
   const progress = useRef(0),
     sceneUpdate = useRef(null);
-  const [reduced, setReduced] = useState(true),
-    [desktop, setDesktop] = useState(false);
+  const [reduced, setReduced] = useState(() =>
+      matchMedia("(prefers-reduced-motion: reduce)").matches,
+    ),
+    [desktop, setDesktop] = useState(() =>
+      matchMedia("(min-width: 900px) and (pointer: fine)").matches,
+    );
+  const [introDone, setIntroDone] = useState(false);
   const [vision, setVision] = useState(true),
     [distance, setDistance] = useState(4.8),
     [role, setRole] = useState("admin");
@@ -86,7 +92,7 @@ export default function LandingPage() {
     };
   }, []);
   useEffect(() => {
-    if (reduced) return;
+    if (reduced || !introDone) return;
     let lenis;
     const tick = (time) => lenis?.raf(time * 1000);
     if (desktop) {
@@ -286,7 +292,7 @@ export default function LandingPage() {
       gsap.ticker.remove(tick);
       lenis?.destroy();
     };
-  }, [reduced, desktop]);
+  }, [reduced, desktop, introDone]);
   useEffect(() => {
     if (!desktop || reduced) return;
     let disposed = false,
@@ -388,6 +394,7 @@ export default function LandingPage() {
   }, []);
   return (
     <div ref={root} className="edge-landing">
+      <TypographicIntro reduced={reduced} onComplete={() => setIntroDone(true)} />
       <div className="scroll-progress" aria-hidden="true" />
       <a className="skip" href="#manifesto">
         Pular para o conteúdo
