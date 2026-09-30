@@ -7,7 +7,11 @@
 }
 .camera-stage-real {
   position: relative;
-  min-height: 420px;
+  width: calc(100% - 40px);
+  min-width: 0;
+  min-height: clamp(280px, 42vw, 420px);
+  aspect-ratio: 16 / 9;
+  max-height: 600px;
   background: #080d1a;
   border-radius: 12px;
   overflow: hidden;
@@ -25,7 +29,8 @@
   background: #000;
 }
 .camera-empty-real {
-  min-height: 420px;
+  min-height: 0;
+  width: 100%;
   color: #fff;
   display: flex;
   flex-direction: column;
@@ -161,7 +166,9 @@
     grid-template-columns: 1fr;
   }
   .camera-stage-real {
-    min-height: 280px;
+    width: calc(100% - 24px);
+    min-height: 240px;
+    aspect-ratio: 16 / 9;
     margin: 14px 12px 0;
   }
   .camera-empty-real {

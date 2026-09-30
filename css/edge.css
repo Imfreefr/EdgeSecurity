@@ -128,7 +128,14 @@ body[data-page] .sb-item.active {
   color: #fff;
   box-shadow: none;
 }
-body[data-page] .sb-item .ico, body[data-page] .sb-logout .ico { color: inherit; opacity: 0.85; }
+body[data-page] .sb-item .ico, body[data-page] .sb-logout .ico {
+  flex: 0 0 20px;
+  min-width: 20px;
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+  color: currentColor;
+}
 body[data-page] .sb-item.active .ico { color: var(--edge-blue-light); opacity: 1; }
 body[data-page] .sb-user { border-top: 1px solid rgba(255, 255, 255, 0.07); }
 body[data-page] .sb-user strong { font-size: 0.8rem; }
@@ -183,6 +190,9 @@ body[data-page] .tb-status i { width: 8px; height: 8px; border-radius: 50%; back
 
 /* ---------- page head: tipografia, não cards ---------- */
 body[data-page] .page-head { align-items: flex-end; margin-bottom: 6px; }
+body[data-page="cameras"] .page-head { flex-wrap: wrap; }
+body[data-page="cameras"] .page-head > div { flex: 1 1 280px; min-width: 0; }
+body[data-page="cameras"] .page-head > .btn { flex: 0 1 auto; }
 body[data-page] .page-head h1 {
   font-family: Manrope, Inter, sans-serif;
   font-size: clamp(1.7rem, 2.6vw, 2.4rem);
@@ -390,17 +400,23 @@ body[data-page] .permission-check { flex-direction: row !important; align-items:
 body[data-page] .permission-check:hover { background: rgba(47, 111, 237, 0.06); }
 body[data-page] .form-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
-/* ---------- toast ---------- */
-body[data-page] .toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 12px);
+/* ---------- app toast: explicit final geometry ---------- */
+body[data-page] .edge-toast {
+  position: fixed; right: 24px; bottom: 24px; left: auto;
+  width: max-content; max-width: min(520px, calc(100vw - 32px));
+  min-width: 0; min-height: 0; height: auto;
+  transform: translateY(12px);
   background: var(--edge-black); color: #fff; font-size: 0.82rem; font-weight: 600;
-  padding: 13px 20px; border-radius: var(--edge-radius-pill);
+  padding: 13px 20px; border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 16px 40px rgba(8, 13, 26, 0.4);
-  opacity: 0; pointer-events: none; z-index: 300; max-width: min(520px, 90vw);
+  opacity: 0; pointer-events: none; z-index: 300;
   transition: opacity 0.25s ease, transform 0.25s var(--edge-ease);
 }
-body[data-page] .toast.show { opacity: 1; transform: translate(-50%, 0); }
+body[data-page] .edge-toast.show { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  body[data-page] .edge-toast { transition: none; transform: none; }
+}
 
 /* ---------- motion funcional de entrada ---------- */
 @media (prefers-reduced-motion: no-preference) {
