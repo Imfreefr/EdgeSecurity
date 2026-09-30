@@ -83,7 +83,7 @@ body[data-page] .btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
 body[data-page] .btn-small { border-radius: 8px; min-height: 36px; }
 
 /* ---------- app shell ---------- */
-body[data-page] .app-shell { min-height: 100vh; }
+body[data-page] .app-shell { width: 100%; min-height: 100dvh; }
 body[data-page] .sidebar {
   position: fixed;
   left: 0; top: 0; bottom: 0;
@@ -162,7 +162,13 @@ body[data-page] .sb-user strong { font-size: 0.8rem; }
 }
 
 /* ---------- topbar ---------- */
-body[data-page] .content { padding: 0 32px 64px; max-width: 1240px; }
+body[data-page] .content {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  padding: 0 32px 64px;
+}
 body[data-page] .app-topbar {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -438,16 +444,24 @@ body.login-body { background: var(--edge-black); font-family: Inter, sans-serif;
     radial-gradient(55% 50% at 60% 85%, rgba(27, 58, 143, 0.9) 0%, transparent 72%),
     radial-gradient(30% 30% at 85% 75%, rgba(127, 178, 255, 0.35) 0%, transparent 70%),
     linear-gradient(160deg, #0a1c4f 0%, #0a1430 60%, #060b1c 100%);
-  animation: lg-drift 16s ease-in-out infinite alternate;
+  animation: none;
 }
-@keyframes lg-drift { from { transform: translate3d(-2%, -1%, 0) scale(1); } to { transform: translate3d(2%, 2%, 0) scale(1.06); } }
-.lg-visual .lg-slats {
+.lg-visual .lg-mesh::after {
+  content: "";
   position: absolute;
   inset: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  display: block;
+  background-image: radial-gradient(rgba(160, 202, 255, 0.18) 1px, transparent 1.5px);
+  background-size: 24px 24px;
+  mask-image: radial-gradient(75% 70% at 50% 42%, #000 12%, transparent 78%);
+  opacity: 0.55;
+}
+.lg-visual .lg-mesh::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0 48%, rgba(127, 178, 255, 0.12) 49% 49.4%, transparent 50% 100%);
+  background-size: 180px 180px;
+  opacity: 0.45;
 }
 .lg-visual .lg-shade {
   position: absolute;
@@ -568,8 +582,8 @@ body.landing .pay-meta { color: #8fa0b5; }
    ROUTE TRANSITION estática (login/cadastro).
    Mesmos tokens/ritmo do StaggeredMenu; só transform/opacity.
    ============================================================ */
-.rt-static { position: fixed; inset: 0; z-index: 160; pointer-events: none; display: none; }
-.rt-static.on { display: block; pointer-events: all; }
+.rt-static { position: fixed; inset: 0; z-index: 160; visibility: hidden; pointer-events: none; display: none; }
+.rt-static.on { display: block; visibility: visible; pointer-events: all; }
 .rt-static .rt-layer { position: absolute; inset: 0; transform: translateX(101%); will-change: transform; }
 .rt-static .rt-brand {
   position: absolute; inset: 0; display: grid; place-items: center; align-content: center;
