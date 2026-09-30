@@ -1,0 +1,240 @@
+"""
+EdgeSecurity Database Layer
+Supports both SQLite (local dev) and PostgreSQL/Supabase (production)
+"""
+from __future__ import annotations
+
+import os
+import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, Optional
+
+# Optional PostgreSQL support
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+    from psycopg_pool import ConnectionPool
+    PSYCOPG_AVAILABLE = True
+except ImportError:
+    PSYCOPG_AVAILABLE = False
+
+# Optional asyncpg support
+ASYNCPG_AVAILABLE = False
+try:
+    import asyncpg
+    ASYNCPG_AVAILABLE = True
+except (ImportError, OSError):
+    # asyncpg requires C++ build tools on Windows
+    pass
+
+
+class DatabaseConfig:
+    """Database configuration from environment"""
+    
+    def __init__(self):
+        # SQLite (local development)
+        self.sqlite_path = Path(os.getenv("DB_PATH", "backend/edgesecurity.db"))
+        
+        # PostgreSQL/Supabase (production)
+        self.postgres_url = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL")
+        self.postgres_pool_min = int(os.getenv("PG_POOL_MIN", "2"))
+        self.postgres_pool_max = int(os.getenv("PG_POOL_MAX", "10"))
+        
+        # Determine active backend
+        self.use_postgres = bool(self.postgres_url and PSYCOPG_AVAILABLE)
+    
+    @property
+    def backend_name(self) -> str:
+        return "postgresql" if self.use_postgres else "sqlite"
+
+
+class Database:
+    """Unified database interface"""
+    
+    def __init__(self, config: Optional[DatabaseConfig] = None):
+        self.config = config or DatabaseConfig()
+        self._pool: Optional[ConnectionPool] = None
+        self._async_pool: Optional[asyncpg.Pool] = None
+    
+    def _init_sqlite(self):
+        """Initialize SQLite connection"""
+        self.config.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(self.config.sqlite_path)
+        conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        return conn
+    
+    def _init_postgres_pool(self) -> ConnectionPool:
+        """Initialize PostgreSQL connection pool"""
+        if not self._pool:
+            self._pool = ConnectionPool(
+                self.config.postgres_url,
+                min_size=self.config.postgres_pool_min,
+                max_size=self.config.postgres_pool_max,
+                kwargs={"row_factory": dict_row},
+                open=False
+            )
+            self._pool.open()
+            self._pool.wait()
+        return self._pool
+    
+    async def _init_async_pool(self) -> asyncpg.Pool:
+        """Initialize async PostgreSQL pool"""
+        if not self._async_pool:
+            self._async_pool = await asyncpg.create_pool(
+                self.config.postgres_url,
+                min_size=self.config.postgres_pool_min,
+                max_size=self.config.postgres_pool_max,
+            )
+        return self._async_pool
+    
+    @contextmanager
+    def conn(self):
+        """Get a database connection (context manager)"""
+        if self.config.use_postgres:
+            pool = self._init_postgres_pool()
+            with pool.connection() as conn:
+                yield conn
+        else:
+            conn = self._init_sqlite()
+            try:
+                yield conn
+                conn.commit()  # Ensure SQLite transactions are committed
+            except Exception:
+                conn.rollback()
+                raise
+            finally:
+                conn.close()
+    
+    async def aconn(self):
+        """Get async PostgreSQL connection"""
+        if not self.config.use_postgres:
+            raise RuntimeError("Async connections only available with PostgreSQL")
+        pool = await self._init_async_pool()
+        async with pool.acquire() as conn:
+            yield conn
+    
+    def execute(self, query: str, params: tuple = ()) -> Any:
+        """Execute a query (non-SELECT)"""
+        with self.conn() as conn:
+            if self.config.use_postgres:
+                with conn.cursor() as cur:
+                    cur.execute(query, params)
+                    return cur
+            else:
+                return conn.execute(query, params)
+    
+    def execute_many(self, query: str, params_list: list) -> Any:
+        """Execute multiple queries"""
+        with self.conn() as conn:
+            if self.config.use_postgres:
+                with conn.cursor() as cur:
+                    cur.executemany(query, params_list)
+                    return cur
+            else:
+                return conn.executemany(query, params_list)
+    
+    def fetchone(self, query: str, params: tuple = ()) -> Optional[dict]:
+        """Fetch single row"""
+        with self.conn() as conn:
+            if self.config.use_postgres:
+                with conn.cursor() as cur:
+                    cur.execute(query, params)
+                    row = cur.fetchone()
+                    return dict(row) if row else None
+            else:
+                row = conn.execute(query, params).fetchone()
+                return dict(row) if row else None
+    
+    def fetchall(self, query: str, params: tuple = ()) -> list[dict]:
+        """Fetch all rows"""
+        with self.conn() as conn:
+            if self.config.use_postgres:
+                with conn.cursor() as cur:
+                    cur.execute(query, params)
+                    return [dict(row) for row in cur.fetchall()]
+            else:
+                rows = conn.execute(query, params).fetchall()
+                return [dict(row) for row in rows]
+    
+    def fetchval(self, query: str, params: tuple = ()) -> Any:
+        """Fetch single value"""
+        with self.conn() as conn:
+            if self.config.use_postgres:
+                with conn.cursor() as cur:
+                    cur.execute(query, params)
+                    row = cur.fetchone()
+                    return row[0] if row else None
+            else:
+                row = conn.execute(query, params).fetchone()
+                return row[0] if row else None
+    
+    def executescript(self, script: str):
+        """Execute multiple statements (SQLite only)"""
+        if self.config.use_postgres:
+            # Split by semicolon for PostgreSQL
+            statements = [s.strip() for s in script.split(';') if s.strip()]
+            with self.conn() as conn:
+                with conn.cursor() as cur:
+                    for stmt in statements:
+                        if stmt:
+                            cur.execute(stmt)
+        else:
+            with self.conn() as conn:
+                conn.executescript(script)
+    
+    def close(self):
+        """Close connection pools"""
+        if self._pool:
+            self._pool.close()
+            self._pool = None
+        if self._async_pool:
+            import asyncio
+            asyncio.run(self._async_pool.close())
+            self._async_pool = None
+
+
+# Global instance
+_db_instance: Optional[Database] = None
+
+
+def get_db() -> Database:
+    """Get global database instance"""
+    global _db_instance
+    if _db_instance is None:
+        _db_instance = Database()
+    return _db_instance
+
+
+def set_db(db: Database):
+    """Set global database instance (for testing)"""
+    global _db_instance
+    _db_instance = db
+
+
+# Backward compatibility functions
+@contextmanager
+def conn():
+    """Backward compatible connection context manager"""
+    db = get_db()
+    with db.conn() as c:
+        yield c
+
+
+def execute(query: str, params: tuple = ()):
+    return get_db().execute(query, params)
+
+
+def fetchone(query: str, params: tuple = ()):
+    return get_db().fetchone(query, params)
+
+
+def fetchall(query: str, params: tuple = ()):
+    return get_db().fetchall(query, params)
+
+
+def fetchval(query: str, params: tuple = ()):
+    return get_db().fetchval(query, params)
