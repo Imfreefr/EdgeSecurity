@@ -18,6 +18,8 @@ window.EdgeAuth = {
   },
   async login(username, password, remember) {
     const result = await EdgeAPI.post("/auth/login", { username, password });
+    sessionStorage.removeItem("edge_session");
+    localStorage.removeItem("edge_session");
     EdgeAPI.setToken(result.token, remember);
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem("edge_session", JSON.stringify(result.user));

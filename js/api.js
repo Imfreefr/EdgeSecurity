@@ -5,9 +5,12 @@ window.EdgeAPI = {
     return API_BASE;
   },
   token() {
+    const hasLocalSession = Boolean(localStorage.getItem("edge_session"));
+    const preferred = hasLocalSession ? localStorage : sessionStorage;
+    const fallback = hasLocalSession ? sessionStorage : localStorage;
     return (
-      localStorage.getItem("edge_token") ||
-      sessionStorage.getItem("edge_token") ||
+      preferred.getItem("edge_token") ||
+      fallback.getItem("edge_token") ||
       ""
     );
   },
@@ -68,6 +71,8 @@ window.EdgeAPI = {
     });
   },
   setToken(token, remember) {
+    localStorage.removeItem("edge_token");
+    sessionStorage.removeItem("edge_token");
     (remember ? localStorage : sessionStorage).setItem("edge_token", token);
   },
   clearToken() {
