@@ -1050,7 +1050,8 @@ def admin_dashboard(request: Request, authorization: str | None = Header(default
         ativas = db.execute("SELECT COUNT(*) n FROM companies WHERE status='ativa'").fetchone()["n"]
         bloqueadas = db.execute("SELECT COUNT(*) n FROM companies WHERE status='bloqueada'").fetchone()["n"]
         subs = {r["status"]: r["n"] for r in db.execute("SELECT status, COUNT(*) n FROM subscriptions GROUP BY status").fetchall()}
-        receita = db.execute("SELECT COALESCE(SUM(valor),0) n FROM payments WHERE status='pago' AND data_pagamento >= datetime('now','-30 days')").fetchone()["n"]
+        _receita_filtro = "data_pagamento >= NOW() - INTERVAL '30 days'" if _db_config.use_postgres else "data_pagamento >= datetime('now','-30 days')"
+        receita = db.execute(f"SELECT COALESCE(SUM(valor),0) n FROM payments WHERE status='pago' AND {_receita_filtro}").fetchone()["n"]
         recentes = [dict(r) for r in db.execute("SELECT p.id,p.valor,p.status,p.data_cobranca,p.data_pagamento,p.metodo,p.criado_em,c.nome_fantasia FROM payments p JOIN companies c ON c.id=p.company_id ORDER BY p.criado_em DESC LIMIT 10").fetchall()]
         return {
             "total_companies": total_companies,
