@@ -25,7 +25,7 @@ window.EdgeAPI = {
   },
   async refreshToken() {
     try {
-      const result = await fetch(`${API_BASE}/auth/refresh`, {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -118,15 +118,6 @@ window.EdgeAPI = {
     return this.request(path, {
       method: "DELETE",
     });
-  },
-  setToken(token, remember) {
-    localStorage.removeItem("edge_token");
-    sessionStorage.removeItem("edge_token");
-    (remember ? localStorage : sessionStorage).setItem("edge_token", token);
-  },
-  clearToken() {
-    localStorage.removeItem("edge_token");
-    sessionStorage.removeItem("edge_token");
   },
 };
 
