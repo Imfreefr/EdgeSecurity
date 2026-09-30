@@ -1810,11 +1810,14 @@
   position: fixed;
   inset: 0;
   z-index: 160;
+  visibility: hidden;
   pointer-events: none;
 }
+.edge-landing .rt-scope.is-active { visibility: visible; }
 .edge-landing .rt-layer {
   position: absolute;
   inset: 0;
+  transform: translateX(101%);
   will-change: transform;
 }
 .edge-landing .rt-brand {
@@ -1828,7 +1831,9 @@
   letter-spacing: -0.03em;
   color: var(--ink);
   opacity: 0;
+  visibility: hidden;
 }
+.edge-landing .rt-scope.is-active .rt-brand { visibility: visible; }
 .edge-landing .rt-brand span {
   font-weight: 400;
 }
