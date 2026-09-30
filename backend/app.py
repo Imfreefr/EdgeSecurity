@@ -53,6 +53,7 @@ WEBHOOK_SECRET = os.getenv("PAYMENT_WEBHOOK_SECRET", "")
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN", "").strip()
 MP_PREAPPROVAL_URL = os.getenv("MP_PREAPPROVAL_URL", "https://api.mercadopago.com/preapproval").strip()
 DATA_ENCRYPTION_KEY = os.getenv("DATA_ENCRYPTION_KEY", "").strip()
+AUTH_SECRET = (os.getenv("AUTH_SECRET") or DATA_ENCRYPTION_KEY or "edgesecurity-auth-secret-change-in-production").encode()
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() in ("1", "true", "yes")
 
 if PAYMENT_MOCK and MP_ACCESS_TOKEN:
@@ -129,6 +130,25 @@ def verify_password(password: str, encoded: str) -> bool:
         return alg == "pbkdf2_sha256" and hmac.compare_digest(candidate, digest_hex)
     except Exception:
         return False
+
+
+def _make_auth_token(user_id: str, session_id: str) -> str:
+    payload = f"{user_id}:{session_id}:{int(time.time())}"
+    signature = hmac.new(AUTH_SECRET, payload.encode(), hashlib.sha256).hexdigest()
+    return secrets.token_urlsafe(8) + "." + base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=") + "." + signature
+
+
+def _read_auth_token(token: str) -> tuple[str, str, int] | None:
+    try:
+        _, encoded, signature = token.split(".", 2)
+        payload = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)).decode()
+        expected = hmac.new(AUTH_SECRET, payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(signature, expected):
+            return None
+        user_id, session_id, issued_at = payload.split(":", 2)
+        return user_id, session_id, int(issued_at)
+    except (ValueError, TypeError, UnicodeError):
+        return None
 
 
 def default_permissions(cargo: str) -> dict[str, bool]:
@@ -423,18 +443,27 @@ def _extract_token(authorization: str | None, request: Request | None = None) ->
     return None
 
 def get_session_for_token(token: str) -> dict[str, Any] | None:
-    if not token or len(token) < 16:
+    parsed = _read_auth_token(token) if token else None
+    if not parsed:
         return None
-    session = SESSIONS.get(token)
-    if not session:
-        return None
+    user_id, session_id, _ = parsed
     now_ts = time.time()
-    last_seen = float(session.get("last_seen", session.get("login_at", now_ts)))
-    if now_ts - last_seen > SESSION_IDLE_TIMEOUT:
-        SESSIONS.pop(token, None)
+    with conn() as db:
+        row = db.execute("SELECT u.*, s.inicio, s.ultimo_heartbeat, s.status FROM usuarios u JOIN sessoes s ON s.usuario_id=u.id WHERE u.id=? AND s.id=? AND s.status='online'", (user_id, session_id)).fetchone()
+    if not row:
         return None
-    session["last_seen"] = now_ts
-    return session
+    try:
+        last_seen = datetime.fromisoformat(row["ultimo_heartbeat"].replace("Z", "+00:00")).timestamp()
+    except Exception:
+        last_seen = now_ts
+    if now_ts - last_seen > SESSION_IDLE_TIMEOUT:
+        return None
+    return {
+        "id": row["id"], "nome": row["nome"], "email": row["email"], "cargo": row["cargo"],
+        "company_id": row["company_id"], "login_at": datetime.fromisoformat(row["inicio"].replace("Z", "+00:00")).timestamp(),
+        "last_recorded": last_seen, "last_seen": now_ts, "session_id": session_id,
+        "administrador_primario": bool(row["administrador_primario"]), "_token": token,
+    }
 
 
 def subscription_status(db, company_id: str) -> dict | None:
@@ -1117,21 +1146,9 @@ def login(data: LoginIn, request: Request, response: Response):
             if sub["status"] != "ativa":
                 raise HTTPException(403, "Assinatura inativa. Regularize o pagamento.")
         LOGIN_ATTEMPTS.pop(rate_key, None)
-        token = secrets.token_urlsafe(32)
         now_ts = time.time()
         session_id = secrets.token_hex(16)
-        SESSIONS[token] = {
-            "id": row["id"],
-            "nome": row["nome"],
-            "email": row["email"],
-            "cargo": row["cargo"],
-            "company_id": row["company_id"],
-            "login_at": now_ts,
-            "last_recorded": now_ts,
-            "last_seen": now_ts,
-            "session_id": session_id,
-            "administrador_primario": bool(row["administrador_primario"]),
-        }
+        token = _make_auth_token(row["id"], session_id)
         stamp = now()
         db.execute("UPDATE usuarios SET ultimo_login=?, ultimo_logout=NULL WHERE id=?", (stamp, row["id"]))
         db.execute("UPDATE sessoes SET status='offline', fim=?, ultimo_heartbeat=? WHERE usuario_id=? AND status='online'", (stamp, stamp, row["id"]))
@@ -1195,7 +1212,6 @@ def logout(request: Request, response: Response, authorization: str | None = Hea
         db.execute("UPDATE sessoes SET status='offline', fim=?, ultimo_heartbeat=? WHERE id=?", (stamp, stamp, session.get("session_id")))
         activity(db, session["id"], "logout", "Usuário encerrou a sessão", session.get("company_id"))
         audit(db, session.get("company_id"), session["id"], "logout", "Logout", "", "ok")
-    SESSIONS.pop(session.get("_token", ""), None)
     _clear_auth_cookie(response)
     return {"ok": True}
 
@@ -1323,9 +1339,8 @@ def delete_user(uid: str, request: Request, authorization: str | None = Header(d
                 raise HTTPException(403, "Apenas o administrador primário pode excluir uma conta de administrador.")
         db.execute("DELETE FROM usuarios WHERE id=?", (uid,))
         activity(db, admin["id"], "exclusão de usuário", f'Usuário {row["email"]} excluído permanentemente', admin["company_id"])
-    for tok, sess in list(SESSIONS.items()):
-        if sess.get("id") == uid:
-            SESSIONS.pop(tok, None)
+    with conn() as db:
+        db.execute("UPDATE sessoes SET status='offline', fim=?, ultimo_heartbeat=? WHERE usuario_id=? AND status='online'", (now(), now(), uid))
     return {"ok": True}
 
 @app.get("/api/ai/status")
