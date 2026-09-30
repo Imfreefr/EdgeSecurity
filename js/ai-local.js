@@ -6,10 +6,12 @@ window.EdgeAILocal = (() => {
   let cbReady = null;
   let currentCamera = null;
   let lastBeep = 0;
+  // Model URL: prioritize assets folder (copied by Vite), fallback to backend paths for local dev
   const MODEL_URLS = [
-    "../backend/model/edgev1-int8.onnx",
-    "backend/model/edgev1-int8.onnx",
-    "/backend/model/edgev1-int8.onnx",
+    "/assets/edgev1-int8.onnx",           // Vercel/production (copied to dist/assets)
+    "../backend/model/edgev1-int8.onnx",  // Local dev (served from backend)
+    "backend/model/edgev1-int8.onnx",     // Local dev alternative
+    "/backend/model/edgev1-int8.onnx",    // Local dev alternative
   ];
   let audioCtx = null;
   function beep(level) {

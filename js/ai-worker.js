@@ -7,20 +7,36 @@ self.onmessage = async (e) => {
   const { type, payload } = e.data;
   if (type === "init") {
     try {
-      const url = payload.modelUrl || "../../backend/model/edgev1-int8.onnx";
-      const alt = "../../backend/model/edgev1.onnx";
-      ort.env.wasm.numThreads = 1;
-      ort.env.wasm.simd = true;
-      try {
-        session = await ort.InferenceSession.create(url, {
-          executionProviders: ["wasm"],
-        });
-      } catch (_) {
-        session = await ort.InferenceSession.create(alt, {
-          executionProviders: ["wasm"],
-        });
+      // Try multiple URLs in order: assets (production), then backend paths (local dev)
+      const urls = [
+        payload.modelUrl,
+        "/assets/edgev1-int8.onnx",
+        "../../backend/model/edgev1-int8.onnx",
+        "/backend/model/edgev1-int8.onnx",
+      ].filter(Boolean);
+      
+      let sessionCreated = false;
+      let lastError = null;
+      
+      for (const url of urls) {
+        try {
+          ort.env.wasm.numThreads = 1;
+          ort.env.wasm.simd = true;
+          session = await ort.InferenceSession.create(url, {
+            executionProviders: ["wasm"],
+          });
+          sessionCreated = true;
+          self.postMessage({ type: "ready", model: url });
+          break;
+        } catch (err) {
+          lastError = err;
+          continue;
+        }
       }
-      self.postMessage({ type: "ready", model: url });
+      
+      if (!sessionCreated) {
+        throw lastError || new Error("Failed to load model from all URLs");
+      }
     } catch (err) {
       self.postMessage({ type: "error", message: String(err.message || err) });
     }
