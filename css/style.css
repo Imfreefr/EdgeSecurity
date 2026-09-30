@@ -2780,3 +2780,192 @@ body.dark .modal-box .card-head p {
     color: #cbd5e1;
   }
 }
+
+/* ============================================================
+   LOGIN — redesign visual (referência: React Bits Pro Auth 2)
+   Split 58/42 no desktop · somente escopo .login-* (não vaza).
+   Sem OAuth · lógica/autenticação preservadas (só visual).
+   Azul EdgeSecurity: #2f6fed (mesmo token da landing).
+   ============================================================ */
+.login-screen {
+  grid-template-columns: minmax(0, 58%) minmax(0, 42%);
+  min-height: 100dvh;
+}
+.login-hero {
+  overflow: hidden;
+  isolation: isolate;
+}
+.login-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.login-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+  transform: scale(1.04);
+}
+.login-visual-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 20, 48, 0.72) 0%, rgba(10, 20, 48, 0.55) 40%, rgba(10, 20, 48, 0.88) 100%),
+    linear-gradient(115deg, rgba(47, 111, 237, 0.5) 0%, rgba(47, 111, 237, 0.12) 45%, transparent 70%);
+}
+.login-visual-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 72px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.05) 0 1px, transparent 1px 72px);
+  mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
+}
+.login-hero::after {
+  content: "EDGE\A SECURITY";
+  white-space: pre;
+  position: absolute;
+  right: 24px;
+  bottom: 8px;
+  z-index: 0;
+  font-weight: 800;
+  font-size: clamp(3.4rem, 7vw, 6.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.05em;
+  text-align: right;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+}
+.login-hero > div,
+.login-hero-foot {
+  position: relative;
+  z-index: 1;
+}
+.login-hero-brand span {
+  color: #8fb4ff;
+}
+.login-hero-copy h2 i {
+  color: #8fb4ff;
+}
+.login-hero-point .ico {
+  background: rgba(47, 111, 237, 0.16);
+  border-color: rgba(143, 180, 255, 0.35);
+  color: #bcd0ff;
+}
+.login-panel {
+  padding: 56px clamp(24px, 4vw, 64px);
+  gap: 18px;
+}
+.login-backrow {
+  width: min(440px, 100%);
+}
+.login-back {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2f6fed;
+}
+.login-back:hover {
+  color: #1b3a8f;
+}
+.login-card {
+  width: min(440px, 100%);
+  border-radius: 24px;
+  padding: 34px 30px 26px;
+  gap: 22px;
+  border: 1px solid #dfe5f0;
+  box-shadow:
+    0 24px 48px rgba(15, 35, 95, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.05);
+}
+.login-card-head h1 {
+  font-size: 1.65rem;
+}
+#auth-subtitle {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+#login-form {
+  gap: 16px;
+}
+.login-field {
+  font-size: 0.82rem;
+  font-weight: 700;
+  gap: 8px;
+}
+.login-field input {
+  min-height: 52px;
+  padding: 14px 16px;
+  font-size: 0.95rem;
+  border-radius: 14px;
+  border: 1px solid #d4dcea;
+}
+.login-field input:focus {
+  border-color: #2f6fed;
+  box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.16);
+}
+.login-field input[aria-invalid="true"] {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1);
+}
+#login-error:not(:empty) {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.login-card .check input {
+  accent-color: #2f6fed;
+}
+.login-card .btn-primary {
+  background: #2f6fed;
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 12px 24px rgba(47, 111, 237, 0.35);
+}
+.login-card .btn-primary:hover {
+  background: #1b3a8f;
+  box-shadow: 0 16px 32px rgba(27, 58, 143, 0.4);
+}
+.login-card .btn-primary:disabled {
+  background: #93b4ff;
+  box-shadow: none;
+}
+@media (max-width: 980px) {
+  .login-hero {
+    padding: 20px 18px 26px;
+  }
+  .login-visual img {
+    opacity: 0.36;
+  }
+  .login-hero-copy {
+    margin-top: 12px;
+  }
+  .login-hero-copy h2 {
+    font-size: 1.5rem;
+  }
+  .login-hero-copy > p,
+  .login-hero-points,
+  .login-hero-foot {
+    display: none;
+  }
+  .login-hero::after {
+    font-size: 2.6rem;
+    opacity: 0.7;
+  }
+  .login-panel {
+    padding: 28px 18px 40px;
+  }
+  .login-card {
+    padding: 26px 20px 22px;
+  }
+}

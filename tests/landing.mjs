@@ -41,13 +41,13 @@ try {
       () => document.documentElement.scrollWidth > innerWidth,
     );
     assert.equal(overflow, false, `landing overflow at ${width}`);
-    await page.getByRole("button", { name: "Menu", exact: true }).click();
-    assert.equal(await page.locator("dialog").evaluate((e) => e.open), true);
+    await page.getByRole("button", { name: "Abrir menu" }).click();
+    assert.equal(await page.locator("#staggered-panel").getAttribute("aria-hidden"), "false");
     await page.keyboard.press("Escape");
-    assert.equal(await page.locator("dialog").evaluate((e) => e.open), false);
+    assert.equal(await page.locator("#staggered-panel").getAttribute("aria-hidden"), "true");
     assert.equal(
       await page
-        .getByRole("button", { name: "Menu", exact: true })
+        .getByRole("button", { name: "Abrir menu" })
         .evaluate((e) => e === document.activeElement),
       true,
     );
