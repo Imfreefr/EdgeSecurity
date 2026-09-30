@@ -3,6 +3,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Magnet from "./Magnet";
+import StaggeredMenu from "./StaggeredMenu";
 import { distanceAt, riskState } from "./riskState";
 gsap.registerPlugin(ScrollTrigger);
 const Arrow = () => (
@@ -21,13 +22,6 @@ const Photo = ({ name, alt, eager = false }) => (
     decoding="async"
   />
 );
-const chapters = [
-  ["#manifesto", "A ideia"],
-  ["#risk", "O risco"],
-  ["#observe", "O produto"],
-  ["#system", "O sistema"],
-  ["#pricing", "Assinatura"],
-];
 const features = [
   [
     "Câmeras centralizadas",
@@ -52,9 +46,8 @@ const features = [
 ];
 export default function LandingPage() {
   const root = useRef(null),
-    menu = useRef(null),
-    trigger = useRef(null),
     scene = useRef(null);
+  const lenisRef = useRef(null);
   const progress = useRef(0),
     sceneUpdate = useRef(null);
   const [reduced, setReduced] = useState(true),
@@ -79,14 +72,7 @@ export default function LandingPage() {
     document.body.style.margin = "0";
     document.body.style.background = "#eeede8";
     document.documentElement.style.scrollBehavior = "auto";
-    const dialog = menu.current,
-      previousOverflow = document.body.style.overflow;
-    const lockScroll = () => {
-      document.body.style.overflow = dialog.open ? "hidden" : previousOverflow;
-    };
-    dialog.addEventListener("toggle", lockScroll);
     return () => {
-      dialog.removeEventListener("toggle", lockScroll);
       motion.removeEventListener("change", sync);
       pointer.removeEventListener("change", sync);
       for (const [el, style] of [
@@ -104,6 +90,7 @@ export default function LandingPage() {
     const tick = (time) => lenis?.raf(time * 1000);
     if (desktop) {
       lenis = new Lenis({ duration: 1.05, anchors: true });
+      lenisRef.current = lenis;
       lenis.on("scroll", ScrollTrigger.update);
       gsap.ticker.add(tick);
     }
@@ -291,12 +278,9 @@ export default function LandingPage() {
     document.fonts.ready.then(() => {
       if (active) ScrollTrigger.refresh();
     });
-    const dialog = menu.current,
-      dialogOpen = () => (dialog.open ? lenis?.stop() : lenis?.start());
-    dialog.addEventListener("toggle", dialogOpen);
     return () => {
       active = false;
-      dialog.removeEventListener("toggle", dialogOpen);
+      lenisRef.current = null;
       ctx.revert();
       gsap.ticker.remove(tick);
       lenis?.destroy();
@@ -337,9 +321,9 @@ export default function LandingPage() {
     progress.current = (4.8 - n) / 4;
     sceneUpdate.current?.(progress.current);
   }
-  function closeMenu() {
-    menu.current.close();
-    trigger.current?.focus();
+  function onMenuToggle(open) {
+    if (open) lenisRef.current?.stop();
+    else lenisRef.current?.start();
   }
   return (
     <div ref={root} className="edge-landing">
@@ -347,56 +331,13 @@ export default function LandingPage() {
       <a className="skip" href="#manifesto">
         Pular para o conteúdo
       </a>
-      <header className="masthead">
-        <a className="wordmark" href="#top" aria-label="EdgeSecurity início">
-          <span className="brand-symbol" aria-hidden="true">
-            e.
-          </span>
-          EDGE<span>SECURITY</span>
-        </a>
-        <span className="masthead-note">Visão que protege.</span>
-        <div className="nav-actions">
-          <a href="/index.html">
-            Entrar <Arrow />
-          </a>
-          <button
-            ref={trigger}
-            onClick={() => menu.current.showModal()}
-            aria-haspopup="dialog"
-            aria-controls="landing-menu"
-          >
-            Menu <span className="menu-lines" aria-hidden="true" />
-          </button>
-        </div>
-      </header>
-      <dialog
-        id="landing-menu"
-        ref={menu}
-        className="menu"
-        aria-label="Navegação principal"
-        onClick={(e) => {
-          if (e.target === menu.current) closeMenu();
-        }}
-      >
-        <div className="menu-head">
-          <span>EDGESECURITY</span>
-          <button onClick={closeMenu}>
-            Fechar <span aria-hidden="true">×</span>
-          </button>
-        </div>
-        <nav>
-          {chapters.map(([href, label], i) => (
-            <a key={href} href={href} onClick={closeMenu}>
-              <small>0{i + 1}</small>
-              {label}
-              <Arrow />
-            </a>
-          ))}
-        </nav>
-        <a className="text-link" href="/index.html">
-          Já sou cliente <Arrow />
-        </a>
-      </dialog>
+      <StaggeredMenu
+        position="right"
+        displayItemNumbering
+        displaySocials={false}
+        logo={{ src: "/assets/logo.png", alt: "EdgeSecurity" }}
+        onToggle={onMenuToggle}
+      />
       <main id="top">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-title">
