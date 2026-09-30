@@ -218,7 +218,8 @@ try {
       await page.goto(`${base}/${path}`);
       await page.waitForTimeout(350);
       assert.equal(await page.locator('script[src*="landing"]').count(), 0);
-      assert.equal(await page.locator("canvas").count(), 0);
+      // Login usa canvas somente no background MicroSlats do painel visual.
+      assert.equal(await page.locator("canvas:not(.lg-slats)").count(), 0);
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth > innerWidth,
       );
@@ -256,6 +257,26 @@ try {
     assert.equal(await page.locator("#dashboard-stats .stat").count(), 4);
     assert.deepEqual(errors, []);
     report.push({ surface: "dashboard", width, errors });
+    for (const r of ["dashboard", "cameras", "alertas", "relatorios", "atividades", "configuracoes", "usuarios"]) {
+      await page.goto(`${base}/pages/${r}.html`);
+      await page.waitForTimeout(400);
+      assert.equal(await page.locator("#sidebar").count(), 1, `${r}: shell`);
+      assert.equal(await page.locator("#menu-btn").count(), 1, `${r}: menu btn`);
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        false,
+        `${r}: overflow at ${width}`,
+      );
+      if (width === 390) {
+        await page.getByRole("button", { name: "Abrir menu" }).click();
+        await page.waitForTimeout(500);
+        assert.equal(await page.evaluate(() => document.body.classList.contains("drawer-open")), true, `${r}: drawer abre`);
+        if (r === "dashboard") await page.screenshot({ path: `${out}/drawer-390.png` });
+        await page.keyboard.press("Escape");
+        assert.equal(await page.evaluate(() => document.body.classList.contains("drawer-open")), false, `${r}: drawer fecha`);
+      }
+    }
+    report.push({ surface: "shell-routes", width, passed: true });
     await page.close();
   }
   const navigation = await browser.newPage();
@@ -269,7 +290,7 @@ try {
   await navigation.waitForURL("**/landing.html");
   await navigation.getByRole("link", { name: "Entrar", exact: true }).click();
   await navigation.waitForURL("**/index.html");
-  assert.equal(await navigation.locator("canvas, .pin-spacer, html.lenis").count(), 0);
+  assert.equal(await navigation.locator("canvas:not(.lg-slats), .pin-spacer, html.lenis").count(), 0);
   assert.equal(await navigation.locator("body").getAttribute("style"), null);
   await navigation.goBack();
   await navigation.waitForURL("**/landing.html");

@@ -38,14 +38,15 @@
         }
         document.addEventListener("click", function (e) {
           if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-          var a = e.target.closest ? e.target.closest('a[href="landing.html"], a[href="pages/cadastro.html"]') : null;
+          var a = e.target.closest ? e.target.closest('a[href="/"], a[href="landing.html"], a[href="pages/cadastro.html"]') : null;
           if (!a || reduced) return;
           e.preventDefault();
-          var fast = a.getAttribute("href") !== "landing.html";
+          var href = a.getAttribute("href");
+          var fast = href !== "/" && href !== "landing.html";
           try { sessionStorage.setItem("edge_fx", fast ? "enter-fast" : "exit"); } catch (_) {}
-          if (!ov) { location.href = a.href; return; }
+          if (!ov) { location.href = href; return; }
           ov.classList.add("on", "cover");
-          setTimeout(function () { location.href = a.href; }, small ? 550 : 900);
+          setTimeout(function () { location.href = href; }, small ? 550 : 900);
         });
       })();
     </script>
@@ -53,13 +54,8 @@
       <div class="lg-shell">
         <section class="lg-visual" aria-label="EdgeSecurity — visão computacional">
           <div class="lg-mesh" aria-hidden="true"></div>
-          <div class="lg-dots" aria-hidden="true"></div>
-          <svg class="lg-waves" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0,120 C100,60 200,180 300,120 C400,60 500,170 600,110 L600,220 L0,220 Z" fill="rgba(47,111,237,0.35)" />
-            <path d="M0,150 C120,100 240,200 360,140 C440,105 520,175 600,140 L600,220 L0,220 Z" fill="rgba(34,211,238,0.16)" />
-          </svg>
-          <div class="lg-grain" aria-hidden="true"></div>
-          <div class="lg-word" aria-hidden="true">EDGE<br />SECURITY</div>
+          <canvas class="lg-slats" data-micro-slats aria-hidden="true"></canvas>
+          <div class="lg-shade" aria-hidden="true"></div>
           <div class="lg-top">
             <img src="assets/logo.png" alt="EdgeSecurity" />
             <b>EDGE<span>SECURITY</span></b>
@@ -145,6 +141,7 @@
     <script src="js/runtime-config.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/micro-slats.js"></script>
     <script>
       async function checkBackendPing() {
         try {

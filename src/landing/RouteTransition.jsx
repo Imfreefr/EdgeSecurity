@@ -21,6 +21,7 @@ export default function RouteTransition({ onCover }) {
   const brand = useRef(null);
   const busy = useRef(false);
   const coverRef = useRef(onCover);
+  const tlRef = useRef(null);
   coverRef.current = onCover;
 
   useEffect(() => {
@@ -30,6 +31,7 @@ export default function RouteTransition({ onCover }) {
     const small = matchMedia("(max-width: 700px)").matches;
     gsap.set(layers.current, { xPercent: 101 });
     gsap.set(brand.current, { autoAlpha: 0, y: 14 });
+
     const go = (e) => {
       const { href } = e.detail;
       if (busy.current || !href) return;
@@ -40,13 +42,21 @@ export default function RouteTransition({ onCover }) {
       }
       busy.current = true;
       coverRef.current?.(true);
+
+      // Coreografar: menu começa a fechar + transition começa junto
+      // window.__edgeMenuClose fecha o menu, mas não esperamos - ambos correm em paralelo
       window.__edgeMenuClose?.();
+
       const d = small ? 0.4 : 0.58;
-      gsap
+      tlRef.current = gsap
         .timeline({
           onComplete: () => {
             sessionStorage.setItem("edge_fx", e.detail.mode);
             location.href = href;
+          },
+          onReverseComplete: () => {
+            busy.current = false;
+            coverRef.current?.(false);
           },
         })
         .to(layers.current, {
@@ -62,8 +72,21 @@ export default function RouteTransition({ onCover }) {
         )
         .to({}, { duration: small ? 0.08 : 0.22 });
     };
+
     window.addEventListener("edge:route", go);
-    return () => window.removeEventListener("edge:route", go);
+    return () => {
+      window.removeEventListener("edge:route", go);
+      tlRef.current?.kill();
+    };
+  }, []);
+
+  // Cleanup ao desmontar
+  useEffect(() => {
+    return () => {
+      tlRef.current?.kill();
+      coverRef.current?.(false);
+      document.body.style.overflow = "";
+    };
   }, []);
 
   return (
