@@ -1246,6 +1246,55 @@ def logout(request: Request, response: Response, authorization: str | None = Hea
     _clear_auth_cookie(response)
     return {"ok": True}
 
+
+@app.post("/api/auth/refresh")
+def refresh_token(request: Request, response: Response, authorization: str | None = Header(default=None)):
+    """Refresh access token without requiring re-login.
+    Validates current token, extends session, returns new token."""
+    session = require_user(authorization, request)
+    user_id = session["id"]
+    session_id = session.get("session_id")
+    
+    with conn() as db:
+        # Verify session still exists and is online
+        row = db.execute("SELECT * FROM sessoes WHERE id=? AND usuario_id=? AND status='online'", 
+            (session_id, user_id)).fetchone()
+        if not row:
+            raise HTTPException(401, "Sessão não encontrada ou expirada.")
+        
+        # Check idle timeout
+        try:
+            last_seen = datetime.fromisoformat(row["ultimo_heartbeat"].replace("Z", "+00:00")).timestamp()
+        except Exception:
+            last_seen = time.time()
+        
+        if time.time() - last_seen > SESSION_IDLE_TIMEOUT:
+            db.execute("UPDATE sessoes SET status='offline', fim=?, ultimo_heartbeat=? WHERE id=?", 
+                (now(), now(), session_id))
+            raise HTTPException(401, "Sessão expirada por inatividade.")
+        
+        # Update heartbeat
+        stamp = now()
+        db.execute("UPDATE sessoes SET ultimo_heartbeat=? WHERE id=?", (stamp, session_id))
+        
+        # Generate new token with same session_id (extends session)
+        new_token = _make_auth_token(user_id, session_id)
+        _set_auth_cookie(response, new_token)
+        
+        activity(db, user_id, "token_refresh", "Token de acesso renovado", session.get("company_id"))
+        
+        return {
+            "token": new_token,
+            "user": {
+                "id": session["id"],
+                "nome": session["nome"],
+                "email": session["email"],
+                "cargo": session["cargo"],
+                "company_id": session["company_id"],
+                "administrador_primario": session.get("administrador_primario", False),
+            }
+        }
+
 @app.get("/api/me")
 def me(request: Request, authorization: str | None = Header(default=None)):
     session = require_user(authorization, request)
