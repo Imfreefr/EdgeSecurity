@@ -1725,6 +1725,8 @@
   flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
+  height: 100dvh;
+  max-height: 100dvh;
 }
 .edge-landing .sm-kicker {
   font-size: 11px;
@@ -1849,4 +1851,84 @@
   .edge-landing .sm-panel nav a {
     font-size: clamp(32px, 10vw, 44px);
   }
+}
+
+@media (max-height: 799px) {
+  .edge-landing .sm-panel {
+    padding-top: 100px;
+    padding-bottom: 24px;
+  }
+  .edge-landing .sm-panel nav a {
+    font-size: clamp(28px, 4.5vw, 52px);
+    padding: 6px 0;
+  }
+  .edge-landing .sm-meta {
+    padding-top: 16px;
+    gap: 10px;
+  }
+  .edge-landing .sm-cta {
+    padding: 14px 18px;
+    font-size: 13px;
+    min-height: 48px;
+  }
+}
+
+@media (max-height: 649px) {
+  .edge-landing .sm-panel {
+    padding-top: 80px;
+    padding-bottom: 16px;
+  }
+  .edge-landing .sm-kicker {
+    margin-bottom: 16px;
+    padding-top: 10px;
+  }
+  .edge-landing .sm-panel nav a {
+    font-size: clamp(24px, 4vw, 42px);
+    padding: 4px 0;
+  }
+  .edge-landing .sm-meta {
+    gap: 8px;
+  }
+  .edge-landing .sm-cta {
+    padding: 12px 16px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+}
+
+@media (max-height: 549px) {
+  .edge-landing .sm-panel {
+    padding-top: 70px;
+    padding-bottom: 12px;
+  }
+  .edge-landing .sm-kicker {
+    font-size: 10px;
+    margin-bottom: 12px;
+  }
+  .edge-landing .sm-panel nav a {
+    font-size: clamp(22px, 3.5vw, 36px);
+    padding: 3px 0;
+    gap: 16px;
+  }
+  .edge-landing .sm-panel nav svg {
+    width: 28px;
+    height: 28px;
+  }
+  .edge-landing .sm-meta {
+    gap: 6px;
+  }
+  .edge-landing .sm-cta {
+    padding: 10px 14px;
+    font-size: 11px;
+    min-height: 40px;
+  }
+  .edge-landing .sm-login {
+    font-size: 12px;
+  }
+}
+
+.edge-landing .sm-toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-color: var(--accent);
 }

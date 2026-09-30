@@ -316,28 +316,34 @@ export default function LandingPage() {
       cleanup?.();
     };
   }, [desktop, reduced]);
-  // Navbar adaptativa: lê a luminância do conteúdo atrás da barra
-  // e informa data-nav="dark|light" (contraste garantido em toda a página).
+  // Navbar adaptativa: amostra múltiplos pontos ao longo da barra
+  // para decidir tema dark/light com base na luminância média.
   useEffect(() => {
     const el = root.current;
     if (!el) return;
     let raf = 0;
     const probe = () => {
-      let node = document.elementFromPoint(
-        Math.min(innerWidth / 2, innerWidth - 20),
-        112,
-      );
-      let theme = "dark";
-      while (node && node !== el && node !== document.documentElement) {
-        const bg = getComputedStyle(node).backgroundColor;
-        const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-        if (m && Number(m[4] ?? 1) > 0.6) {
-          const lum = (0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 255;
-          theme = lum > 0.55 ? "dark" : "light";
-          break;
+      const bar = el.querySelector(".sm-bar");
+      if (!bar) return;
+      const rect = bar.getBoundingClientRect();
+      const y = rect.top + rect.height / 2;
+      let totalLum = 0, samples = 0;
+      for (let x = rect.left + 20; x < rect.right - 20; x += Math.max(40, rect.width / 8)) {
+        let node = document.elementFromPoint(x, y);
+        while (node && node !== el && node !== document.documentElement) {
+          const bg = getComputedStyle(node).backgroundColor;
+          const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (m && Number(m[4] ?? 1) > 0.6) {
+            const lum = (0.2126 * +m[1] + 0.7152 * +m[2] + 0.0722 * +m[3]) / 255;
+            totalLum += lum;
+            samples++;
+            break;
+          }
+          node = node.parentElement;
         }
-        node = node.parentElement;
       }
+      const avgLum = samples ? totalLum / samples : 0;
+      const theme = avgLum > 0.5 ? "light" : "dark";
       el.setAttribute("data-nav", theme);
     };
     const schedule = () => {
