@@ -5,7 +5,6 @@ import hmac
 import os
 import re
 import secrets
-import sqlite3
 import time
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -31,8 +30,9 @@ try:
 except Exception:
     PaymentService = None
 
+from database import get_db, DatabaseConfig
+
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = Path(os.getenv("DB_PATH", str(BASE_DIR / "edgesecurity.db")))
 _raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500").strip()
 if _raw_cors == "*":
     raise RuntimeError("CORS_ORIGINS='*' proibido — configure origens explicitas.")
@@ -61,6 +61,14 @@ if PAYMENT_MOCK and MP_ACCESS_TOKEN:
 
 app = FastAPI(title="EdgeSecurity API", version="6.7.4")
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type", "X-Requested-With", "X-Webhook-Signature"])
+
+# Initialize database on startup
+_db_config = DatabaseConfig()
+print(f"Database backend: {_db_config.backend_name}")
+if _db_config.use_postgres:
+    print("Using PostgreSQL/Supabase")
+else:
+    print("Using SQLite (local development)")
 
 
 @app.middleware("http")
@@ -111,10 +119,8 @@ def now() -> str:
 
 
 def conn():
-    c = sqlite3.connect(DB_PATH)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA foreign_keys = ON")
-    return c
+    """Backward compatible connection context manager"""
+    return get_db().conn()
 
 
 def hash_password(password: str) -> str:
@@ -157,7 +163,32 @@ def default_permissions(cargo: str) -> dict[str, bool]:
 
 
 def init_db():
-    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Initialize database schema - runs migrations for SQLite, verifies for PostgreSQL"""
+    db_config = DatabaseConfig()
+    
+    if db_config.use_postgres:
+        # For PostgreSQL, migrations are applied separately via SQL files
+        # Just verify connection and tables exist
+        with conn() as db:
+            # Check if core tables exist
+            tables = db.execute("""
+                SELECT table_name FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name IN ('companies', 'usuarios', 'cameras', 'alertas')
+            """).fetchall()
+            if len(tables) < 4:
+                print("AVISO: Tabelas PostgreSQL nao encontradas. Execute as migrations SQL em migrations/")
+            else:
+                print("PostgreSQL schema verificado")
+        
+        # Ensure super_admin exists (handled by migration 002, but double-check)
+        with conn() as db:
+            if not db.execute("SELECT 1 FROM usuarios WHERE cargo='super_admin' LIMIT 1").fetchone():
+                print("AVISO: Super admin nao encontrado. Execute migration 002.")
+        return
+    
+    # SQLite path - full migration logic
+    db_config.sqlite_path.parent.mkdir(parents=True, exist_ok=True)
     with conn() as db:
         db.executescript("""
         CREATE TABLE IF NOT EXISTS companies (
