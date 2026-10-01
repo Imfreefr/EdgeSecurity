@@ -1,6 +1,10 @@
 window.EdgeAILocal = (() => {
   let worker = null;
   let ready = false;
+  let framePending = false;
+  let alertPending = false;
+  const lastAlerts = new Map();
+  const workerUrl = new URL("./ai-worker.js", document.currentScript.src);
   let cbResult = null;
   let cbError = null;
   let cbReady = null;
@@ -34,7 +38,7 @@ window.EdgeAILocal = (() => {
   }
   function ensureWorker() {
     if (worker) return worker;
-    worker = new Worker("js/ai-worker.js");
+    worker = new Worker(workerUrl);
     worker.onmessage = (e) => {
       const { type, detections, cameraId, message, model } = e.data;
       if (type === "ready") {
@@ -44,12 +48,16 @@ window.EdgeAILocal = (() => {
           classes: ["human", "forklift"],
         });
       } else if (type === "result") {
+        framePending = false;
         const risk = window.RiskEngine
           ? window.RiskEngine.assess(detections || [])
           : { level: "safe", pairs: [] };
         if (risk.level === "high" || risk.level === "critical")
           beep(risk.level);
-        if (risk.level === "high" || risk.level === "critical") {
+        const alertKey = `${cameraId}:${risk.level}`;
+        if ((risk.level === "high" || risk.level === "critical") &&
+            !alertPending && Date.now() - (lastAlerts.get(alertKey) || 0) >= 30000) {
+          alertPending = true;
           try {
             EdgeAPI.post("/alerts", {
               camera_id: cameraId,
@@ -60,8 +68,15 @@ window.EdgeAILocal = (() => {
                   ? "RISCO CRÍTICO: pessoa e máquina muito próximas."
                   : "Risco de colisão detectado pela IA.",
               status: "Aberto",
-            }).catch(() => {});
-          } catch {}
+            }).then(() => lastAlerts.set(alertKey, Date.now()))
+              .catch(() => {
+                lastAlerts.set(alertKey, Date.now());
+                window.showToast?.("Não foi possível salvar o alerta da IA.");
+              }).finally(() => { alertPending = false; });
+          } catch {
+            alertPending = false;
+            window.showToast?.("Não foi possível salvar o alerta da IA.");
+          }
         }
         cbResult?.({
           camera_id: cameraId,
@@ -70,10 +85,14 @@ window.EdgeAILocal = (() => {
           alert_created: null,
         });
       } else if (type === "error") {
+        framePending = false;
         cbError?.(message || "Falha na IA local.");
       }
     };
-    worker.onerror = (ev) => cbError?.(ev.message || "Erro no Worker de IA.");
+    worker.onerror = (ev) => {
+      framePending = false;
+      cbError?.(ev.message || "Erro no Worker de IA.");
+    };
     return worker;
   }
   function connect(cameraId, onResult, onError, onReady) {
@@ -85,13 +104,14 @@ window.EdgeAILocal = (() => {
     w.postMessage({ type: "init", payload: { modelUrl: MODEL_URLS[0] } });
   }
   function sendFrame(canvas, cameraId, quality = 0.62) {
-    if (!worker || !ready) return false;
+    if (!worker || !ready || framePending) return false;
     try {
       const w = canvas.width,
         h = canvas.height;
       const ctx = canvas.getContext("2d");
       const imageData = ctx.getImageData(0, 0, w, h);
       const buffer = imageData.data.buffer.slice(0);
+      framePending = true;
       worker.postMessage(
         {
           type: "infer",
@@ -101,6 +121,7 @@ window.EdgeAILocal = (() => {
       );
       return true;
     } catch {
+      framePending = false;
       return false;
     }
   }
@@ -111,6 +132,7 @@ window.EdgeAILocal = (() => {
       } catch {}
       worker = null;
       ready = false;
+      framePending = false;
     }
   }
   function isConnected() {
