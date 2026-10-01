@@ -348,6 +348,7 @@
       drawResults,
       (msg) => {
         if (AI === window.EdgeAILocal && window.EdgeAI) {
+          stopAIAnalysis();
           setAIStatus("Tentando IA no servidor…");
           window.EdgeAI.connect(cameraId, drawResults, (m) => { stopAIAnalysis(); showToast(m); setAIStatus("Erro na detecção"); }, () => {
             aiRunning = true;

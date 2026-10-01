@@ -61,7 +61,7 @@ self.onmessage = async (e) => {
         nh = Math.round(height * scale);
       const dx = Math.round((inputSize - nw) / 2),
         dy = Math.round((inputSize - nh) / 2);
-      ctx.fillStyle = "#000";
+      ctx.fillStyle = "rgb(114, 114, 114)";
       ctx.fillRect(0, 0, inputSize, inputSize);
       ctx.drawImage(tmp, 0, 0, width, height, dx, dy, nw, nh);
       const data = ctx.getImageData(0, 0, inputSize, inputSize).data;
@@ -82,6 +82,9 @@ self.onmessage = async (e) => {
       const out = await session.run(feeds);
       const output = out[session.outputNames[0]];
       const dims = output.dims;
+      if (dims.length !== 3 || dims[0] !== 1 || dims[2] !== 6) {
+        throw new Error(`Formato ONNX incompatível: ${dims.join("×")}; esperado 1×N×6.`);
+      }
       const arr = output.data;
       const detections = [];
       const confThr = payload.confidence ?? 0.4;
@@ -126,13 +129,12 @@ self.onmessage = async (e) => {
             "veículo",
             "forklift",
             "empilhadeira",
-            "objeto",
           ].includes(raw)
         )
           class_name = "forklift";
         else if (cls === 0) class_name = "human";
         else if (cls === 1) class_name = "forklift";
-        else continue;
+        else class_name = raw;
         const bx = [x1, y1, x2, y2];
         const sx = (bx[0] - dx) / scale,
           sy = (bx[1] - dy) / scale,

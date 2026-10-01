@@ -27,6 +27,7 @@ from services.detector import SafetyDetector
 from services.risk_engine import assess_risk
 import base64
 import json
+import asyncio
 try:
     import httpx
 except ImportError:
@@ -1438,13 +1439,48 @@ def ai_status():
 
 @app.websocket("/ws/detection")
 async def websocket_detection(websocket: WebSocket):
+    origin = websocket.headers.get("origin")
+    if origin and origin not in CORS_ORIGINS:
+        await websocket.close(code=1008)
+        return
     await websocket.accept()
     try:
+        auth = await asyncio.wait_for(websocket.receive_json(), timeout=10)
+        if not isinstance(auth, dict) or auth.get("type") != "auth":
+            await websocket.close(code=1008)
+            return
+        token = auth.get("token")
+        cam_id = auth.get("camera_id")
+        if not isinstance(token, str) or not isinstance(cam_id, str):
+            await websocket.close(code=1008)
+            return
+        def authorized_camera():
+            session = require_permission(f"Bearer {token}", "visualizar_cameras")
+            with conn() as db:
+                user = db.execute("SELECT status FROM usuarios WHERE id=?", (session["id"],)).fetchone()
+                camera = db.execute("SELECT company_id FROM cameras WHERE id=?", (cam_id,)).fetchone()
+                if not user or user["status"] != "ativo" or not camera:
+                    raise HTTPException(403, "Acesso negado.")
+                if session["cargo"] != "super_admin" and camera["company_id"] != session["company_id"]:
+                    raise HTTPException(403, "Acesso negado.")
+                if session["cargo"] not in ("administrador", "super_admin"):
+                    assigned = db.execute("SELECT 1 FROM usuario_cameras WHERE usuario_id=? AND camera_id=?", (session["id"], cam_id)).fetchone()
+                    if not assigned:
+                        raise HTTPException(403, "Acesso negado.")
+            return camera["company_id"]
+        comp_id = authorized_camera()
         detector = get_detector()
         await websocket.send_json({"type": "ready", "model": Path(detector.model_path).name, "classes": detector.names})
         while True:
             payload = await websocket.receive_json()
+            comp_id = authorized_camera()
+            if not isinstance(payload, dict) or payload.get("camera_id") != cam_id:
+                await websocket.close(code=1008)
+                return
             image = payload.get("image", "")
+            if not isinstance(image, str) or len(image) > 2_000_000:
+                await websocket.close(code=1009)
+                return
             if not image:
                 await websocket.send_json({"type": "error", "message": "Frame sem imagem."})
                 continue
@@ -1458,19 +1494,14 @@ async def websocket_detection(websocket: WebSocket):
                 detections = detector.infer(frame)
                 risk = assess_risk(detections)
                 # company isolation for alert
-                cam_id = payload.get("camera_id")
-                comp_id = None
-                if cam_id:
-                    with conn() as db:
-                        cr = db.execute("SELECT company_id FROM cameras WHERE id=?", (cam_id,)).fetchone()
-                        if cr:
-                            comp_id = cr["company_id"]
                 alert_id = create_ai_alert(cam_id, risk, comp_id)
                 await websocket.send_json({"type": "result", "camera_id": cam_id, "detections": detections, "risk": risk, "alert_created": alert_id})
             except Exception as exc:
                 await websocket.send_json({"type": "error", "message": f"Erro na inferência: {exc}"})
     except WebSocketDisconnect:
         return
+    except (HTTPException, asyncio.TimeoutError):
+        await websocket.close(code=1008)
     except Exception as exc:
         try:
             await websocket.send_json({"type": "error", "message": str(exc)})
