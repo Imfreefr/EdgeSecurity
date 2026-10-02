@@ -9,6 +9,8 @@ import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Optional
+from time import perf_counter
+from perf import current as perf_current, measure
 
 # Optional PostgreSQL support
 try:
@@ -109,7 +111,11 @@ class Database:
         
         def execute(self, query: str, params: tuple = ()):
             query = self._convert(query)
-            return self._conn.execute(query, params)
+            metrics = perf_current.get()
+            if metrics is not None:
+                metrics["queries"] = metrics.get("queries", 0) + 1
+            with measure("db_ms"):
+                return self._conn.execute(query, params)
         
         def executemany(self, query: str, params_list: list):
             query = self._convert(query)
@@ -146,19 +152,31 @@ class Database:
     def conn(self):
         """Get a database connection (context manager)"""
         if self.config.use_postgres:
-            pool = self._init_postgres_pool()
+            with measure("pool_init_ms"):
+                pool = self._init_postgres_pool()
+            checkout = perf_counter()
             with pool.connection() as conn:
+                metrics = perf_current.get()
+                if metrics is not None:
+                    metrics["acquire_ms"] = metrics.get("acquire_ms", 0) + (perf_counter() - checkout) * 1000
+                    metrics["connections"] = metrics.get("connections", 0) + 1
                 try:
                     yield self._ConnectionWrapper(conn, self._convert_params)
-                    conn.commit()
+                    with measure("transaction_ms"):
+                        conn.commit()
                 except Exception:
                     conn.rollback()
                     raise
         else:
-            conn = self._init_sqlite()
+            with measure("acquire_ms"):
+                conn = self._init_sqlite()
+            metrics = perf_current.get()
+            if metrics is not None:
+                metrics["connections"] = metrics.get("connections", 0) + 1
             try:
                 yield self._ConnectionWrapper(conn, self._convert_params)
-                conn.commit()
+                with measure("transaction_ms"):
+                    conn.commit()
             except Exception:
                 conn.rollback()
                 raise

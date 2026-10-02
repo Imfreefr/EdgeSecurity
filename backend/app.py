@@ -6,6 +6,7 @@ import os
 import re
 import secrets
 import time
+import logging
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,7 @@ except Exception:
     PaymentService = None
 
 from database import get_db, DatabaseConfig
+from perf import current as perf_current, auth_timing
 
 BASE_DIR = Path(__file__).resolve().parent
 _raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:5500,http://127.0.0.1:5500").strip()
@@ -69,6 +71,31 @@ if PAYMENT_MOCK and MP_ACCESS_TOKEN:
 
 app = FastAPI(title="EdgeSecurity API", version="6.7.4")
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type", "X-Requested-With", "X-Webhook-Signature"])
+
+
+@app.middleware("http")
+async def performance_timing(request: Request, call_next):
+    if os.getenv("EDGE_PERF_DEBUG") != "1":
+        return await call_next(request)
+    metrics = {}
+    context_token = perf_current.set(metrics)
+    started = time.perf_counter()
+    try:
+        response = await call_next(request)
+        metrics["total_ms"] = (time.perf_counter() - started) * 1000
+        # auth_ms includes DB time: do not subtract it twice.
+        metrics["processing_ms"] = max(0, metrics["total_ms"] - sum(
+            metrics.get(k, 0) for k in ("db_ms", "pool_init_ms", "acquire_ms", "transaction_ms")))
+        response.headers["Server-Timing"] = ", ".join(
+            f"{k.removesuffix('_ms')};dur={metrics.get(k, 0):.2f}"
+            for k in ("auth_ms", "db_ms", "pool_init_ms", "acquire_ms", "transaction_ms", "processing_ms", "total_ms"))
+        response.headers["X-Edge-DB-Queries"] = str(metrics.get("queries", 0))
+        route = request.scope.get("route")
+        logging.getLogger("edge.perf").info("[PERF] route=%s status=%s metrics=%s",
+            getattr(route, "path", "unmatched"), response.status_code, metrics)
+        return response
+    finally:
+        perf_current.reset(context_token)
 
 # Initialize database on startup
 _db_config = DatabaseConfig()
@@ -520,6 +547,7 @@ def subscription_status(db, company_id: str) -> dict | None:
     return d
 
 
+@auth_timing
 def require_user(authorization: str | None, request: Request | None = None):
     tok = _extract_token(authorization, request)
     if not tok:
@@ -531,6 +559,7 @@ def require_user(authorization: str | None, request: Request | None = None):
     return session
 
 
+@auth_timing
 def require_user_active(authorization: str | None = None, request: Request | None = None):
     session = require_user(authorization, request)
     if session.get("cargo") == "super_admin":
@@ -555,6 +584,7 @@ def require_user_active(authorization: str | None = None, request: Request | Non
     return session
 
 
+@auth_timing
 def require_admin(authorization: str | None = None, request: Request | None = None):
     session = require_user_active(authorization, request)
     if session["cargo"] not in ("administrador", "super_admin") and session["cargo"] != "administrador":
@@ -566,6 +596,7 @@ def require_admin(authorization: str | None = None, request: Request | None = No
     return session
 
 
+@auth_timing
 def require_permission(authorization: str | None = None, key: str = "", request: Request | None = None):
     if key not in PERMISSION_KEYS:
         raise HTTPException(500, "Chave de permissão inválida.")
