@@ -83,21 +83,34 @@ body[data-page] .btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
 body[data-page] .btn-small { border-radius: 8px; min-height: 36px; }
 
 /* ---------- app shell ---------- */
-body[data-page] .app-shell { width: 100%; min-height: 100dvh; }
+body[data-page] { overflow-x: visible; --sidebar-rail: 80px; --sidebar-open: 248px; --content-gutter: 32px; }
+body[data-page] .app-shell {
+  --sidebar-width: var(--sidebar-rail);
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  transition: grid-template-columns 0.3s var(--edge-ease);
+  width: 100%; min-height: 100dvh;
+}
+body[data-page] .app-shell:has(.sidebar:hover),
+body[data-page] .app-shell:has(.sidebar:focus-within) { --sidebar-width: var(--sidebar-open); }
+body[data-page] .app-shell > .content { grid-column: 2; margin-left: 0; }
 body[data-page] .sidebar {
+  display: flex;
+  flex-direction: column;
   position: fixed;
   left: 0; top: 0; bottom: 0;
-  width: 248px;
+  width: var(--sidebar-width) !important;
   height: 100dvh;
   z-index: 120;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: var(--edge-black);
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   padding: 20px 14px 16px;
   gap: 6px;
 }
-body[data-page] .content { margin-left: 248px; }
 body[data-page] .m-header, body[data-page] .m-scrim { display: none; }
+body[data-page] .sb-close { display: none; }
 body[data-page] .sb-brand {
   display: flex; align-items: center; gap: 10px;
   padding: 2px 10px 16px;
@@ -111,7 +124,7 @@ body[data-page] .sb-brand small { display: block; font-size: 0.62rem; font-weigh
 body[data-page] .sb-live { display: flex; align-items: center; gap: 6px; padding: 0 10px 14px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7d8aa0; }
 body[data-page] .sb-live i { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18); animation: edge-pulse 2.4s infinite; }
 @keyframes edge-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-body[data-page] .sb-nav { gap: 2px; }
+body[data-page] .sb-nav { flex-direction: column; gap: 2px; }
 body[data-page] .sb-item, body[data-page] .sb-logout {
   border-radius: 10px;
   color: #93a1b6;
@@ -162,11 +175,9 @@ body[data-page] .sb-user span {
 body[data-page] .sb-user strong { font-size: 0.8rem; }
 body[data-page] .sb-user span + span { margin-top: 4px; }
 @media (min-width: 768px) {
-  /* OPÇÃO A — rail 80px, expande sobre o conteúdo (sem layout shift) */
-  body[data-page] .sidebar { width: 80px; transition: width 0.3s var(--edge-ease), box-shadow 0.3s ease; }
-  body[data-page] .content { margin-left: 80px; }
+  /* O rail e o conteúdo compartilham a mesma coluna do layout. */
+  body[data-page] .sidebar { transition: width 0.3s var(--edge-ease), box-shadow 0.3s ease; }
   body[data-page] .sidebar:hover, body[data-page] .sidebar:focus-within {
-    width: 248px;
     box-shadow: 24px 0 60px rgba(8, 13, 26, 0.35);
   }
   body[data-page] .sb-brand { justify-content: center; padding-left: 0; padding-right: 0; }
@@ -214,12 +225,12 @@ body[data-page] .content {
   width: auto;
   min-width: 0;
   max-width: none;
-  padding: 0 32px 64px;
+  padding: 0 var(--content-gutter) 64px;
 }
 body[data-page] .app-topbar {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  min-height: 60px; margin: 0 -32px 26px; padding: 10px 32px;
+  min-height: 60px; margin: 0 calc(-1 * var(--content-gutter)) 26px; padding: 10px var(--content-gutter);
   background: color-mix(in srgb, var(--edge-paper) 82%, transparent);
   backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--edge-border);
@@ -279,7 +290,7 @@ body[data-page] .link { color: var(--edge-blue); font-weight: 700; }
 body[data-page] .link:hover { color: var(--edge-blue-dark); }
 
 /* ---------- dashboard: hierarquia operacional ---------- */
-body[data-page] .dashboard-grid { grid-template-columns: 1.5fr 1fr; gap: 22px; }
+body[data-page] .dashboard-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 22px; }
 body[data-page] .camera-card { background: var(--edge-black); border-color: rgba(255, 255, 255, 0.09); color: #e8edf5; }
 body[data-page] .camera-card .card-head { border-bottom-color: rgba(255, 255, 255, 0.09); }
 body[data-page] .camera-card .card-head h2 { color: #fff; }
@@ -334,7 +345,7 @@ body[data-page] thead th {
   color: var(--edge-muted); padding: 12px 16px;
   border-bottom: 1px solid var(--edge-border); background: var(--edge-card); white-space: nowrap;
 }
-body[data-page] tbody td { padding: 13px 16px; border-bottom: 1px solid var(--edge-border); vertical-align: middle; font-variant-numeric: tabular-nums; }
+body[data-page] tbody td { padding: 13px 16px; border-bottom: 1px solid var(--edge-border); vertical-align: middle; font-variant-numeric: tabular-nums; white-space: normal; }
 body[data-page] tbody tr:last-child td { border-bottom: none; }
 body[data-page] tbody tr { transition: background-color 0.15s ease; }
 body[data-page] tbody tr:hover { background: rgba(47, 111, 237, 0.05); }
@@ -694,11 +705,16 @@ body.landing .pay-meta { color: #8fa0b5; }
     border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.16); color: #fff; font-size: 1.35rem;
   }
   body[data-page] .sidebar {
-    width: min(300px, 84vw);
+    width: min(300px, 84vw) !important;
     transform: translateX(-105%);
     transition: transform 0.3s var(--edge-ease);
     z-index: 140;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  body[data-page] .sb-close {
+    display: grid; place-items: center; align-self: flex-end;
+    width: 44px; min-height: 44px; flex-shrink: 0; color: #fff; background: transparent;
+    font-size: 1.5rem; border-radius: 10px;
   }
   body[data-page].drawer-open .sidebar { transform: none; box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45); }
   body[data-page] .m-scrim {
@@ -711,8 +727,11 @@ body.landing .pay-meta { color: #8fa0b5; }
   body[data-page].drawer-open { overflow: hidden; }
   body[data-page] .sb-item, body[data-page] .sb-logout { min-height: 48px; }
   body[data-page] .content { margin-left: 0; padding: 76px 14px 40px; }
+  body[data-page] .app-shell { display: block; }
   body[data-page] .app-topbar { display: none; }
   body[data-page] .form-grid { grid-template-columns: 1fr; }
+  /* Dense tables retain readable columns; only their own container scrolls. */
+  body[data-page] .table-wrap table:has(th:nth-child(6)) { min-width: 680px; }
   body[data-page] .page-head { flex-direction: column; align-items: flex-start; }
   /* KPIs 2x2 compactos */
   body[data-page] .stat-grid, body[data-page] .admin-stat-grid {
@@ -727,4 +746,17 @@ body.landing .pay-meta { color: #8fa0b5; }
   body[data-page] .stat .value { font-size: 1.45rem; }
   /* empty states compactos */
   body[data-page] .empty, body[data-page] .empty-state, body[data-page] .table-wrap > .empty-state { padding: 26px 18px; }
+}
+
+/* Intrinsic content must shrink inside the shared shell, including nested grids. */
+body[data-page] .content > *,
+body[data-page] :is(.dashboard-grid, .report-grid, .settings-grid, .form-grid) > * { min-width: 0; }
+body[data-page] :is(.page-head, .filters, .form-actions) { flex-wrap: wrap; }
+body[data-page] :is(.page-head, .card, .stat, .admin-card) { overflow-wrap: anywhere; }
+body[data-page] .settings-grid { grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); }
+body[data-page] :is(input, select, textarea, video, canvas) { max-width: 100%; }
+body[data-page] .table-wrap { max-width: 100%; min-width: 0; }
+body[data-page] .modal { z-index: 200; }
+@media (min-width: 768px) and (max-width: 1023px) {
+  body[data-page] { --content-gutter: 20px; }
 }
