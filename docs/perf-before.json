@@ -1,0 +1,189 @@
+{
+  "base": "https://edgesecurity.vercel.app",
+  "scope": "actual frontend loader + real HTTP; excludes HTML, assets and DOM painting",
+  "reports": [
+    {
+      "run": 1,
+      "kind": "first observed (not proven cold)",
+      "ready_ms": 4003.95,
+      "requests": [
+        {
+          "endpoint": "/api/auth/heartbeat",
+          "method": "POST",
+          "start_ms": 1.29,
+          "duration_ms": 754.32,
+          "status": 200,
+          "bytes": 52,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/me",
+          "method": "GET",
+          "start_ms": 1.98,
+          "duration_ms": 859.86,
+          "status": 200,
+          "bytes": 1389,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/cameras",
+          "method": "GET",
+          "start_ms": 862.07,
+          "duration_ms": 765.89,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/alerts",
+          "method": "GET",
+          "start_ms": 1628.14,
+          "duration_ms": 761.91,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/users",
+          "method": "GET",
+          "start_ms": 2390.24,
+          "duration_ms": 856.63,
+          "status": 200,
+          "bytes": 590,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/activities",
+          "method": "GET",
+          "start_ms": 3247.08,
+          "duration_ms": 756.66,
+          "status": 200,
+          "bytes": 418,
+          "server_timing": null
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "kind": "warm",
+      "ready_ms": 4357.68,
+      "requests": [
+        {
+          "endpoint": "/api/auth/heartbeat",
+          "method": "POST",
+          "start_ms": 0.85,
+          "duration_ms": 622.27,
+          "status": 200,
+          "bytes": 52,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/me",
+          "method": "GET",
+          "start_ms": 1.17,
+          "duration_ms": 840.49,
+          "status": 200,
+          "bytes": 1389,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/cameras",
+          "method": "GET",
+          "start_ms": 841.82,
+          "duration_ms": 860.22,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/alerts",
+          "method": "GET",
+          "start_ms": 1702.2,
+          "duration_ms": 839.56,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/users",
+          "method": "GET",
+          "start_ms": 2541.91,
+          "duration_ms": 980.15,
+          "status": 200,
+          "bytes": 590,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/activities",
+          "method": "GET",
+          "start_ms": 3522.21,
+          "duration_ms": 835.31,
+          "status": 200,
+          "bytes": 418,
+          "server_timing": null
+        }
+      ]
+    },
+    {
+      "run": 3,
+      "kind": "warm",
+      "ready_ms": 4351.66,
+      "requests": [
+        {
+          "endpoint": "/api/auth/heartbeat",
+          "method": "POST",
+          "start_ms": 0.89,
+          "duration_ms": 641.33,
+          "status": 200,
+          "bytes": 52,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/me",
+          "method": "GET",
+          "start_ms": 1.14,
+          "duration_ms": 823.09,
+          "status": 200,
+          "bytes": 1389,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/cameras",
+          "method": "GET",
+          "start_ms": 824.38,
+          "duration_ms": 859.32,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/alerts",
+          "method": "GET",
+          "start_ms": 1683.82,
+          "duration_ms": 844.29,
+          "status": 200,
+          "bytes": 2,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/users",
+          "method": "GET",
+          "start_ms": 2528.24,
+          "duration_ms": 982.06,
+          "status": 200,
+          "bytes": 590,
+          "server_timing": null
+        },
+        {
+          "endpoint": "/api/activities",
+          "method": "GET",
+          "start_ms": 3510.43,
+          "duration_ms": 841.1,
+          "status": 200,
+          "bytes": 418,
+          "server_timing": null
+        }
+      ]
+    }
+  ]
+}

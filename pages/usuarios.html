@@ -27,8 +27,17 @@
         </div>
         <button class="btn btn-primary" id="add-user">+ Criar usuário</button>
       </div>
-      <div id="user-stats" class="stat-grid"></div>
-      <div class="card"><div id="users-table" class="table-wrap"></div></div>
+      <div id="user-stats" class="stat-grid" aria-busy="true" aria-label="Carregando estatísticas">
+        <div class="stat" aria-hidden="true"><div class="label">Usuários cadastrados</div><div class="value"><span class="users-skeleton"></span></div><div class="hint">Carregando…</div></div>
+        <div class="stat" aria-hidden="true"><div class="label">Contas ativas</div><div class="value"><span class="users-skeleton"></span></div><div class="hint">Carregando…</div></div>
+        <div class="stat" aria-hidden="true"><div class="label">Administradores</div><div class="value"><span class="users-skeleton"></span></div><div class="hint">Carregando…</div></div>
+        <div class="stat" aria-hidden="true"><div class="label">Sessões atuais</div><div class="value"><span class="users-skeleton"></span></div><div class="hint">Carregando…</div></div>
+      </div>
+      <div class="card"><div id="users-table" class="table-wrap" aria-busy="true">
+        <p role="status" class="empty">Carregando usuários…</p>
+        <div class="users-skeleton-row" aria-hidden="true"><span class="users-skeleton"></span><span class="users-skeleton"></span><span class="users-skeleton"></span></div>
+        <div class="users-skeleton-row" aria-hidden="true"><span class="users-skeleton"></span><span class="users-skeleton"></span><span class="users-skeleton"></span></div>
+      </div></div>
       <div id="user-modal" class="modal hidden"></div>
     </template>
     <div id="app"></div>

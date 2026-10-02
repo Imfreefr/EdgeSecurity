@@ -1,6 +1,20 @@
 /* ==========================================================================
    Usuários — modal, permissões e tabela
    ========================================================================== */
+.users-skeleton {
+  display: inline-block;
+  width: 3ch;
+  height: 1em;
+  border-radius: 4px;
+  background: currentColor;
+  opacity: .12;
+}
+.users-skeleton-row {
+  display: flex;
+  gap: 24px;
+  padding: 14px 18px;
+}
+.users-skeleton-row .users-skeleton { flex: 1; }
 .modal {
   position: fixed;
   inset: 0;

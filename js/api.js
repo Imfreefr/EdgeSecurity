@@ -5,9 +5,10 @@ window.EdgeAPI = {
     return API_BASE;
   },
   token() {
-    const hasLocalSession = Boolean(localStorage.getItem("edge_session"));
+    const hasLocalSession = !sessionStorage.getItem("edge_session") && Boolean(localStorage.getItem("edge_session"));
     const preferred = hasLocalSession ? localStorage : sessionStorage;
     const fallback = hasLocalSession ? sessionStorage : localStorage;
+    if (preferred.getItem("edge_session")) return preferred.getItem("edge_token") || "";
     return (
       preferred.getItem("edge_token") ||
       fallback.getItem("edge_token") ||
@@ -24,19 +25,26 @@ window.EdgeAPI = {
     sessionStorage.removeItem("edge_token");
   },
   async refreshToken() {
+    if (this._refreshPromise) return this._refreshPromise;
+    this._refreshPromise = this.performRefresh().finally(() => { this._refreshPromise = null; });
+    return this._refreshPromise;
+  },
+  async performRefresh() {
+    const originalToken = this.token();
     try {
       const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${this.token()}`,
+          "Authorization": `Bearer ${originalToken}`,
         },
         credentials: "include",
       });
       if (!res.ok) return false;
       const data = await res.json();
       if (data.token) {
-        const hasLocal = Boolean(localStorage.getItem("edge_session"));
+        if (this.token() !== originalToken) return false;
+        const hasLocal = !sessionStorage.getItem("edge_session") && Boolean(localStorage.getItem("edge_session"));
         this.setToken(data.token, hasLocal);
         return true;
       }
@@ -67,7 +75,7 @@ window.EdgeAPI = {
     }
 
     // Auto-refresh on 401 (session expired but refresh possible)
-    if (res.status === 401 && path !== "/auth/refresh" && path !== "/auth/login") {
+    if (res.status === 401 && token && !path.startsWith("/auth/")) {
       const refreshed = await this.refreshToken();
       if (refreshed) {
         // Retry original request with new token
@@ -85,6 +93,9 @@ window.EdgeAPI = {
     }
 
     if (!res.ok) {
+      if (res.status === 401 && token && !path.startsWith("/auth/")) {
+        window.EdgeAuth?.expire?.(this.token() === token ? token : headers.Authorization?.slice(7));
+      }
       throw new Error(
         body?.detail ||
           `Falha de comunicação com o serviço. Tente novamente (${res.status}).`,
@@ -138,26 +149,30 @@ window.EdgeData = {
       return;
     }
     try {
-      const me = await EdgeAPI.get("/me");
+      // Each endpoint validates its own session, tenant and permissions.
+      // Keep results private until the subscription check passes; no partial render.
+      const [me, cameras, alerts, users, activities] = await Promise.all([
+        EdgeAPI.get("/me"),
+        EdgeAPI.get("/cameras"),
+        EdgeAPI.get("/alerts"),
+        session.cargo === "administrador" ? EdgeAPI.get("/users") : Promise.resolve(null),
+        session.cargo === "administrador" ? EdgeAPI.get("/activities") : Promise.resolve([]),
+      ]);
       if (me.subscription && me.subscription.status !== "ativa") {
         const msg = me.subscription.status === "pendente" ? "Pagamento pendente. Finalize sua assinatura para acessar o sistema." : me.subscription.status === "atrasada" || me.subscription.status === "bloqueada" ? "Sua assinatura está vencida. Regularize o pagamento para continuar." : me.subscription.status === "cancelada" ? "Sua assinatura foi cancelada." : "Assinatura inativa.";
         document.body.innerHTML = `<div style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#f8fafc"><div style="max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px;text-align:center;box-shadow:0 10px 28px rgba(15,23,42,.07)"><div style="display:inline-flex;padding:8px 12px;border-radius:999px;background:#fef3c7;border:1px solid #fde68a;color:#92400e;font-size:.72rem;font-weight:700">ASSINATURA ${escapeHtml(me.subscription.status.toUpperCase())}</div><h1 style="margin-top:14px;font-size:1.35rem;font-weight:800">Assinatura vencida</h1><p style="margin-top:8px;color:#475569;font-size:.85rem;line-height:1.6">${escapeHtml(msg)}</p><p style="margin-top:6px;color:#64748b;font-size:.78rem">Empresa: ${escapeHtml(me.company ? me.company.nome_fantasia : "")} • Próximo vencimento: ${me.subscription.proximo_vencimento ? formatDate(me.subscription.proximo_vencimento) : "—"}</p><div style="margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn btn-primary" href="pagamento.html?tid=${encodeURIComponent(me.subscription.transacao_id || "")}">Regularizar pagamento</a><button class="btn btn-secondary" onclick="EdgeAuth.logout()">Sair</button></div></div></div>`;
         return;
       }
+      EdgeDB.cameras = cameras;
+      EdgeDB.alerts = alerts;
+      EdgeDB.users = users || [me];
+      EdgeDB.activities = activities;
     } catch (e) {
       if (String(e.message).includes("Assinatura") || String(e.message).includes("Pagamento") || String(e.message).includes("Empresa bloqueada") || String(e.message).includes("cancelada")) {
         document.body.innerHTML = `<div style="min-height:100vh;display:grid;place-items:center;padding:24px;background:#f8fafc"><div style="max-width:520px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:28px;text-align:center"><h1 style="font-size:1.25rem;font-weight:800">Acesso bloqueado</h1><p style="margin-top:8px;color:#475569">${escapeHtml(e.message)}</p><div style="margin-top:16px"><button class="btn btn-secondary" onclick="EdgeAuth.logout()">Sair</button> <a class="btn btn-primary" href="pagamento.html">Regularizar</a></div></div></div>`;
         return;
       }
-    }
-    EdgeDB.cameras = await EdgeAPI.get("/cameras");
-    EdgeDB.alerts = await EdgeAPI.get("/alerts");
-    if (session.cargo === "administrador") {
-      EdgeDB.users = await EdgeAPI.get("/users");
-      EdgeDB.activities = await EdgeAPI.get("/activities");
-    } else {
-      EdgeDB.users = [await EdgeAPI.get("/me")];
-      EdgeDB.activities = [];
+      throw e;
     }
     window.dispatchEvent(new Event("edge-data-ready"));
   },

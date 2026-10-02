@@ -1,0 +1,1074 @@
+{
+  "base": "https://edgesecurity.vercel.app",
+  "scope": "real browser and production API; only js/api.js replaced in browser memory for controlled A/B; cold start not controlled",
+  "reports": [
+    {
+      "variant": "before",
+      "run": 1,
+      "temperature": "first observed, not proven cold",
+      "layout_dom_ms": 203.29999999981374,
+      "data_ready_ms": 4312.399999999907,
+      "data_painted_ms": 4341.399999999907,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 47.60000000009313,
+          "duration_ms": 106.1999999997206,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 47.6999999997206,
+          "duration_ms": 56,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 47.799999999813735,
+          "duration_ms": 52.3000000002794,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 47.799999999813735,
+          "duration_ms": 54.200000000186265,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 47.89999999990687,
+          "duration_ms": 74.70000000018626,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 47.89999999990687,
+          "duration_ms": 87.5,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 48,
+          "duration_ms": 11.600000000093132,
+          "status": 200,
+          "transfer_bytes": 7589,
+          "body_bytes": 7289
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 48,
+          "duration_ms": 55,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 48,
+          "duration_ms": 87.6999999997206,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 48.10000000009313,
+          "duration_ms": 86.39999999990687,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 100.60000000009313,
+          "duration_ms": 97.5,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 202.79999999981374,
+          "duration_ms": 642,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 203,
+          "duration_ms": 763.7999999998137,
+          "status": 200,
+          "transfer_bytes": 867,
+          "body_bytes": 567
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 203.10000000009313,
+          "duration_ms": 90.39999999990687,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 968.1000000000931,
+          "duration_ms": 801.5999999996275,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 1770.8999999999069,
+          "duration_ms": 805,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "other",
+          "start_ms": 2396,
+          "duration_ms": 115.5,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 2577.2999999998137,
+          "duration_ms": 924,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 3502.5,
+          "duration_ms": 808.7999999998137,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        }
+      ]
+    },
+    {
+      "variant": "before",
+      "run": 2,
+      "temperature": "warm",
+      "layout_dom_ms": 255.70000000018626,
+      "data_ready_ms": 4497.9000000003725,
+      "data_painted_ms": 4528,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 44.90000000037253,
+          "duration_ms": 102.79999999981374,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 45,
+          "duration_ms": 43.700000000186265,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 45.10000000009313,
+          "duration_ms": 44.3000000002794,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 45.10000000009313,
+          "duration_ms": 74,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 45.10000000009313,
+          "duration_ms": 204.20000000018626,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 45.200000000186265,
+          "duration_ms": 8.799999999813735,
+          "status": 200,
+          "transfer_bytes": 7589,
+          "body_bytes": 7289
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 45.200000000186265,
+          "duration_ms": 44.799999999813735,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 45.200000000186265,
+          "duration_ms": 51.10000000009313,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 45.200000000186265,
+          "duration_ms": 53.5,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 45.200000000186265,
+          "duration_ms": 74.5,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 119.60000000009313,
+          "duration_ms": 96.10000000009313,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 255,
+          "duration_ms": 628.4000000003725,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 255.3000000002794,
+          "duration_ms": 88.79999999981374,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 255.3000000002794,
+          "duration_ms": 836.6999999997206,
+          "status": 200,
+          "transfer_bytes": 867,
+          "body_bytes": 567
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 1093.4000000003725,
+          "duration_ms": 816.1999999997206,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 1910.8000000002794,
+          "duration_ms": 815.7999999998137,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "other",
+          "start_ms": 2522,
+          "duration_ms": 128.70000000018626,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 2730.100000000093,
+          "duration_ms": 942.7000000001863,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 3674.600000000093,
+          "duration_ms": 822.1000000000931,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        }
+      ]
+    },
+    {
+      "variant": "before",
+      "run": 3,
+      "temperature": "warm",
+      "layout_dom_ms": 267.5,
+      "data_ready_ms": 4151.600000000093,
+      "data_painted_ms": 4178.4000000003725,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 49.10000000009313,
+          "duration_ms": 105.70000000018626,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 49.3000000002794,
+          "duration_ms": 47.39999999990687,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 49.40000000037253,
+          "duration_ms": 50.89999999990687,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 49.40000000037253,
+          "duration_ms": 51.59999999962747,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 49.40000000037253,
+          "duration_ms": 79.1999999997206,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 49.40000000037253,
+          "duration_ms": 212.1999999997206,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 49.5,
+          "duration_ms": 11.600000000093132,
+          "status": 200,
+          "transfer_bytes": 7589,
+          "body_bytes": 7289
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 49.5,
+          "duration_ms": 80,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 49.60000000009313,
+          "duration_ms": 51.89999999990687,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 49.60000000009313,
+          "duration_ms": 79.60000000009313,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 100.8000000002794,
+          "duration_ms": 109.10000000009313,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 266.90000000037253,
+          "duration_ms": 689.5,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 267.10000000009313,
+          "duration_ms": 757,
+          "status": 200,
+          "transfer_bytes": 867,
+          "body_bytes": 567
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 267.20000000018626,
+          "duration_ms": 78.10000000009313,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 1025.2000000001863,
+          "duration_ms": 748.8999999999069,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 1775.4000000003725,
+          "duration_ms": 755.6999999997206,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "other",
+          "start_ms": 2220.4000000003725,
+          "duration_ms": 123.89999999990687,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 2532.3000000002794,
+          "duration_ms": 859.2999999998137,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 3392.7000000001863,
+          "duration_ms": 757.8999999999069,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "run": 1,
+      "temperature": "first observed, not proven cold",
+      "layout_dom_ms": 291.10000000009313,
+      "data_ready_ms": 3350.100000000093,
+      "data_painted_ms": 3377.100000000093,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 47.40000000037253,
+          "duration_ms": 101.1999999997206,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 47.5,
+          "duration_ms": 49.60000000009313,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 47.60000000009313,
+          "duration_ms": 48.200000000186265,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 47.60000000009313,
+          "duration_ms": 84.39999999990687,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 47.60000000009313,
+          "duration_ms": 236.5,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 47.700000000186265,
+          "duration_ms": 7.899999999906868,
+          "status": 200,
+          "transfer_bytes": 8701,
+          "body_bytes": 8401
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 47.700000000186265,
+          "duration_ms": 48.89999999990687,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 47.700000000186265,
+          "duration_ms": 49.5,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 47.700000000186265,
+          "duration_ms": 84,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 47.8000000002794,
+          "duration_ms": 49.5,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 96.90000000037253,
+          "duration_ms": 94.59999999962747,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 290,
+          "duration_ms": 640.9000000003725,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 290.3000000002794,
+          "duration_ms": 759.7999999998137,
+          "status": 200,
+          "transfer_bytes": 868,
+          "body_bytes": 568
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 290.40000000037253,
+          "duration_ms": 2566.1999999997206,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 290.5,
+          "duration_ms": 2798.2000000001863,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 290.60000000009313,
+          "duration_ms": 2727.2000000001863,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 290.60000000009313,
+          "duration_ms": 3058.5,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 290.70000000018626,
+          "duration_ms": 229.60000000009313,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "other",
+          "start_ms": 2051.2000000001863,
+          "duration_ms": 188.89999999990687,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "run": 2,
+      "temperature": "warm",
+      "layout_dom_ms": 234,
+      "data_ready_ms": 1165.8000000002794,
+      "data_painted_ms": 1192.8000000002794,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 46.5,
+          "duration_ms": 101.40000000037253,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 46.700000000186265,
+          "duration_ms": 47.200000000186265,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 46.700000000186265,
+          "duration_ms": 49.60000000009313,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 46.700000000186265,
+          "duration_ms": 87.10000000009313,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 46.8000000002794,
+          "duration_ms": 49.89999999990687,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 46.8000000002794,
+          "duration_ms": 118.10000000009313,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 46.90000000037253,
+          "duration_ms": 8.299999999813735,
+          "status": 200,
+          "transfer_bytes": 8701,
+          "body_bytes": 8401
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 46.90000000037253,
+          "duration_ms": 47.799999999813735,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 46.90000000037253,
+          "duration_ms": 48.6999999997206,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 47,
+          "duration_ms": 48.90000000037253,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 134.3000000002794,
+          "duration_ms": 94.39999999990687,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 233.10000000009313,
+          "duration_ms": 710.8999999999069,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 233.40000000037253,
+          "duration_ms": 747.5999999996275,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 233.40000000037253,
+          "duration_ms": 761.0999999996275,
+          "status": 200,
+          "transfer_bytes": 867,
+          "body_bytes": 567
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 233.5,
+          "duration_ms": 829.9000000003725,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 233.5,
+          "duration_ms": 931.2000000001863,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 233.60000000009313,
+          "duration_ms": 738.8000000002794,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 233.70000000018626,
+          "duration_ms": 184.70000000018626,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "run": 3,
+      "temperature": "warm",
+      "layout_dom_ms": 336.89999999990687,
+      "data_ready_ms": 1261.2000000001863,
+      "data_painted_ms": 1290.6000000000931,
+      "requests": [
+        {
+          "path": "/css2",
+          "initiator": "link",
+          "start_ms": 148,
+          "duration_ms": 103.20000000018626,
+          "status": 0,
+          "transfer_bytes": 1078,
+          "body_bytes": 778
+        },
+        {
+          "path": "/css/style.css",
+          "initiator": "link",
+          "start_ms": 148.20000000018626,
+          "duration_ms": 44.299999999813735,
+          "status": 200,
+          "transfer_bytes": 13487,
+          "body_bytes": 13187
+        },
+        {
+          "path": "/css/edge.css",
+          "initiator": "link",
+          "start_ms": 148.20000000018626,
+          "duration_ms": 46,
+          "status": 200,
+          "transfer_bytes": 10615,
+          "body_bytes": 10315
+        },
+        {
+          "path": "/css/usuarios.css",
+          "initiator": "link",
+          "start_ms": 148.20000000018626,
+          "duration_ms": 77.79999999981374,
+          "status": 200,
+          "transfer_bytes": 1737,
+          "body_bytes": 1437
+        },
+        {
+          "path": "/js/api.js",
+          "initiator": "script",
+          "start_ms": 148.29999999981374,
+          "duration_ms": 10.800000000279397,
+          "status": 200,
+          "transfer_bytes": 8701,
+          "body_bytes": 8401
+        },
+        {
+          "path": "/js/runtime-config.js",
+          "initiator": "script",
+          "start_ms": 148.29999999981374,
+          "duration_ms": 46.5,
+          "status": 200,
+          "transfer_bytes": 445,
+          "body_bytes": 145
+        },
+        {
+          "path": "/js/auth.js",
+          "initiator": "script",
+          "start_ms": 148.29999999981374,
+          "duration_ms": 51.8000000002794,
+          "status": 200,
+          "transfer_bytes": 1013,
+          "body_bytes": 713
+        },
+        {
+          "path": "/boxicons@2.1.4/css/boxicons.min.css",
+          "initiator": "link",
+          "start_ms": 148.29999999981374,
+          "duration_ms": 182.5,
+          "status": 0,
+          "transfer_bytes": 0,
+          "body_bytes": 0
+        },
+        {
+          "path": "/js/app.js",
+          "initiator": "script",
+          "start_ms": 148.39999999990687,
+          "duration_ms": 52.8000000002794,
+          "status": 200,
+          "transfer_bytes": 2704,
+          "body_bytes": 2404
+        },
+        {
+          "path": "/js/usuarios.js",
+          "initiator": "script",
+          "start_ms": 148.39999999990687,
+          "duration_ms": 77,
+          "status": 200,
+          "transfer_bytes": 2974,
+          "body_bytes": 2674
+        },
+        {
+          "path": "/css2",
+          "initiator": "css",
+          "start_ms": 195.10000000009313,
+          "duration_ms": 95.60000000009313,
+          "status": 0,
+          "transfer_bytes": 1027,
+          "body_bytes": 727
+        },
+        {
+          "path": "/api/auth/heartbeat",
+          "initiator": "fetch",
+          "start_ms": 336.10000000009313,
+          "duration_ms": 870.1000000000931,
+          "status": 200,
+          "transfer_bytes": 353,
+          "body_bytes": 53
+        },
+        {
+          "path": "/api/me",
+          "initiator": "fetch",
+          "start_ms": 336.29999999981374,
+          "duration_ms": 923.8000000002794,
+          "status": 200,
+          "transfer_bytes": 867,
+          "body_bytes": 567
+        },
+        {
+          "path": "/api/cameras",
+          "initiator": "fetch",
+          "start_ms": 336.39999999990687,
+          "duration_ms": 739.7000000001863,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/alerts",
+          "initiator": "fetch",
+          "start_ms": 336.5,
+          "duration_ms": 804.8999999999069,
+          "status": 200,
+          "transfer_bytes": 302,
+          "body_bytes": 2
+        },
+        {
+          "path": "/api/users",
+          "initiator": "fetch",
+          "start_ms": 336.5,
+          "duration_ms": 875.8999999999069,
+          "status": 200,
+          "transfer_bytes": 891,
+          "body_bytes": 591
+        },
+        {
+          "path": "/assets/logo.png",
+          "initiator": "img",
+          "start_ms": 336.60000000009313,
+          "duration_ms": 146.60000000009313,
+          "status": 200,
+          "transfer_bytes": 164936,
+          "body_bytes": 164636
+        },
+        {
+          "path": "/api/activities",
+          "initiator": "fetch",
+          "start_ms": 336.60000000009313,
+          "duration_ms": 753.2999999998137,
+          "status": 200,
+          "transfer_bytes": 669,
+          "body_bytes": 369
+        }
+      ]
+    }
+  ]
+}

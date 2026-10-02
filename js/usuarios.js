@@ -25,6 +25,9 @@ const defaultPermissions = (c) => {
   );
 };
 function renderUsers() {
+  document.getElementById("user-stats").removeAttribute("aria-busy");
+  document.getElementById("user-stats").removeAttribute("aria-label");
+  document.getElementById("users-table").removeAttribute("aria-busy");
   const active = EdgeDB.users.filter((u) => u.status === "ativo").length;
   const online = EdgeDB.users.filter(
     (u) => u.status === "ativo" && u.ultimo_login && !u.ultimo_logout,
@@ -140,3 +143,13 @@ window.deleteUser = async (id) => {
 };
 document.getElementById("add-user").onclick = () => openUserForm();
 window.addEventListener("edge-data-ready", renderUsers);
+window.addEventListener("edge-data-error", () => {
+  const stats = document.getElementById("user-stats");
+  const table = document.getElementById("users-table");
+  if (!stats || !table || !table.hasAttribute("aria-busy")) return;
+  stats.replaceChildren();
+  stats.removeAttribute("aria-busy");
+  stats.removeAttribute("aria-label");
+  table.removeAttribute("aria-busy");
+  table.innerHTML = '<div class="empty" role="alert">Não foi possível carregar os usuários. <button class="btn btn-secondary" onclick="location.reload()">Tentar novamente</button></div>';
+});
