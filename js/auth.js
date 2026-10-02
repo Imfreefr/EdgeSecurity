@@ -6,6 +6,7 @@ window.EdgeAuth = {
   // do usuário/API interpolado em innerHTML passar por escapeHtml() sem
   // exceção — não usar innerHTML com dados não sanitizados no futuro.
   current() {
+    if (!EdgeAPI.token()) return null;
     try {
       return JSON.parse(
         sessionStorage.getItem("edge_session") ||
@@ -24,6 +25,14 @@ window.EdgeAuth = {
     const storage = remember ? localStorage : sessionStorage;
     storage.setItem("edge_session", JSON.stringify(result.user));
     return result;
+  },
+  expire(rejectedToken) {
+    // An old in-flight request must never clear a newer login.
+    if (!rejectedToken || EdgeAPI.token() !== rejectedToken) return;
+    EdgeAPI.clearToken();
+    sessionStorage.removeItem("edge_session");
+    localStorage.removeItem("edge_session");
+    location.href = "/index.html?session=expired";
   },
   async logout() {
     try {

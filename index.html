@@ -155,6 +155,9 @@
       checkBackendPing();
       const form = document.getElementById("login-form");
       let isSubmitting = false;
+      if (new URLSearchParams(location.search).get("session") === "expired") {
+        document.getElementById("login-error").textContent = "Sua sessão expirou ou foi encerrada por um novo login. Entre novamente.";
+      }
       function setFieldError(id, msg) {
         const el = document.getElementById(id);
         const err = document.getElementById("login-error");

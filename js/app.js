@@ -104,5 +104,8 @@ function applyFontSize(size) {
   heartbeat();
   const heartbeatTimer = setInterval(heartbeat, 10000);
   window.addEventListener("pagehide", () => clearInterval(heartbeatTimer));
-  EdgeData.load().catch((e) => showToast(e.message));
+  EdgeData.load().catch((e) => {
+    showToast(e.message);
+    window.dispatchEvent(new Event("edge-data-error"));
+  });
 })();

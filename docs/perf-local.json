@@ -1,0 +1,48 @@
+{
+  "scope": "isolated SQLite, real FastAPI and auth; not production latency",
+  "samples": [
+    {
+      "endpoint": "/me",
+      "status": 200,
+      "queries": 6,
+      "server_timing": "auth;dur=2.97, db;dur=0.21, pool_init;dur=0.00, acquire;dur=3.85, transaction;dur=0.00, processing;dur=2.25, total;dur=6.32"
+    },
+    {
+      "endpoint": "/cameras",
+      "status": 200,
+      "queries": 4,
+      "server_timing": "auth;dur=5.10, db;dur=0.16, pool_init;dur=0.00, acquire;dur=5.48, transaction;dur=0.00, processing;dur=2.33, total;dur=7.97"
+    },
+    {
+      "endpoint": "/alerts",
+      "status": 200,
+      "queries": 4,
+      "server_timing": "auth;dur=5.23, db;dur=0.17, pool_init;dur=0.00, acquire;dur=5.81, transaction;dur=0.00, processing;dur=2.62, total;dur=8.61"
+    },
+    {
+      "endpoint": "/users",
+      "status": 200,
+      "queries": 6,
+      "server_timing": "auth;dur=4.83, db;dur=0.21, pool_init;dur=0.00, acquire;dur=5.23, transaction;dur=0.00, processing;dur=2.43, total;dur=7.87"
+    },
+    {
+      "endpoint": "/activities",
+      "status": 200,
+      "queries": 4,
+      "server_timing": "auth;dur=4.97, db;dur=0.16, pool_init;dur=0.00, acquire;dur=5.30, transaction;dur=0.00, processing;dur=2.32, total;dur=7.78"
+    },
+    {
+      "endpoint": "/monitor/usuarios",
+      "status": 200,
+      "queries": 4,
+      "server_timing": "auth;dur=5.06, db;dur=0.19, pool_init;dur=0.00, acquire;dur=5.73, transaction;dur=0.00, processing;dur=2.56, total;dur=8.48"
+    },
+    {
+      "endpoint": "/reports",
+      "status": 200,
+      "queries": 14,
+      "server_timing": "auth;dur=5.29, db;dur=0.30, pool_init;dur=0.00, acquire;dur=5.32, transaction;dur=0.00, processing;dur=2.75, total;dur=8.37"
+    }
+  ],
+  "security": "PASS: tenant isolation, foreign edit rejection, member role, live permission revocation, blocked company, Bearer refresh/navigation, invalid token and logout"
+}
