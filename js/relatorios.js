@@ -74,6 +74,7 @@ async function renderReport() {
       ["Crítico", "Alto", "Normal"].map((k) => r.alert_levels[k] || 0),
     );
   } catch (e) {
+    EdgeLoading.fail("report-stats");
     showToast(e.message);
   }
 }

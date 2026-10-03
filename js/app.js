@@ -30,6 +30,16 @@ function applyFontSize(size) {
   document.getElementById("app").innerHTML =
     `<div class="app-shell"><header class="m-header"><div class="m-brand"><img src="../assets/logo.png" alt="EdgeSecurity" /><b>EDGE</b></div><span class="m-section">${escapeHtml(labels[page] || page)}</span><span class="m-status"><i></i>LOCAL</span><button id="menu-btn" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebar"><i class="bx bx-menu" aria-hidden="true"></i></button></header><aside class="sidebar collapsed" id="sidebar"><div class="sb-brand"><img src="../assets/logo.png" alt="EdgeSecurity" /><b>EDGE<span>SECURITY</span><small>Operação local</small></b></div><div class="sb-live" aria-hidden="true"><i></i><span>Sistema online</span></div><nav class="sb-nav">${nav.map((n) => `<button class="sb-item ${page === n[0] ? "active" : ""}" data-go="${n[0]}" title="${n[2]}" aria-label="${n[2]}"><i class="ico ${n[1]}" aria-hidden="true"></i><span class="sb-label">${n[2]}</span></button>`).join("")}</nav><div class="sb-user"><strong>${escapeHtml(s.nome)}</strong><span>${s.cargo === "administrador" ? "Administrador" : "Usuário"}</span>${companyLabel ? `<span style="margin-top:4px;color:#7dd3fc;font-weight:700">${companyLabel}</span>` : ""}${subLabel}</div><button class="sb-logout" id="logout" title="Sair" aria-label="Sair"><i class="bx bx-log-out ico" aria-hidden="true"></i><span class="sb-label">Sair</span></button></aside><div class="m-scrim" id="m-scrim"></div><main class="content"><div class="app-topbar"><span>${escapeHtml(labels[page] || page)} — EdgeSecurity</span><span class="tb-status"><i></i>Operação local</span></div>${original}</main></div><div id="toast" class="toast"></div>`;
   document.getElementById("toast")?.classList.replace("toast", "edge-toast");
+  const loadingAreas = {
+    dashboard: {"dashboard-stats": "Carregando visão geral…", "recent-alerts": "Carregando alertas…", "recent-activities": "Carregando atividades…"},
+    cameras: {"registered-cameras": "Carregando câmeras cadastradas…"},
+    alertas: {"alerts-table": "Carregando alertas…"},
+    relatorios: {"report-stats": "Carregando relatórios…"},
+    atividades: {"activity-stats": "Carregando estatísticas…", "activities-table": "Carregando atividades…"},
+    configuracoes: {"account-loading": "Carregando configurações…"},
+  }[page] || {};
+  Object.entries(loadingAreas).forEach(([id, label]) => EdgeLoading.begin(id, label));
+  window.addEventListener("edge-data-error", () => Object.keys(loadingAreas).forEach(id => EdgeLoading.fail(id)));
   // Fixed overlays belong to the viewport, outside animated content containers.
   document.querySelectorAll(".content .modal").forEach((modal) => document.body.append(modal));
   document

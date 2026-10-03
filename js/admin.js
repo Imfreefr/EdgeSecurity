@@ -7,6 +7,11 @@ if (!s) {
 if (s)
   document.getElementById("admin-user").textContent = s.nome + " — " + s.email;
 let adminData = null;
+if (s?.cargo === "super_admin") {
+  EdgeLoading.begin("admin-stats", "Carregando administração…");
+  EdgeLoading.begin("admin-payments", "Carregando pagamentos…");
+  EdgeLoading.begin("admin-companies", "Carregando empresas…");
+}
 async function loadAdmin() {
   try {
     const dash = await EdgeAPI.get("/admin/dashboard");
@@ -34,6 +39,8 @@ async function loadAdmin() {
       ? `<table><thead><tr><th>Empresa</th><th>Valor</th><th>Status</th><th>Data</th></tr></thead><tbody>${dash.pagamentos_recentes.map((p) => `<tr><td>${escapeHtml(p.nome_fantasia)}</td><td>R$ ${Number(p.valor).toFixed(2)}</td><td><span class="badge ${p.status === "pago" ? "green" : p.status === "pendente" ? "amber" : "red"}">${escapeHtml(p.status)}</span></td><td>${formatDate(p.criado_em)}</td></tr>`).join("")}</tbody></table>`
       : '<div class="empty">Nenhum pagamento.</div>';
   } catch (e) {
+    EdgeLoading.fail("admin-stats");
+    EdgeLoading.fail("admin-payments");
     showToastSafe(e.message);
   }
   await searchCompanies();
@@ -52,6 +59,7 @@ async function searchCompanies() {
       ? `<table><thead><tr><th>Empresa</th><th>CNPJ</th><th>Admin</th><th>E-mail</th><th>Empresa</th><th>Assinatura</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.nome_fantasia)}</td><td>${escapeHtml(r.cnpj)}</td><td>${escapeHtml(r.admin_nome || "—")}</td><td>${escapeHtml(r.admin_email || "—")}</td><td><span class="badge ${r.status === "ativa" ? "green" : "red"}">${escapeHtml(r.status)}</span></td><td><span class="badge ${r.sub_status === "ativa" ? "green" : r.sub_status === "pendente" ? "amber" : "red"}">${escapeHtml(r.sub_status || "—")}</span> R$ ${r.valor ? Number(r.valor).toFixed(2) : "—"}</td><td>${r.proximo_vencimento ? formatDate(r.proximo_vencimento) : "—"}</td><td><button class="btn btn-secondary btn-small" onclick="openCompany('${escapeHtml(r.id)}')">Detalhes</button></td></tr>`).join("")}</tbody></table>`
       : '<div class="empty">Nenhuma empresa encontrada.</div>';
   } catch (e) {
+    EdgeLoading.fail("admin-companies");
     showToastSafe(e.message);
   }
 }

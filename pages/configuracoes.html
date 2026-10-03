@@ -29,9 +29,10 @@
       <div class="settings-grid">
         <section class="card settings-card">
           <h2>Conta</h2>
+          <div id="account-loading"></div>
           <label>Nome<input id="setting-name" /></label
           ><label>E-mail<input id="setting-email" /></label
-          ><button class="btn btn-primary" id="save-account">
+          ><button class="btn btn-primary" id="save-account" disabled>
             Salvar alterações
           </button>
         </section>
@@ -76,6 +77,7 @@
     <script src="../js/runtime-config.js"></script>
     <script src="../js/api.js"></script>
     <script src="../js/auth.js"></script>
+    <script src="../js/loading.js"></script>
     <script src="../js/app.js"></script>
     <script src="../js/configuracoes.js"></script>
   </body>

@@ -83,6 +83,8 @@ body[data-page] .btn:disabled { opacity: 0.55; cursor: wait; transform: none; }
 body[data-page] .btn-small { border-radius: 8px; min-height: 36px; }
 
 /* ---------- app shell ---------- */
+.data-loading { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 22px; min-height: 96px; color: var(--edge-muted); font-size: .85rem; }
+.data-loading-bars { width: min(320px, 100%); height: 28px; border-radius: 4px; background: linear-gradient(currentColor 0 0) top left / 100% 8px no-repeat, linear-gradient(currentColor 0 0) bottom left / 65% 8px no-repeat; opacity: .12; }
 body[data-page] { overflow-x: visible; --sidebar-rail: 80px; --sidebar-open: 248px; --content-gutter: 32px; }
 body[data-page] .app-shell {
   --sidebar-width: var(--sidebar-rail);
