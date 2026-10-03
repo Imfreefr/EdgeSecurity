@@ -52,7 +52,10 @@ async function initConfig() {
     };
     if (u.cargo !== "administrador")
       document.querySelector(".admin-only")?.remove();
+    EdgeLoading.end("account-loading");
+    document.getElementById("save-account").disabled = false;
   } catch (e) {
+    EdgeLoading.fail("account-loading");
     showToast(e.message);
   }
 }

@@ -40,6 +40,8 @@ async function initActivities() {
     document.getElementById("activities-table").innerHTML =
       `<h2 class="monitor-title">Usuários</h2>${userTable}<h2 class="monitor-title">Histórico de atividades</h2>${data.length ? `<table><thead><tr><th>Ação</th><th>Descrição</th><th>Data</th></tr></thead><tbody>${data.map((a) => `<tr><td>${escapeHtml(a.acao)}</td><td>${escapeHtml(a.descricao)}</td><td>${formatDate(a.data_hora)}</td></tr>`).join("")}</tbody></table>` : '<div class="empty">Nenhuma atividade registrada.</div>'}`;
   } catch (e) {
+    EdgeLoading.fail("activity-stats");
+    EdgeLoading.fail("activities-table");
     showToast(e.message);
   }
 }

@@ -2,6 +2,42 @@
    Módulo de Câmeras — layout e estados
    Palco de vídeo, controles, lista de dispositivos e detecção ao vivo
    ========================================================================== */
+body[data-page="cameras"] { --camera-gutter: clamp(16px, 2vw, 24px); }
+body[data-page="cameras"] .page-head { gap: 16px 24px; margin-bottom: 24px; }
+body[data-page="cameras"] .page-head > .camera-page-actions {
+  display: flex; flex: 0 1 auto; flex-wrap: wrap; gap: 12px;
+}
+body[data-page="cameras"] .card-head { padding: 20px var(--camera-gutter); gap: 16px; flex-wrap: wrap; }
+body[data-page="cameras"] .camera-stage-real {
+  width: calc(100% - 2 * var(--camera-gutter)); min-height: 220px; max-height: 480px;
+  margin: var(--camera-gutter) var(--camera-gutter) 0;
+}
+body[data-page="cameras"] .camera-empty-real {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 0; gap: 12px; padding: 24px;
+}
+body[data-page="cameras"] .camera-empty-real span { line-height: 1.5; max-width: min(44ch, 100%); }
+body[data-page="cameras"] .camera-empty-real .btn {
+  justify-self: center; align-self: center; width: auto; max-width: 100%; margin-top: 8px;
+}
+body[data-page="cameras"] .camera-controls {
+  gap: 12px; padding: 20px var(--camera-gutter) var(--camera-gutter);
+}
+body[data-page="cameras"] .camera-controls .camera-picker { flex-basis: 280px; gap: 8px; }
+body[data-page="cameras"] .camera-controls :is(select, .btn) { min-height: 44px; }
+body[data-page="cameras"] .ip-form { gap: 18px; padding: 20px var(--camera-gutter) var(--camera-gutter); }
+body[data-page="cameras"] .ai-metrics { gap: 16px; padding: 20px var(--camera-gutter); flex-wrap: wrap; }
+body[data-page="cameras"] .ai-warning { margin: 0 var(--camera-gutter) var(--camera-gutter); padding: 14px 16px; }
+body[data-page="cameras"] .device-row { flex-wrap: wrap; gap: 16px; padding: 16px var(--camera-gutter); }
+@media (max-width: 700px) {
+  body[data-page="cameras"] .page-head > div { flex: 0 1 auto; }
+  body[data-page="cameras"] .page-head > .camera-page-actions { width: 100%; }
+  body[data-page="cameras"] .camera-page-actions .btn { flex: 1 1 180px; }
+  body[data-page="cameras"] .camera-controls .camera-picker { flex-basis: 100%; }
+  body[data-page="cameras"] .camera-controls .btn { flex: 1 1 100%; }
+  body[data-page="cameras"] .camera-empty-real { padding: 20px 16px; }
+}
+
 .camera-live-card {
   margin-bottom: 18px;
 }

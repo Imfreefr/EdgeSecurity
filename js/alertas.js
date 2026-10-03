@@ -21,6 +21,7 @@ async function initAlerts() {
       document.getElementById("alerts-table").innerHTML =
         `<table><thead><tr><th>Data</th><th>Câmera</th><th>Tipo</th><th>Descrição</th><th>Nível</th><th>Status</th></tr></thead><tbody>${data.map((a) => `<tr><td>${formatDate(a.data_hora)}</td><td>${escapeHtml(cameraById(a.camera_id)?.nome || "—")}</td><td>${escapeHtml(a.tipo)}</td><td>${escapeHtml(a.descricao)}</td><td><span class="level ${a.nivel === "Crítico" ? "critical" : a.nivel === "Alto" ? "high" : "normal"}">${a.nivel}</span></td><td><span class="badge ${a.status === "Aberto" ? "red" : "green"}">${a.status}</span></td></tr>`).join("") || '<tr><td colspan="6"><div class="empty">Nenhum alerta encontrado.</div></td></tr>'}</tbody></table>`;
     } catch (e) {
+      EdgeLoading.fail("alerts-table");
       showToast(e.message);
     }
   }
