@@ -93,7 +93,8 @@ Em um terminal com o ambiente virtual ativado:
 python backend/run.py
 ```
 
-API: <http://127.0.0.1:8000>  
+API: <http://127.0.0.1:8000>
+
 Verificação de disponibilidade: <http://127.0.0.1:8000/api/health>
 
 ### 4. Iniciar a interface
