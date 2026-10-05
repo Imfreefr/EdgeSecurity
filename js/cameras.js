@@ -24,6 +24,7 @@
   const ipStatus = document.getElementById("ip-status");
   const ipError = document.getElementById("ip-error");
   let testedIp = false;
+  let initialized = false;
   const humanCount = document.getElementById("ai-human-count");
   const machineCount = document.getElementById("ai-machine-count");
   const riskLevel = document.getElementById("ai-risk-level");
@@ -335,7 +336,7 @@
       return;
     }
     const registered = registeredCameras().find(
-      (c) => c.device_id === select.value,
+      (c) => c.device_id === stream.getVideoTracks()[0]?.getSettings().deviceId,
     );
     if (!registered) {
       showToast("Cadastre esta câmera antes de iniciar a detecção.");
@@ -452,6 +453,7 @@
   }
   async function refreshDevices() {
     try {
+      const selectedId = stream?.getVideoTracks()[0]?.getSettings().deviceId || select.value;
       devices = await CameraAPI.list();
       select.innerHTML = "";
       if (!devices.length) {
@@ -468,6 +470,7 @@
         o.textContent = d.label || `Câmera ${i + 1}`;
         select.appendChild(o);
       });
+      if (devices.some((d) => d.deviceId === selectedId)) select.value = selectedId;
       select.disabled = false;
       register.disabled = !canRegisterCamera();
       list.innerHTML = devices
@@ -545,6 +548,8 @@
   }
   function initializeCameraPage() {
     renderRegistered();
+    if (initialized) return;
+    initialized = true;
     register.disabled = true;
     if (!canUseCamera()) {
       start.disabled = true;

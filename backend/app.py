@@ -1545,11 +1545,11 @@ def cameras(request: Request, authorization: str | None = Header(default=None)):
     with conn() as db:
         cid = session.get("company_id")
         if session.get("cargo") == "super_admin":
-            rows = db.execute("SELECT id,nome,tipo,localizacao,status,criado_em FROM cameras ORDER BY nome LIMIT 100").fetchall()
+            rows = db.execute("SELECT id,nome,tipo,device_id,localizacao,status,criado_em FROM cameras ORDER BY nome LIMIT 100").fetchall()
         elif session["cargo"] == "administrador":
-            rows = db.execute("SELECT id,nome,tipo,localizacao,status,criado_em FROM cameras WHERE company_id=? ORDER BY nome LIMIT 100", (cid,)).fetchall()
+            rows = db.execute("SELECT id,nome,tipo,device_id,localizacao,status,criado_em FROM cameras WHERE company_id=? ORDER BY nome LIMIT 100", (cid,)).fetchall()
         else:
-            rows = db.execute("SELECT c.id,c.nome,c.tipo,c.localizacao,c.status,c.criado_em FROM cameras c JOIN usuario_cameras uc ON uc.camera_id=c.id WHERE uc.usuario_id=? AND c.company_id=? ORDER BY c.nome LIMIT 100", (session["id"], cid)).fetchall()
+            rows = db.execute("SELECT c.id,c.nome,c.tipo,c.device_id,c.localizacao,c.status,c.criado_em FROM cameras c JOIN usuario_cameras uc ON uc.camera_id=c.id WHERE uc.usuario_id=? AND c.company_id=? ORDER BY c.nome LIMIT 100", (session["id"], cid)).fetchall()
         return [dict(r) for r in rows]
 
 @app.post("/api/cameras")
@@ -1562,7 +1562,7 @@ def create_camera(data: CameraIn, request: Request, authorization: str | None = 
         db.execute("INSERT INTO cameras(id,nome,tipo,device_id,endereco,localizacao,status,criado_em,company_id) VALUES(?,?,?,?,?,?,?,?,?)",
             (cid, data.nome.strip()[:80], data.tipo, (data.device_id or "")[:200], (data.endereco or "")[:500], (data.localizacao or "")[:80], data.status, now(), session["company_id"]))
         activity(db, session["id"], "criação de câmera", f"Câmera cadastrada", session["company_id"])
-        return dict(db.execute("SELECT id,nome,tipo,localizacao,status,criado_em FROM cameras WHERE id=?", (cid,)).fetchone())
+        return dict(db.execute("SELECT id,nome,tipo,device_id,localizacao,status,criado_em FROM cameras WHERE id=?", (cid,)).fetchone())
 
 @app.post("/api/cameras/test")
 def test_camera(data: CameraTestIn, request: Request, authorization: str | None = Header(default=None)):
