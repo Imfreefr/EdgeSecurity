@@ -1,7 +1,7 @@
 /* Cliente WebSocket da detecção ao vivo. O backend executa a análise. */
 window.EdgeAI = (() => {
   function httpBase() {
-    return "http://127.0.0.1:8000";
+    return window.EDGE_API_BASE || "http://127.0.0.1:8000";
   }
   let socket = null;
   let framePending = false;

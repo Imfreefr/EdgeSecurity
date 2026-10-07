@@ -15,13 +15,13 @@ export default defineConfig({
         for (const path of ["index.html", "pages", "css", "js", "assets"]) {
           cpSync(path, `dist/${path}`, { recursive: true });
         }
-        // Copy ONNX model for browser inference (EdgeAILocal)
-        const modelSrc = resolve(projectRoot, "backend/model/edgev1-int8.onnx");
-        const modelDest = resolve(projectRoot, "dist/assets/edgev1-int8.onnx");
-        if (existsSync(modelSrc)) {
-          cpSync(modelSrc, modelDest);
-          console.log("Copied edgev1-int8.onnx to dist/assets/");
-        }
+        // Copy the validated ONNX model for browser inference (EdgeAILocal).
+        // edgev1-int8.onnx is not a valid graph for the browser runtime.
+        const modelSrc = resolve(projectRoot, "backend/model/edgev1.onnx");
+        const modelDest = resolve(projectRoot, "dist/assets/edgev1.onnx");
+        if (!existsSync(modelSrc)) throw new Error("Missing browser model: backend/model/edgev1.onnx");
+        cpSync(modelSrc, modelDest);
+        console.log("Copied edgev1.onnx to dist/assets/");
       },
     },
   ],

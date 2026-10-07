@@ -1,18 +1,21 @@
 importScripts(
   "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/ort.min.js",
 );
+ort.env.wasm.wasmPaths =
+  "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/";
 let session = null;
 let names = [".pessoa", ".máquina", "operador", "objeto"];
 self.onmessage = async (e) => {
   const { type, payload } = e.data;
   if (type === "init") {
     try {
-      // Try multiple URLs in order: assets (production), then backend paths (local dev)
+      // Try the validated FP32 export first. The INT8 export currently has an
+      // invalid DynamicQuantizeLinear/float16 graph for ONNX Runtime.
       const urls = [
         payload.modelUrl,
-        "/assets/edgev1-int8.onnx",
-        "../../backend/model/edgev1-int8.onnx",
-        "/backend/model/edgev1-int8.onnx",
+        "/assets/edgev1.onnx",
+        "../../backend/model/edgev1.onnx",
+        "/backend/model/edgev1.onnx",
       ].filter(Boolean);
       
       let sessionCreated = false;

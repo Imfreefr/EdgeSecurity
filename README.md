@@ -14,7 +14,7 @@ Este README descreve a branch **`v6.4.3-vercel`**. O nome da branch identifica e
 | Banco local | SQLite |
 | Banco persistente | PostgreSQL, compatível com Supabase, via psycopg |
 | IA no navegador | ONNX Runtime Web, WebAssembly e Web Worker |
-| Modelo do navegador | `backend/model/edgev1-int8.onnx` |
+| Modelo do navegador | `backend/model/edgev1.onnx` |
 | IA no servidor local | Ultralytics e modelo `backend/model/edgev1.pt` |
 | Publicação | Frontend em `dist/` e entrada Python em `api/index.py` |
 
@@ -83,7 +83,7 @@ npm ci
 npm run build
 ```
 
-O build gera `dist/`, preserva as páginas internas e copia o modelo para `dist/assets/edgev1-int8.onnx`, quando o arquivo de origem existe. Confirme a presença desse arquivo para testar a IA no navegador.
+O build gera `dist/`, preserva as páginas internas e copia o modelo para `dist/assets/edgev1.onnx`. O export INT8 existente contém uma operação de quantização incompatível com sua entrada float16; o navegador usa o export ONNX válido. Confirme a presença desse arquivo para testar a IA no navegador.
 
 ### 3. Iniciar a API
 
