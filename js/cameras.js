@@ -315,6 +315,13 @@
     riskLevel.dataset.level = risk;
   }
   const AI = window.EdgeAILocal || window.EdgeAI;
+  function canUseServerFallback() {
+    return (
+      location.hostname === "localhost" ||
+      location.hostname === "127.0.0.1" ||
+      location.hostname === "::1"
+    );
+  }
   function stopAIAnalysis() {
     aiRunning = false;
     if (frameTimer) clearInterval(frameTimer);
@@ -348,7 +355,7 @@
       cameraId,
       drawResults,
       (msg) => {
-        if (AI === window.EdgeAILocal && window.EdgeAI) {
+        if (AI === window.EdgeAILocal && window.EdgeAI && canUseServerFallback()) {
           stopAIAnalysis();
           setAIStatus("Tentando IA no servidor…");
           window.EdgeAI.connect(cameraId, drawResults, (m) => { stopAIAnalysis(); showToast(m); setAIStatus("Erro na detecção"); }, () => {

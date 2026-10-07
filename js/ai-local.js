@@ -10,12 +10,14 @@ window.EdgeAILocal = (() => {
   let cbReady = null;
   let currentCamera = null;
   let lastBeep = 0;
+  // Use the validated FP32 export in production. The INT8 export currently
+  // contains an invalid DynamicQuantizeLinear/float16 graph for ONNX Runtime.
   // Model URL: prioritize assets folder (copied by Vite), fallback to backend paths for local dev
   const MODEL_URLS = [
-    "/assets/edgev1-int8.onnx",           // Vercel/production (copied to dist/assets)
-    "../backend/model/edgev1-int8.onnx",  // Local dev (served from backend)
-    "backend/model/edgev1-int8.onnx",     // Local dev alternative
-    "/backend/model/edgev1-int8.onnx",    // Local dev alternative
+    "/assets/edgev1.onnx",           // Vercel/production (copied to dist/assets)
+    "../backend/model/edgev1.onnx",  // Local dev (served from backend)
+    "backend/model/edgev1.onnx",     // Local dev alternative
+    "/backend/model/edgev1.onnx",    // Local dev alternative
   ];
   let audioCtx = null;
   function beep(level) {
@@ -44,7 +46,7 @@ window.EdgeAILocal = (() => {
       if (type === "ready") {
         ready = true;
         cbReady?.({
-          model: model || "edgev1-int8.onnx",
+          model: model || "edgev1.onnx",
           classes: ["human", "forklift"],
         });
       } else if (type === "result") {
