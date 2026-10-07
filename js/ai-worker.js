@@ -159,7 +159,7 @@ self.onmessage = async (e) => {
           track_id: null,
         });
       }
-      self.postMessage({ type: "result", cameraId, detections });
+      self.postMessage({ type: "result", cameraId, detections, width, height });
     } catch (err) {
       self.postMessage({ type: "error", message: String(err.message || err) });
     }

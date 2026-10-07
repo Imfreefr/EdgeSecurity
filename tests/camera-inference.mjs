@@ -34,10 +34,13 @@ try {
   await page.evaluate(() => {
     window.smokeResults = 0;
     const connect = window.EdgeAILocal.connect;
-    window.EdgeAILocal.connect = (id, result, error, ready) => connect(id, data => {
+    window.EdgeAILocal.connect = (id, result, error, ready) => {
+      window.smokeDrawResults = result;
+      return connect(id, data => {
       window.smokeResults++;
       result(data);
-    }, error, ready);
+      }, error, ready);
+    };
   });
   await page.locator('#detect-cameras').click();
   await expect(page.locator('#camera-select')).toBeEnabled();
@@ -48,6 +51,27 @@ try {
   await page.locator('#start-ai').click();
   await expect(page.locator('#ai-status')).toHaveText('IA local ao vivo', { timeout: 60000 });
   await page.waitForFunction(() => window.smokeResults >= 3, { timeout: 60000 });
+  // Deliberately use different inference and camera resolutions: the previous
+  // renderer put 640px coordinates directly on a 1280px video canvas.
+  const geometry = await page.evaluate(() => {
+    const video = document.getElementById('camera-video');
+    const overlay = document.getElementById('ai-overlay');
+    const context = overlay.getContext('2d');
+    const original = context.strokeRect;
+    let box;
+    context.strokeRect = (...args) => { box = args; };
+    window.smokeDrawResults({ frame_width: 320, frame_height: 180,
+      detections: [{ bbox: [80, 45, 240, 135], class_name: 'forklift', label: 'maquina', confidence: 0.9 }] });
+    context.strokeRect = original;
+    return { box, expected: [video.videoWidth / 4, video.videoHeight / 4, video.videoWidth / 2, video.videoHeight / 2],
+      videoFit: getComputedStyle(video).objectFit,
+      overlayFit: getComputedStyle(overlay).objectFit,
+      machines: document.getElementById('ai-machine-count').textContent };
+  });
+  expect(geometry.box).toEqual(geometry.expected);
+  expect(geometry.videoFit).toBe('contain');
+  expect(geometry.overlayFit).toBe('contain');
+  expect(geometry.machines).toBe('1');
   await page.locator('#stop-ai').click();
   await expect(page.locator('#ai-status')).toHaveText('Detecção desligada');
   console.log('PASS: published camera UI -> video frames -> ONNX Worker -> results -> stop (simulated webcam; API mocked)');

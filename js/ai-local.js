@@ -42,7 +42,7 @@ window.EdgeAILocal = (() => {
     if (worker) return worker;
     worker = new Worker(workerUrl);
     worker.onmessage = (e) => {
-      const { type, detections, cameraId, message, model } = e.data;
+      const { type, detections, cameraId, message, model, width, height } = e.data;
       if (type === "ready") {
         ready = true;
         cbReady?.({
@@ -82,6 +82,8 @@ window.EdgeAILocal = (() => {
         }
         cbResult?.({
           camera_id: cameraId,
+          frame_width: width,
+          frame_height: height,
           detections: detections || [],
           risk,
           alert_created: null,

@@ -474,6 +474,12 @@ body.dark .ip-form input {
 .ai-overlay {
   transition: opacity 0.22s ease;
 }
+/* Match the full video and overlay, including their letterbox margins.
+   Override edge.css's more-specific cover rule which crops wide previews. */
+body[data-page="cameras"] .camera-stage-real video,
+body[data-page="cameras"] .ai-overlay {
+  object-fit: contain;
+}
 @keyframes camScan {
   0% {
     transform: translateY(-8px);

@@ -278,15 +278,21 @@
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const frameWidth = data.frame_width || 640;
+    const frameHeight = data.frame_height || Math.round(video.videoHeight * (640 / video.videoWidth));
+    const scaleX = canvas.width / frameWidth;
+    const scaleY = canvas.height / frameHeight;
     const risk = data.risk?.level || "safe";
     const line = risk === "critical" ? 6 : risk === "high" ? 5 : 3;
     (data.detections || []).forEach((d) => {
-      const [x1, y1, x2, y2] = d.bbox;
+      const [left, top, right, bottom] = d.bbox;
+      const x1 = left * scaleX, y1 = top * scaleY;
+      const x2 = right * scaleX, y2 = bottom * scaleY;
       ctx.lineWidth = line;
       ctx.strokeStyle =
         d.class_name === "human"
           ? "#22c55e"
-          : d.class_name === "machine"
+          : ["machine", "forklift"].includes(d.class_name)
             ? "#f59e0b"
             : "#60a5fa";
       ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
@@ -306,7 +312,7 @@
       (d) => d.class_name === "human",
     ).length;
     machineCount.textContent = (data.detections || []).filter(
-      (d) => d.class_name === "machine",
+      (d) => ["machine", "forklift"].includes(d.class_name),
     ).length;
     riskLevel.textContent =
       { safe: "Seguro", medium: "Atenção", high: "Alto", critical: "CRÍTICO" }[
@@ -388,10 +394,10 @@
         const interval = Math.max(100, Math.round(1000 / 8));
         frameTimer = setInterval(() => {
           if (!aiRunning || !video.videoWidth) return;
-          frameCanvas.width = 640;
-          frameCanvas.height = Math.round(
-            video.videoHeight * (640 / video.videoWidth),
-          );
+          // Preserve camera detail until the Worker performs its single
+          // letterbox resize to the model's 640x640 input.
+          frameCanvas.width = video.videoWidth;
+          frameCanvas.height = video.videoHeight;
           frameCanvas
             .getContext("2d")
             .drawImage(video, 0, 0, frameCanvas.width, frameCanvas.height);
