@@ -1,0 +1,8 @@
+{
+  "currency": "USD",
+  "total_authorized": "24.00",
+  "working_limit": "18.00",
+  "safety_reserve": "6.00",
+  "runs": [],
+  "note": "No job launched. Add actual platform-billed amounts after each completed/cancelled/failed run; do not substitute estimates."
+}

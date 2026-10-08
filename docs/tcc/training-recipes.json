@@ -1,0 +1,21 @@
+{
+  "provider": "Ultralytics Cloud Training",
+  "status": "PREPARED_NOT_EXECUTED",
+  "required_dataset": "Edge Security CCTV v2",
+  "task": "detect",
+  "defaults": {
+    "imgsz": 640,
+    "batch": -1,
+    "pretrained": true,
+    "seed": 42,
+    "deterministic": true
+  },
+  "sequential_runs": [
+    {"name": "Edge-CCTV-v2-smoke", "model": "yolo26n.pt", "epochs": 10},
+    {"name": "Edge-CCTV-v2-main-n", "model": "yolo26n.pt", "epochs": 100, "patience": 20},
+    {"name": "Edge-CCTV-v2-compare-s", "model": "yolo26s.pt", "epochs": 100, "patience": 20, "optional_if_budget_available": true}
+  ],
+  "export": {"format": "onnx", "imgsz": 640, "batch": 1, "half": false, "int8": false, "dynamic": false},
+  "browser_expected": {"input": [1, 3, 640, 640], "input_type": "float32", "output": "1 x N x 6; xyxy, confidence, class_id"},
+  "note": "Do not launch until final dataset/import and cost monitoring are verified. Validate export shape/runtime, never overwrite edgev1 automatically."
+}

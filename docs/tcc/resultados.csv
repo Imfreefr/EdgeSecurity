@@ -1,0 +1,4 @@
+modelo,status,dataset_version,test_hash,precision_pessoa,recall_pessoa,map50_pessoa,map50_95_pessoa,precision_empilhadeira,recall_empilhadeira,map50_empilhadeira,map50_95_empilhadeira,latencia_ms,limiar_validacao,custo_usd
+edgev1,PENDENTE,,,,,,,,,,,,,
+YOLO26n,PENDENTE,,,,,,,,,,,,,
+YOLO26s,OPCIONAL_PENDENTE,,,,,,,,,,,,,
