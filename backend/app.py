@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
+from threading import Event, Thread
 
 # Load .env file
 try:
@@ -26,6 +27,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from services.detector import SafetyDetector
 from services.risk_engine import assess_risk
+from services.camera_results import CameraResults
+from services.camera_pipeline import CameraPipeline
 import base64
 import json
 import asyncio
@@ -70,6 +73,11 @@ if PAYMENT_MOCK and MP_ACCESS_TOKEN:
     print("AVISO: PAYMENT_MOCK=true com MP_ACCESS_TOKEN definido — mock deve ser false em producao.")
 
 app = FastAPI(title="EdgeSecurity API", version="6.7.4")
+camera_results = CameraResults()
+_camera_pipeline = None
+_camera_catalog_thread = None
+_camera_catalog_stop = Event()
+_camera_catalog_sources = {}
 app.add_middleware(CORSMiddleware, allow_origins=CORS_ORIGINS, allow_credentials=False, allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type", "X-Requested-With", "X-Webhook-Signature"])
 
 
@@ -639,9 +647,9 @@ def create_ai_alert(camera_id, risk, company_id=None):
     if current - _last_risk_alert.get(key, 0) < 5:
         return None
     _last_risk_alert[key] = current
-    description = "Risco de colisão: empilhadeira próxima de pessoa detectado pela IA."
+    description = "Aproximação visual alta entre pedestre e empilhadeira, estimada em pixels; distância física não calibrada."
     if risk.get("level") == "critical":
-        description = "RISCO CRÍTICO: empilhadeira e pessoa em zona de colisão."
+        description = "Aproximação visual crítica: caixas de pedestre e empilhadeira se sobrepõem na imagem. Não confirma colisão."
     with conn() as db:
         if not company_id and camera_id:
             cr = db.execute("SELECT company_id FROM cameras WHERE id=?", (camera_id,)).fetchone()
@@ -814,6 +822,66 @@ def test_ip_stream(url: str):
 @app.on_event("startup")
 def startup():
     init_db()
+    global _camera_pipeline, _camera_catalog_thread
+    # This is a local, long-running camera service, not a stateless cloud worker.
+    enabled = os.getenv('EDGE_MULTICAMERA_ENABLED', 'true').lower() in ('1','true','yes')
+    if enabled and os.getenv('VERCEL') != '1' and _camera_pipeline is None:
+        if _camera_catalog_thread is not None and _camera_catalog_thread.is_alive():
+            raise RuntimeError('Previous camera catalog worker is still stopping')
+        _camera_catalog_stop.clear()
+        _camera_pipeline = CameraPipeline(get_detector, camera_results, alert_callback=create_ai_alert)
+        _camera_pipeline.start()
+        synchronize_camera_catalog()
+        _camera_catalog_thread = Thread(target=watch_camera_catalog, name='edge-camera-catalog', daemon=True)
+        _camera_catalog_thread.start()
+
+
+def synchronize_camera_catalog():
+    pipeline = _camera_pipeline
+    if pipeline is None:
+        return
+    with conn() as db:
+        rows = db.execute("SELECT id,company_id,tipo,endereco FROM cameras WHERE status NOT IN ('inativo','desativado','disabled')").fetchall()
+    desired = {(r['company_id'],r['id']): ((r['endereco'] or '') if r['tipo'] in ('ip','rtsp','wifi') else None) for r in rows}
+    for key in list(_camera_catalog_sources):
+        if key not in desired or desired[key] != _camera_catalog_sources[key]:
+            pipeline.remove_camera(*key)
+            _camera_catalog_sources.pop(key, None)
+    for key, source in desired.items():
+        if key not in _camera_catalog_sources:
+            try:
+                if source == '':
+                    raise ValueError('Empty network camera source')
+                pipeline.add_camera(*key, source=source)
+                _camera_catalog_sources[key] = source
+            except (ValueError, RuntimeError):
+                logging.getLogger('edge.cameras').warning('Camera configuration unavailable: camera_id=%s', key[1])
+
+
+def watch_camera_catalog():
+    while not _camera_catalog_stop.wait(2):
+        try:
+            synchronize_camera_catalog()
+        except Exception:
+            # A transient database error must not remove already-running sources.
+            logging.getLogger('edge.cameras').warning('Camera catalog refresh unavailable')
+
+
+@app.on_event('shutdown')
+def stop_camera_pipeline():
+    global _camera_pipeline, _camera_catalog_thread
+    _camera_catalog_stop.set()
+    if _camera_catalog_thread is not None:
+        _camera_catalog_thread.join(timeout=3)
+    if _camera_pipeline is not None:
+        outcome = _camera_pipeline.close()
+        if outcome['remaining_threads']:
+            logging.getLogger('edge.cameras').warning('Camera workers still stopping: %s', outcome['remaining_threads'])
+        else:
+            _camera_pipeline = None
+            _camera_catalog_sources.clear()
+    if _camera_catalog_thread is not None and not _camera_catalog_thread.is_alive():
+        _camera_catalog_thread = None
 
 @app.get("/api/health")
 def health():
@@ -1502,6 +1570,7 @@ async def websocket_detection(websocket: WebSocket):
         comp_id = authorized_camera()
         detector = get_detector()
         await websocket.send_json({"type": "ready", "model": Path(detector.model_path).name, "classes": detector.names})
+        last_result_sequence = 0
         while True:
             payload = await websocket.receive_json()
             comp_id = authorized_camera()
@@ -1522,11 +1591,30 @@ async def websocket_detection(websocket: WebSocket):
                 frame = cv2.imdecode(array, cv2.IMREAD_COLOR)
                 if frame is None:
                     raise ValueError("Não foi possível decodificar o frame JPEG.")
-                detections = detector.infer(frame)
-                risk = assess_risk(detections)
+                pipeline = globals().get('_camera_pipeline')
+                if pipeline is not None:
+                    if pipeline.snapshot(comp_id, cam_id) is None:
+                        await websocket.send_json({'type':'error','message':'A captura desta câmera ainda não está disponível.'})
+                        continue
+                    if not pipeline.has_network_capture(comp_id, cam_id):
+                        sequence = pipeline.submit_frame(comp_id, cam_id, frame)
+                        after_sequence = sequence-1
+                    else:
+                        # The panel consumes results; it never creates another IP capture.
+                        after_sequence = last_result_sequence
+                    result = await asyncio.to_thread(pipeline.wait_for_result, comp_id, cam_id, after_sequence, 10)
+                    if result is None:
+                        await websocket.send_json({'type':'error','message':'Aguardando quadros válidos ou resultado da câmera.'})
+                        continue
+                    last_result_sequence = result['source_sequence']
+                    await websocket.send_json(result)
+                    continue
+                detections = await asyncio.to_thread(detector.infer, frame, camera_id=cam_id, company_id=comp_id)
+                risk = assess_risk(detections, frame_width=frame.shape[1])
                 # company isolation for alert
                 alert_id = create_ai_alert(cam_id, risk, comp_id)
-                await websocket.send_json({"type": "result", "camera_id": cam_id, "detections": detections, "risk": risk, "alert_created": alert_id})
+                result = camera_results.record(comp_id, cam_id, {"type": "result", "camera_id": cam_id, "frame_width": frame.shape[1], "frame_height": frame.shape[0], "detections": detections, "risk": risk, "alert_created": alert_id})
+                await websocket.send_json(result)
             except Exception as exc:
                 await websocket.send_json({"type": "error", "message": f"Erro na inferência: {exc}"})
     except WebSocketDisconnect:
@@ -1581,12 +1669,34 @@ def test_camera(data: CameraTestIn, request: Request, authorization: str | None 
         raise HTTPException(422, "Não foi possível abrir o stream. Verifique endereço, credenciais, rede e se a câmera disponibiliza RTSP/HTTP.")
     return {"ok": True, "width": result[0], "height": result[1], "message": "Stream acessível."}
 
+
+@app.get('/api/cameras/{cid}/analysis')
+def camera_analysis(cid: str, request: Request, authorization: str | None = Header(default=None)):
+    session = require_permission(authorization, 'visualizar_cameras', request)
+    with conn() as db:
+        cam = db.execute('SELECT company_id FROM cameras WHERE id=?', (cid,)).fetchone()
+        if not cam:
+            raise HTTPException(404, 'Câmera não encontrada.')
+        if session.get('cargo') != 'super_admin' and cam['company_id'] != session.get('company_id'):
+            raise HTTPException(403, 'Acesso negado.')
+        if session.get('cargo') not in ('administrador','super_admin'):
+            assigned = db.execute('SELECT 1 FROM usuario_cameras WHERE usuario_id=? AND camera_id=?', (session['id'],cid)).fetchone()
+            if not assigned:
+                raise HTTPException(403, 'Acesso negado.')
+        company_id = cam['company_id']
+    if _camera_pipeline is None:
+        return {'camera_id':cid,'continuous_processing':False,'result':camera_results.latest(company_id,cid)}
+    snapshot = _camera_pipeline.snapshot(company_id,cid)
+    return dict(snapshot or {'camera_id':cid,'connection_state':'unavailable','processing_state':'unavailable'},
+                pipeline_enabled=True, continuous_processing=bool(snapshot and snapshot['processing_active']))
+
 @app.get("/api/cameras/{cid}/mjpeg")
 def camera_mjpeg(cid: str, request: Request, token: str | None = None, authorization: str | None = Header(default=None)):
     tok = token or _extract_token(authorization, request)
     session = get_session_for_token(tok) if tok else None
     if not session:
         raise HTTPException(401, "Sessão inválida ou expirada.")
+    require_permission(f'Bearer {tok}', 'visualizar_cameras', request)
     with conn() as db:
         cam = db.execute("SELECT * FROM cameras WHERE id=?", (cid,)).fetchone()
         if not cam:
@@ -1600,6 +1710,40 @@ def camera_mjpeg(cid: str, request: Request, token: str | None = None, authoriza
         if cam["tipo"] not in ("ip", "rtsp", "wifi"):
             raise HTTPException(400, "Esta câmera não é uma fonte IP.")
         url = cam["endereco"]
+        company_id = cam['company_id']
+    pipeline = _camera_pipeline
+    if pipeline is not None:
+        if not pipeline.has_network_capture(company_id,cid):
+            raise HTTPException(422,'Captura contínua indisponível para esta câmera.')
+
+        def shared_frames():
+            sequence = 0
+            next_auth_check = 0
+            while globals().get('_camera_pipeline') is pipeline:
+                if time.monotonic() >= next_auth_check:
+                    try:
+                        current_session = require_permission(f'Bearer {tok}', 'visualizar_cameras', request)
+                        with conn() as db:
+                            current_cam = db.execute('SELECT company_id FROM cameras WHERE id=?',(cid,)).fetchone()
+                            if not current_cam or current_cam['company_id'] != company_id:
+                                break
+                            if current_session.get('cargo') != 'super_admin' and current_session.get('company_id') != company_id:
+                                break
+                            if current_session.get('cargo') not in ('administrador','super_admin'):
+                                if not db.execute('SELECT 1 FROM usuario_cameras WHERE usuario_id=? AND camera_id=?',(current_session['id'],cid)).fetchone():
+                                    break
+                    except HTTPException:
+                        break
+                    next_auth_check = time.monotonic()+2
+                item = pipeline.wait_for_jpeg(company_id,cid,sequence,2)
+                if item is None:
+                    if pipeline.snapshot(company_id,cid) is None:
+                        break
+                    yield b''
+                    continue
+                sequence, encoded = item
+                yield b'--frame\r\nContent-Type: image/jpeg\r\nContent-Length: '+str(len(encoded)).encode()+b'\r\n\r\n'+encoded+b'\r\n'
+        return StreamingResponse(shared_frames(),media_type='multipart/x-mixed-replace; boundary=frame',headers={'Cache-Control':'no-store'})
     cap = open_ip_camera(url or "")
     if cap is None:
         raise HTTPException(422, "Não foi possível abrir o stream da câmera.")
