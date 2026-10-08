@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-08",
+  "input_manifest_sha256": "8a25f16905447520a9cdfaf852fb0a5a01a26a0514d2593932c9286566231a8d",
+  "exclusions": [
+    {
+      "id": "6a86e87412f589cbf38e17f6",
+      "source_sha256": "eeef1b103bd445590b57bd9af37b42d13e5bef29f83592cbf60632da111b0bbb",
+      "action": "excluded_confirmed_near_duplicate",
+      "canonical_id": "6a86e87412f589cbf38e17f5",
+      "canonical_sha256": "f67b7ae0472c82e748cae37d60c8490799135551ed65d789a3a66f66af0cc74f",
+      "group": "original-phone-yard-IMG0288-related-session",
+      "comparison_evidence": "IMG_0300 and IMG_0301 individually viewed: same close side view of same forklift, same driver at controls and same outside person holding phone; same rack, drums, cones and lighting. Small camera tilt and hand shift do not add a distinct occlusion or target-scale case.",
+      "reason": "Confirmed redundant close-session view; preserve IMG_0300 as representative pending its full annotation review. No image file deleted."
+    },
+    {
+      "id": "6a86e87412f589cbf38e17f7",
+      "source_sha256": "07cf074593e3e0b46acb7fd7c46bf42553310c71696ce4d3a7df62b3cfcc32b2",
+      "action": "excluded_confirmed_near_duplicate",
+      "canonical_id": "6a86e87412f589cbf38e17f5",
+      "canonical_sha256": "f67b7ae0472c82e748cae37d60c8490799135551ed65d789a3a66f66af0cc74f",
+      "group": "original-phone-yard-IMG0288-related-session",
+      "comparison_evidence": "IMG_0300 and IMG_0302 individually viewed: same close side composition, visible driver, forklift, outside person and background; slight viewpoint/pose shift without useful new small-object, lighting or occlusion condition. Different outside-person clipping in IMG_0299 remains retained for separate review.",
+      "reason": "Confirmed redundant close-session view; retain representative IMG_0300. Preserve original pixels and labels in source manifest; not a negative."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-07",
+  "method": "Individual full-frame visual inspection; conservative decisions; no automatic training approval",
+  "originals": {
+    "0": {"file": "VID_20260820_064426_454_frame_003.webp", "decision": "pending_crop_and_source_rights", "reason": "Social-media capture has text/header/footer and CCTV in lower half. Crop and source rights must be verified; occupants and small people need redrawing. Not a negative."},
+    "2": {"file": "IMG_0495.jpg", "decision": "partial_correction_pending_boxes_and_rights", "remove_class3_cones": true, "reason": "The four class-3 boxes mark traffic cones, not cargo/boxes/pallets; remove only these verified mistakes. Seated person has hands at vehicle controls, but existing person box misses visible lower extent; forklift box also needs redrawing. Close-view training complement only, after rights and geometry review."},
+    "4": {"file": "IMG_0421.jpg", "decision": "excluded_extreme_close_view", "reason": "Very close shot of empty forklift cabin; vehicle fills/crosses image edges, little CCTV context. Excluded from final selection, original preserved; not a negative."},
+    "7": {"file": "IMG_0346.jpg", "decision": "partial_correction_pending_occupant", "reason": "Reconfirmed outside person is class 0. Visible seated occupant is missing a label, and original forklift box truncates visible extent. No complete annotation approval."},
+    "26": {"file": "IMG_0332.jpg", "decision": "excluded_ambiguous_operator", "reason": "Reconfirmed seated person reaching down; active driving not visually identifiable. Preserve original labels in quarantine; do not speculate class 0/2."}
+  },
+  "public_candidates": {
+    "3_te2": {"decision": "pending_full_annotation", "reason": "Vehicle is visible at upper-left with IP text across that region; useful corridor crop removes it. Do not mark full frame negative or copy labels from other frames."},
+    "3_te3": {"decision": "pending_occluded_load_annotation", "reason": "Foreground stack fully conceals vehicle/driver. Annotate only visible containers and people, not hidden forklift/driver inferred from clip title. Context required for ambiguous regions."},
+    "3_te8": {"decision": "pending_pedestrian_and_cargo_annotation", "reason": "No visible forklift. Several workers remain by fixed industrial presses and at far right. They are pedestrians (0), not forklift operators (2); do not label fixed presses as forklifts or mark this as negative."},
+    "7_te5": {"decision": "retain_useful_variation_pending_annotation", "reason": "Compared individually with 7_te8: similar forklift position but far-right pedestrian is visible only here. Preserve useful change in pedestrian presence; not a confirmed redundant image."},
+    "7_te8": {"decision": "retain_useful_variation_pending_annotation", "reason": "Forklift/load partly occluded by right-side fixed press. Far-right pedestrian from 7_te5 is absent; visible seated worker at press is not forklift operator. Driver is not inferred if hidden."}
+  }
+}

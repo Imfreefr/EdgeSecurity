@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-08",
+  "usage": "private",
+  "media_rights": "unknown; repository software license not assumed to license video",
+  "frames": {
+    "sana-public-frame-000455": {"boxes_xyxy": [[0,1280,132,1462,691]], "note": "Real live-action elevated hall footage, one pedestrian; no identifiable forklift or cargo. Fixed waste bins/furniture not cargo."},
+    "sana-public-frame-002274": {"boxes_xyxy": [[0,314,279,554,887],[0,720,238,902,791]], "note": "Two pedestrians outside machines, elevated camera; no forklift or cargo identifiable."},
+    "sana-public-frame-004092": {"boxes_xyxy": [[0,572,284,801,912]], "note": "One pedestrian in elevated live-action hall; no additional target visible."}
+  },
+  "night_yard_frames_inspected": {
+    "yangga-public-frame-000086": "Elevated nighttime yard: several forklifts, small pedestrians and many stacked bale loads. Full annotations pending; not a negative.",
+    "yangga-public-frame-000432": "Same camera/session; forklifts partially clipped or occluded, small pedestrians and bale loads; annotations pending.",
+    "yangga-public-frame-000778": "Same camera/session; walking pedestrian in open yard plus distant person/forklift and cargo stacks; annotations pending."
+  },
+  "grouping": "All white-hall frames stay together; all night-yard frames stay together. Original recording/event relationships and baseline exposure remain unresolved; no verified independent-group count assigned yet."
+}

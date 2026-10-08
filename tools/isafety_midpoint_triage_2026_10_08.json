@@ -1,0 +1,22 @@
+{
+  "source_url": "https://huggingface.co/datasets/raiyaanabdullah/isafety-bench",
+  "date": "2026-10-08",
+  "usage": "private",
+  "review_scope": "Twelve midpoint images opened individually; not full-video review or annotation approval.",
+  "independence_verified": false,
+  "approved_for_training": false,
+  "decisions": [
+    {"video": "-NF8DZCdcUQ_trim_1.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated warehouse aisle with forklift and many loads; visible operator extent needs examination. No hidden person inferred."},
+    {"video": "_2tSBxyAwLs_trim_52.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated outdoor CCTV with forklift and pedestrian. FailArmy text requires crop feasibility check; compilation origin must not be counted as independent scenes by clip."},
+    {"video": "_4GgKoR0OOw_trim_3.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Close industrial vehicle shot heavily obscured by editorial animation; not elevated distant CCTV. Other moments not examined."},
+    {"video": "_XXq1kmmBYY_trim_6.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated factory CCTV with forklift, motion blur and timestamp. Need sharper representative moments and comparison to original compilation."},
+    {"video": "3-zGsp26zgw_trim_5.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated portrait outdoor loading view, partially occluded forklift, editorial Near Miss text. Crop and class coverage pending."},
+    {"video": "3AFgNQQMRzw_trim_1.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated factory with multiple forklifts and metallic loads. Confirm visible people and check baseline-related scenes before split."},
+    {"video": "6iUd46DAP9w_trim_0.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated loading-bay view with visible driver and two pedestrians. Bottom explanatory text requires removal without truncating targets."},
+    {"video": "iFbIfo_vBfA_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Close eye-level forklift/driver shot and editorial text. Not selected to fill distant CCTV expansion."},
+    {"video": "R4pN50yYI5k_trim_2.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated warehouse aisle with two forklifts and cargo. Low-resolution operator visibility requires careful individual annotation."},
+    {"video": "U5lAqk0_5bE_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Ground-level narrow warehouse shot, not distant elevated framing; very low resolution. Other moments not examined."},
+    {"video": "VTc91caMAR8_trim_2.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated warehouse loading-bay CCTV; forklift and cargo. Borders may be removable, operator visibility pending."},
+    {"video": "Ytan3MRulVg_trim_1.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Video is a recording of another screen with black borders and playback controls; unsuitable midpoint. Original recording absent."}
+  ]
+}

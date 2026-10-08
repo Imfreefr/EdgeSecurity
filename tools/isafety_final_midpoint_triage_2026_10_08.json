@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-08",
+  "usage": "private",
+  "approved_for_training": false,
+  "independence_verified": false,
+  "review_scope": "Both additional midpoint frames viewed individually, not complete clips.",
+  "decisions": [
+    {"video": "oeHrto1r-S4_clip0_trim_17.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Extreme low-angle close-up of forklift wheel and load. Not elevated CCTV; other moments not examined."},
+    {"video": "oyRnP9p0KIs_trim_8.mp4", "decision": "exclude_clip_from_training_research_selection", "training_allowed": false, "reason": "Large For Preview Purposes Only mark states restricted purpose and obscures the image. Do not remove the mark or treat unknown rights as permission; no training selection without separate authorization."}
+  ]
+}

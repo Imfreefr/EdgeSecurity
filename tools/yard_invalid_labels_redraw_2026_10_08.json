@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "616b9029c37955d8725be780bfa52940197b28aa23caacaef14068cd375077b8",
+  "reference_size": [768, 1024],
+  "group": "original-phone-yard-IMG0288-related-session",
+  "viewpoint": "ground_level_close",
+  "frames": {
+    "6a86e87412f589cbf38e17ef": {"boxes": [[1,306,160,626,868],[0,0,266,101,660],[0,608,289,754,581],[2,453,251,537,423]], "coverage_complete": true, "note": "Invalid old coordinates replaced by complete manual redraw on upright image, not silently clipped. One forklift, identifiable driver and two outside pedestrians; left person clipped by edge. Bag/jacket and cones excluded from cargo. Close same-session frame remains train only and subject to final redundancy selection."},
+    "6a86e87412f589cbf38e17f1": {"boxes": [[1,299,116,641,850],[0,0,117,271,1024],[0,444,252,624,397],[2,398,222,473,393]], "coverage_complete": true, "note": "Foreground outside woman incorrectly classed as operator in original; corrected to pedestrian. Partly mast-occluded outside man is pedestrian, visible extent including extended arm only; no hidden legs inferred. Seated woman at wheel is sole operator. One forklift including empty forks; handbag and traffic cones are not cargo. Close same-session frame train only, redundancy selection pending."}
+  }
+}

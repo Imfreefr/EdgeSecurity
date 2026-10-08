@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "18d17d5a5626b503f62ec1b663f0edbb852665b2d614516642cfab16593b97a1",
+  "approved_overlays": {
+    "IMG_0291": "16b197368acaf97b0f86b69f923786e36f0c2209330ec9f11c2d3fe21513bd09",
+    "IMG_0292": "d6c4991e97732305d2a0eb815d68097a16c337f0c442afa0a8a98b1d17d8f4d4",
+    "IMG_0293": "ee9e87527e8dfa115d1980f0fac1e19d333b81ac96b675c21e8d869990be097d",
+    "IMG_0295": "8015e420760f3dbf2f32757f27acb344ae4ce2f4f6012ec82ff248f17edcdbaa"
+  },
+  "scope": "Four individually inspected full overlays; IMG_0291 operator arm omission corrected and revised overlay rechecked. Only annotation review; final close-view quota, near-duplicate and group checks remain pending."
+}

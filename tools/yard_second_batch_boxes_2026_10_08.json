@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "1e569a150bab9f7e38a854632f71e83c6153e14a3246fcf41d51738246766563",
+  "reference_size": [768, 1024],
+  "group": "original-phone-yard-IMG0288-related-session",
+  "viewpoint": "ground_level_close",
+  "frames": {
+    "6a86e87412f589cbf38e17ec": {"boxes": [[1,169,254,588,852],[0,532,387,695,671],[2,416,335,532,498],[0,51,341,91,558]], "coverage_complete": true, "note": "Same close yard session. Add missing partly pillar-occluded pedestrian on left, using visible extent only. Outside man class 0; seated identifiable driver class 2, including visible left arm across mast. Forks part of forklift, no cargo. All original files preserved. Train only; final redundancy selection pending."},
+    "6a86e87412f589cbf38e17ed": {"boxes": [[1,205,210,580,850],[0,536,348,691,640],[2,389,308,537,467],[0,0,319,85,571]], "coverage_complete": true, "note": "Add missing left pedestrian clipped by image edge; personal handbag and jacket are not cargo. Driver visible behind mast at controls; do not label driver twice. Outside man class 0. Same session, train only and redundancy selection pending."},
+    "6a86e87412f589cbf38e17ee": {"boxes": [[1,220,207,560,872],[0,548,325,681,642],[2,390,309,571,479],[0,0,319,77,619]], "coverage_complete": true, "note": "One forklift, two outside pedestrians and identifiable seated driver. Restore missed partly clipped pedestrian on left. No cargo; handbag excluded. Same close session stays together, train only; final redundancy selection pending."},
+    "6a86e87412f589cbf38e17f0": {"boxes": [[1,302,124,577,854],[0,550,268,648,556],[2,393,231,495,402],[0,0,411,27,806]], "coverage_complete": true, "note": "One forklift, driver at controls, outside man and visible strip of pedestrian at left boundary. Left pedestrian extent excludes handbag/jacket. Traffic cones are fixed safety markers, not cargo. Same close session, train only; final redundancy selection pending."}
+  },
+  "blocked_images": {
+    "IMG_0294": "Original pedestrian box exceeds top boundary by rounding; manually redraw and transform with image before approval.",
+    "IMG_0296": "Original huge class-2 box exceeds boundary and incorrectly labels outside woman as operator. Personal bag and traffic cones must not be cargo. Manual redraw required; not approved."
+  }
+}

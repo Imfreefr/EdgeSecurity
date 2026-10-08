@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-08",
+  "stage": "individual_source_image_triage_only",
+  "annotation_review_complete": false,
+  "approved_for_training": false,
+  "originals_preserved": true,
+  "id_first": "6a870b0912f589cbf38e1b24",
+  "id_last": "6a870b0912f589cbf38e1b38",
+  "frames_individually_inspected": 21,
+  "groups": [
+    {"frames": [1, 6, 7, 8, 9], "scene": "yellow_forklift_beside_truck", "observations": "Elevated loading scene. Frame 1 has editorial title, circle and arrow obscuring targets. Frame 9 has a large censorship patch. Frames 6-8 require tight visible pedestrian, forklift and cargo boxes; inspect driver visibility rather than infer occupation."},
+    {"frames": [2, 3, 4, 5], "scene": "red_forklift_loading_bay", "observations": "Elevated CCTV, wrapped load, outside pedestrians and truck. Timestamp overlays require crop assessment and joint box transformation. Manual pallet truck must not be labelled forklift."},
+    {"frames": [10, 11, 12, 13, 14], "scene": "white_panels_and_fixed_roller_machine", "observations": "Vertical footage with black side borders. Foreground person at stationary industrial equipment is class 0, not class 2 merely because operating equipment. Fixed roller machine is not class 1. A forklift becomes visible behind the panels in later frames; avoid inferring hidden people."},
+    {"frames": [15, 16, 17, 18], "scene": "two_forklifts_blue_pallet_yard", "observations": "Elevated daylight yard, blue pallet load and partially clipped forklifts; subtitles cover lower targets. Review crop feasibility and visible load units individually."},
+    {"frames": [19, 20, 21], "scene": "orange_forklift_red_car_yard", "observations": "Elevated daylight yard, orange forklift and carried load. Subtitles overlap lower vehicle; do not infer driver boxes from a dark cab."}
+  ],
+  "grouping_policy": "These are observed scene clusters, not proof of independent source events. Keep all related compilation footage together conservatively until original recordings establish independence.",
+  "new_night_yard_comparison": "The downloaded night-yard footage was not observed in these 21 compilation frames. This does not establish absence from the remaining originals or from edgev1 training data.",
+  "remaining_work": "Check original annotations, resolve ambiguities using source footage, transform any crop boxes, render and individually review overlays. No approved-image count changes from this triage."
+}

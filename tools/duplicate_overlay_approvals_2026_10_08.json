@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-08",
+  "method": "Each clean frame and redrawn overlay opened individually. Frame 004 corrected and re-opened. The other eight overlays were unchanged byte-for-byte after regeneration. Approval concerns annotations only, not licensing or final training readiness.",
+  "manifest_sha256": "7b1d2ff5e1b2d31e7375a3eae7404d7a0cae27e39c62ddb498d40043e9311390",
+  "approved_overlays": {
+    "IMG_0457_frame_001": "ed849d43aeea6023ed112e0fd646266851f6421d5c028640d276b6f82971ab01",
+    "IMG_0457_frame_002": "730642d9ffec71b185d85a814fe57993d44ccda513495a604ba489da19b50ae4",
+    "IMG_0457_frame_003": "fb5757f40330122fde1cddc7248629840cd8a050471e6328d0ff1ae12c85d018",
+    "IMG_0457_frame_004": "5935e09475f3a8242377d2d75cb111f20c7fb0203f7b44fcdef792f313fa159d",
+    "IMG_0457_frame_005": "1e81fcbc953db173d2a567ed6bc287c137f6a0187af68489c807d4e748314f40",
+    "IMG_0457_frame_006": "fdf5368afc99673a59b1793c2fd5ad6a03e03239791f98b1a33c8e1b21df22b9",
+    "IMG_0457_frame_007": "f4192e0ecab34b4e0a2a2f1ac8f48643e965ebd125dcc3e0565e0e53fac6213e",
+    "IMG_0457_frame_008": "39070465ccd6fbecd11f4635163501cc78243ba689114d0eee09ad9eac535df0",
+    "IMG_0457_frame_009": "2da5f25fe3eca96097d3e47f08a4be6a5b03df0f44206deb180ab12eacace2d8"
+  }
+}

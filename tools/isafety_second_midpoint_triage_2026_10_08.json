@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-08",
+  "usage": "private",
+  "review_scope": "Twelve second-batch midpoint images opened individually. No full-video or box approval.",
+  "approved_for_training": false,
+  "independence_verified": false,
+  "decisions": [
+    {"video": "YzLYJ9YqSaE_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Elevated warehouse but black editorial circles obscure apparent people/operators. Do not infer hidden persons. Other frames not examined."},
+    {"video": "zbhAHjl_iOM_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Close eye-level portrait recording with text; not elevated distant CCTV."},
+    {"video": "ZNOHrOs9VMA_trim_1.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated factory with burning forklift and text in corner. Factory layout appears related to _XXq1kmmBYY: compare clips and group conservatively before splitting.", "possible_related_video_id": "_XXq1kmmBYY"},
+    {"video": "ZWYH_lCpl8w_clip0_trim_0.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated warehouse aisle, forklift and cargo, news banner and logo. Crop feasibility and relationship to other warehouse-collapse recordings unresolved."},
+    {"video": "87O1pBSGtR0_trim_19.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated loading dock with two visible pedestrians. Red pallet truck must not automatically become forklift class 1; fixed dock platform is not cargo."},
+    {"video": "91OaD3ixCyA_trim_41.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated monochrome warehouse with forklifts and loads; bottom-left branding may obstruct part of machine and needs crop review."},
+    {"video": "aTW27C3AG-o_trim_115.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Ground-level handheld outdoor recording, blurred pillarbox areas and editorial branding; not desired CCTV framing."},
+    {"video": "_g7R05NOikU_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Ground-level forklift demonstration with close operator; unsuitable for elevated expansion."},
+    {"video": "_n8cIxEpups_trim_2.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated rack aisle and forklift, with branded lower border. Need inspect driver visibility and removable banner."},
+    {"video": "_nm1Yb8sxxY_trim_2.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Close portrait of person addressing camera with subtitles; no CCTV view."},
+    {"video": "1SR4reJQnCM_trim_0.mp4", "decision": "exclude_midpoint_from_selection", "reason": "Eye-level forklift shot with large top/bottom panels and central text obscuring scene; not suitable midpoint."},
+    {"video": "G8z74loJO7U_trim_8.mp4", "decision": "retain_for_full_clip_review", "reason": "Elevated indoor packing area, visible pedestrian and many boxes. Classify pallet-handling equipment carefully; no operator inferred in unoccupied equipment."}
+  ]
+}

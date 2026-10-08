@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "ade14597cd95405396fe98677366970e6f88e12335db8dc9ebfcb5572a7e4c8c",
+  "approved_overlays": {
+    "IMG_0297": "5a845e7fbaa14713de3a68f7c6dffaa05c476f9f92dd0d79b19ff395b184a6ad",
+    "IMG_0298": "e737315246357d11a668784fe4229f7eb8ab5225ef31abb1a120001b7e3e7c8e",
+    "IMG_0299": "c4d536fc01fe9e972d2c0bc67ad02f014fccf1dc4eddb8b2c4361457da1a5309",
+    "IMG_0300": "8a934ae738854e79d9e3b3defe37c013c46e16af718bb1124bd43f0a6a37db57"
+  },
+  "scope": "Four full overlays individually inspected after rotation and manual redraw. Includes visible cargo units, clipped pedestrians and sole identifiable driver. Not final training approval; close-view quota and full dataset gates remain pending."
+}

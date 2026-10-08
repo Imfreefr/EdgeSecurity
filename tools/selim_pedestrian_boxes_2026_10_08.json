@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-08",
+  "group": "selim-mixed-origin-relationships-pending",
+  "frames": {
+    "candidate-00000.png": {
+      "boxes": [[0, 19, 35, 176, 390]],
+      "note": "Visible delivery pedestrian, including both arms and legs. Van is not a forklift; no visible cargo box or identifiable forklift operator."
+    },
+    "candidate-00270.png": {
+      "boxes": [[0, 53, 56, 208, 256], [0, 200, 128, 256, 256]],
+      "note": "Two pedestrians, both clipped by image boundaries. Annotate visible extent only; no forklift, cargo or operator."
+    }
+  }
+}

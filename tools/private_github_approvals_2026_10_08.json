@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-08",
+  "method": "All three source frames and all three proposed overlays opened individually; visible pedestrian extent, category and absence of other targets inspected. Private partial supplement only; source-event independence still pending.",
+  "manifest_sha256": "440772deb3bfb40a0ebe44a8d94221ef01cea044a262b828ad5c076c79755927",
+  "overlays": {
+    "sana-public-frame-000455": "c8be4cfb7587b3bdb05a802bfa7bad011434520aa7472d1fe494788b3ff4c596",
+    "sana-public-frame-002274": "938eda74b1d9910f1f94e65a6d15b4dd792d0e86daaddfb4ba973fa1f5ba2ddd",
+    "sana-public-frame-004092": "1f79ca5ca0c790b1758dd26493f2dbe3b9c1909e98eb2874886c3a8179cfaa79"
+  }
+}

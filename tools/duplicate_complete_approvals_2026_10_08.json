@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-08",
+  "method": "All 16 clean full frames individually inspected. Overlays 001-009 previously reviewed and unchanged. Overlays 010-016 individually inspected; native-resolution source and overlay detail inspected for distant pedestrians and cargo. Corrected overlays 013/014/016 re-opened in full frame and detail; 010/011/012/015 unchanged after regeneration. Approval concerns annotations only, not licensing, near-duplicate retention or final training readiness.",
+  "cargo_rule": "Stored drums/containers on pallets are visible container loads (class 3); each identifiable pallet is labeled separately. Fixed metal racks, waste bins, furniture, PPE and cones are not cargo. Objects entirely occluded are not inferred.",
+  "manifest_sha256": "b5dfc500ffa8d3627f0f79a12e86269d34300ab4d39ec3e48bd519e5034a3a5f",
+  "approved_overlays": {
+    "IMG_0457_frame_001": "ed849d43aeea6023ed112e0fd646266851f6421d5c028640d276b6f82971ab01",
+    "IMG_0457_frame_002": "730642d9ffec71b185d85a814fe57993d44ccda513495a604ba489da19b50ae4",
+    "IMG_0457_frame_003": "fb5757f40330122fde1cddc7248629840cd8a050471e6328d0ff1ae12c85d018",
+    "IMG_0457_frame_004": "5935e09475f3a8242377d2d75cb111f20c7fb0203f7b44fcdef792f313fa159d",
+    "IMG_0457_frame_005": "1e81fcbc953db173d2a567ed6bc287c137f6a0187af68489c807d4e748314f40",
+    "IMG_0457_frame_006": "fdf5368afc99673a59b1793c2fd5ad6a03e03239791f98b1a33c8e1b21df22b9",
+    "IMG_0457_frame_007": "f4192e0ecab34b4e0a2a2f1ac8f48643e965ebd125dcc3e0565e0e53fac6213e",
+    "IMG_0457_frame_008": "39070465ccd6fbecd11f4635163501cc78243ba689114d0eee09ad9eac535df0",
+    "IMG_0457_frame_009": "2da5f25fe3eca96097d3e47f08a4be6a5b03df0f44206deb180ab12eacace2d8",
+    "IMG_0457_frame_010": "eeb16aaa70e6b145028cbd064ec5c94f4b72333fad3d89fcbccf010356ba49c5",
+    "IMG_0457_frame_011": "04ef61502271b6a483e3033922b378031769102122be56cc3ede2d7a0c3c233e",
+    "IMG_0457_frame_012": "74e47e4de3928067dffda05d48349bdec38b11ed5e57a570467654d009b5675d",
+    "IMG_0457_frame_013": "41f5cda9b8f94eb50990801cfca669f186a9092c03b0856cfbb3d1309cf34795",
+    "IMG_0457_frame_014": "3b9cebf7469b47a28c930ad1891b46fe3ee92e35e346095f910f339c5ed6ee89",
+    "IMG_0457_frame_015": "50047688091513c23c398c3b0c0a01488efd88d58cd758c24344183785a6ae2d",
+    "IMG_0457_frame_016": "252dde8dc37a88a4416631c4408fbc38b1c622bafae8f8464a371e272fab0f04"
+  }
+}

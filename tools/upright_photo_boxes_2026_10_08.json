@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "13ff63e4708dfe9d71f65fa237bb829dd40185e77cd1587654ae492edb8a90fa",
+  "reference_size": [768, 1024],
+  "group": "original-phone-yard-IMG0288-related-session",
+  "viewpoint": "ground_level_close",
+  "frames": {
+    "6a86e87412f589cbf38e17e9": {"boxes": [[1,67,270,533,769],[0,451,394,620,655],[2,364,356,465,505]], "coverage_complete": true, "note": "Upright close view: empty forks belong to forklift. Man outside machine is pedestrian, not operator. Seated woman with hand at steering controls is identifiable operator; visible body only. No cargo. Same session as adjacent photos; near-duplicate selection remains a final gate, train only."},
+    "6a86e87412f589cbf38e17ea": {"boxes": [[1,100,275,562,771],[0,473,398,654,659],[2,392,367,487,522]], "coverage_complete": true, "note": "Same close yard session: forklift including forks, outside man class 0, seated identifiable driver class 2; no cargo. Near-duplicate selection pending, train only."},
+    "6a86e87412f589cbf38e17eb": {"boxes": [[1,135,279,580,796],[0,489,394,659,660],[2,410,367,502,529]], "coverage_complete": true, "note": "Same close yard session with changed pose: one forklift, outside pedestrian and visibly seated driver at controls. No cargo; do not label mast occlusion as hidden people. Near-duplicate selection pending, train only."}
+  }
+}

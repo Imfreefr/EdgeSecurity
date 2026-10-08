@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "e1ff4672dd6c2a6ff6918525deedfd696bf10806ecaafc476c7056e1016749af",
+  "approved_overlays": {
+    "IMG_0294": "4ec1aa323e5e332e030b18acf3f0b9481aefa77b8de74ec7a3b38f2885f7cc40",
+    "IMG_0296": "b0fdaa8d8ed37e98183499b5a4410a472b2af4443cb6fb1504b8d24761fdef4f"
+  },
+  "scope": "Two complete manual redraw overlays individually inspected after rotation; invalid source labels preserved. Annotation review only, no final training approval or platform upload."
+}

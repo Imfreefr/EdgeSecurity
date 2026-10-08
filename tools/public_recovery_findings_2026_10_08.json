@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-08",
+  "source_frames_individually_reinspected": ["0_te1", "0_te10", "0_te20", "0_te30", "3_te1", "4_te1", "4_te10", "4_te20", "7_te1"],
+  "transformed_overlays_individually_reinspected": ["public-0_te1", "public-0_te20", "public-0_te30", "public-3_te1", "public-4_te1", "public-4_te10", "public-4_te20", "public-7_te1", "public-0_te30-empty-floor"],
+  "full_positive_annotation_approval": false,
+  "training_ready": false,
+  "findings": [
+    {
+      "id": "public-0_te10",
+      "action": "exclude_from_recovery_selection_preserve_source_and_old_labels",
+      "reason": "Enlarged individual view shows the cargo box over the forklift door/cab area, not a separate visible load; driver behind glass is insufficiently identifiable at controls. Do not import the old suggestion unchanged."
+    },
+    {
+      "id": "public-7_te1",
+      "action": "correct_occluded_container_visible_extent_pending_complete_cargo_review",
+      "old_source_xyxy": [3, 708, 229, 805, 340],
+      "new_source_xyxy": [3, 708, 237, 740, 340],
+      "reason": "Restrict the rear grey container to its visible left strip; the cab window is not cargo. Other foreground/background pallets and containers must be checked for missing labels before full positive approval."
+    },
+    {
+      "ids": ["public-3_te1", "public-7_te1"],
+      "action": "crop_camera_watermark_and_transform_boxes",
+      "source_dimensions": [1920, 1080],
+      "source_crop": [0, 120, 1920, 1080],
+      "reason": "Remove IPC text; keep only visible clipped person/objects. Both resulting overlays individually reinspected. Does not certify complete cargo coverage."
+    },
+    {
+      "id": "public-0_te30-empty-floor",
+      "action": "negative_crop_visually_reconfirmed",
+      "reason": "Individual view shows only floor and painted walkway, no target. A crop of an existing frame, never a new independent scene."
+    }
+  ],
+  "remaining": "Complete cargo coverage on positive frames, recover additional r2 source clips, recover original 340 images/exports; obtain at least 20 independent licensed groups. No final package or paid operation approved."
+}

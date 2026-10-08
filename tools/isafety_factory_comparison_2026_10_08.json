@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-08",
+  "purpose": "Recheck earlier possible source relationship before splitting",
+  "videos": [
+    {"name": "_XXq1kmmBYY_trim_6.mp4", "sha256": "7f11041493d33f330523d823043b6e61108c6676b58affabb05df9a546d31061", "decoded_frames": 210, "observed_scene": "Factory with upright coil containers, yellow safety rail and staircase, date 2021-06-14. Falling long crane/structure and moving orange forklift."},
+    {"name": "ZNOHrOs9VMA_trim_1.mp4", "sha256": "88365ffecf13899d14d98a1705468c61084056f29dd32f9fe117d5d64469dc63", "decoded_frames": 480, "observed_scene": "Pipe-processing factory with long horizontal pipe beds and overhead red crane. Forklift carrying a long pipe; fire develops."}
+  ],
+  "visual_review_scope": "Start and last frames viewed individually for each clip; midpoints viewed individually in earlier triage. Not every video frame visually reviewed.",
+  "earlier_possible_relationship": "not_confirmed",
+  "reason": "Initial midpoint resemblance was generic industrial structure. The inspected start/end frames show different equipment and event evolution. Do not assert these are the same event, but unknown complete source histories also do not prove independence from all other compilations or baseline data.",
+  "independence_verified": false,
+  "approved_for_training": false,
+  "next_action": "Compare selected source scenes against all original compilation clusters, then annotate chosen sharp frames and resolve recording-level grouping."
+}

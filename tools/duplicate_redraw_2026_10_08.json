@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-08",
+  "reference_size": [1024, 576],
+  "group": "original-phone-IMG_0457-related-session",
+  "method": "Individual full-frame visual inspection; manual visible-extent boxes; proposed overlays require inspection before final approval",
+  "frames": {
+    "IMG_0457_frame_001": {"boxes": [[0,191,149,322,493],[1,647,97,1024,469]], "coverage_complete": true, "note": "Pedestrian outside empty forklift; pole occlusion; forks included; no cargo identifiable."},
+    "IMG_0457_frame_002": {"boxes": [[0,235,137,383,526],[1,591,90,972,474]], "coverage_complete": true, "note": "Walking pedestrian outside empty forklift; visible forks included."},
+    "IMG_0457_frame_003": {"boxes": [[0,350,129,560,576],[1,520,91,891,480]], "coverage_complete": true, "note": "Pedestrian clipped at lower border; empty seat; no inferred operator."},
+    "IMG_0457_frame_004": {"boxes": [[0,468,133,614,576],[1,430,91,850,497]], "coverage_complete": true, "note": "Pedestrian outside machine, lower border clipping; left shoe extent corrected after inspecting overlay; backpack not separately labeled as cargo."},
+    "IMG_0457_frame_005": {"boxes": [[0,442,126,632,576],[1,326,80,824,526]], "coverage_complete": true, "note": "Pedestrian walking past empty seat; include both visible forks; blurry edge intrusion not inferred as another person."},
+    "IMG_0457_frame_006": {"boxes": [[0,484,126,631,576],[1,181,61,774,523]], "coverage_complete": true, "note": "Pedestrian outside empty forklift; backpack not an additional class; foreground blur not inferred."},
+    "IMG_0457_frame_007": {"boxes": [[0,507,133,658,576],[1,168,55,738,524]], "coverage_complete": true, "note": "Pedestrian partially occludes empty forklift; visible machine extent includes forks."},
+    "IMG_0457_frame_008": {"boxes": [[0,578,91,766,576],[1,170,5,640,519]], "coverage_complete": true, "note": "Walking pedestrian, rear of empty forklift; feet clipped at border."},
+    "IMG_0457_frame_009": {"boxes": [[0,608,123,770,576],[1,242,36,592,514]], "coverage_complete": true, "note": "Pedestrian outside forklift; background metal racks not confidently cargo or pallets."},
+    "IMG_0457_frame_010": {"boxes": [[0,612,133,752,520],[1,320,37,589,534],[0,161,165,172,189]], "coverage_complete": true, "note": "Distant walking pedestrian confirmed in native-resolution detail and box tightened; main pedestrian outside empty forklift; right-background metal racks not inferred cargo."},
+    "IMG_0457_frame_011": {"boxes": [[0,615,147,744,494],[1,299,37,561,540]], "coverage_complete": true, "note": "Main pedestrian and empty forklift; native-resolution background inspected: fixed waste bins, tent, cones, not forklift/cargo; no other visible pedestrian."},
+    "IMG_0457_frame_012": {"boxes": [[0,654,160,768,474],[1,258,50,603,576],[0,592,187,602,207]], "coverage_complete": true, "note": "Distant walking pedestrian confirmed in source detail; left-background desk, PPE, chairs and cones not cargo; no hidden driver."},
+    "IMG_0457_frame_013": {"boxes": [[0,690,147,800,426],[1,211,20,664,576],[0,772,177,781,192],[3,0,162,34,242],[3,0,240,42,246]], "coverage_complete": true, "note": "Previously missing distant pedestrian confirmed; visible upper body only because foreground person occludes legs. Stored drum/container load and separate pallet on left rack annotated only to visible extent; drum top tightened after native overlay inspection, excluding rack beam; chairs and desk excluded."},
+    "IMG_0457_frame_014": {"boxes": [[0,693,164,790,443],[1,149,38,698,576],[0,993,190,1017,220],[3,40,222,134,242],[3,50,263,153,289],[3,126,174,163,238]], "coverage_complete": true, "note": "Native-resolution detail confirms distant pedestrian, rack pallet and floor pallet. Floor pallet includes left visible slats after overlay correction. Stored drum left extent corrected; rest occluded by forklift not inferred. Empty seat; backlit foreground pedestrian."},
+    "IMG_0457_frame_015": {"boxes": [[0,650,174,763,435],[1,97,62,754,559],[3,308,184,343,237],[3,341,183,374,238],[3,257,228,381,241],[3,288,258,328,276]], "coverage_complete": true, "note": "Backlit pedestrian remains identifiable. Two stored drums/container loads, rack pallet and visible floor pallet separately annotated; fixed rack not included; forklift seat empty."},
+    "IMG_0457_frame_016": {"boxes": [[0,676,146,810,453],[1,112,39,727,549],[3,394,208,428,222],[3,407,237,445,252]], "coverage_complete": true, "note": "Pedestrian outside empty forklift. Native-resolution detail confirms visible rack pallet and floor pallet behind steering wheel; boxes tightened after overlay inspection to exclude strap/pillar area. Fully hidden drums not inferred. Desk, PPE, chairs and cones not cargo."}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "60e90352fd6bd301c4ee82943752bf9691c5751da054e85b6f674d469befa9f2",
+  "reference_size": [768, 1024],
+  "group": "original-phone-yard-IMG0288-related-session",
+  "viewpoint": "ground_level_close",
+  "frames": {
+    "6a86e87412f589cbf38e17f2": {"boxes": [[1,164,109,489,822],[0,386,85,768,1024],[2,241,244,375,381]], "coverage_complete": true, "note": "Close session with large foreground pedestrian clipped at right and bottom; not operator. Identifiable driver at controls partly mast-occluded. Forklift including visible forks; no cargo visible. Train only, related images grouped together."},
+    "6a86e87412f589cbf38e17f3": {"boxes": [[1,194,148,677,868],[0,52,260,207,571],[2,271,239,394,420],[3,728,409,768,433]], "coverage_complete": true, "note": "Walking outside man class 0; seated identifiable driver class 2. Empty forklift forks not cargo. Small edge-clipped wooden pallet beneath storage rack is cargo, fixed rack and cones excluded. Close same-session train only."},
+    "6a86e87412f589cbf38e17f4": {"boxes": [[1,108,137,708,858],[0,695,317,768,538],[2,212,244,319,429],[3,655,296,707,378],[3,704,292,765,379],[3,575,268,768,287],[3,575,370,727,394],[3,584,399,670,427]], "coverage_complete": true, "note": "Forklift and visible seated driver, right-edge clipped outside pedestrian. Two visible blue storage drums, stacked timber load and pallet stacks annotated as cargo units; do not label the fixed rack. Cones excluded. Train only, same related phone session."},
+    "6a86e87412f589cbf38e17f5": {"boxes": [[1,65,154,718,907],[0,651,317,757,557],[2,168,272,311,462],[3,589,319,640,400],[3,636,319,690,402],[3,513,273,705,304],[3,504,398,684,421],[3,513,428,627,450]], "coverage_complete": true, "note": "Representative retained instead of redundant IMG_0301/0302. Forklift with identifiable driver and outside man holding phone. Visible blue drums, stacked timber and pallets are cargo; rack, cones and personal phone excluded. Same close session, train only; final close-view quota remains pending."}
+  }
+}

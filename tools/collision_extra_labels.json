@@ -1,0 +1,28 @@
+{
+  "reference_dimensions": [1920, 1080],
+  "method": "Manual visual inspection of full frames; source-coordinate boxes clipped to documented crop; no inferred hidden occupants",
+  "images": {
+    "3_te5": {
+      "crop": [400, 120, 1740, 900],
+      "boxes": [[1,438,107,810,466],[0,1536,425,1665,620],[0,1642,412,1736,674],[3,583,83,818,247],[3,595,211,818,349],[3,600,334,816,466],[3,708,227,815,340],[3,1062,178,1147,254],[3,1435,485,1514,582],[3,1653,546,1735,650]],
+      "reason": "Elevated forklift/load with nearby workers; cab occupant cannot be identified reliably, not invented"
+    },
+    "7_te2": {
+      "crop": [400, 120, 1740, 900],
+      "boxes": [[1,668,205,1046,635],[2,752,281,868,427],[0,1537,428,1668,626],[3,583,148,838,304],[3,582,278,694,432],[3,708,227,815,340],[3,1062,178,1147,254],[3,1435,485,1514,582],[3,1653,546,1735,650]],
+      "reason": "Elevated forklift moving across corridor; visible seated driver at controls and separate worker at press"
+    },
+    "7_te3": {
+      "crop": [400, 120, 1740, 900],
+      "boxes": [[1,1115,346,1730,840],[2,1450,466,1617,657],[3,1136,382,1390,585],[3,1115,565,1357,754],[3,708,227,815,340],[3,1062,178,1147,254]],
+      "reason": "Distinct closer position and strong occlusion; worker behind vehicle not inferred as fully visible"
+    }
+  },
+  "not_approved": {
+    "3_te2": "Forklift mostly outside selected useful corridor; lower priority composition",
+    "3_te3": "Stacked load occludes vehicle; hold for detailed occlusion and cargo review",
+    "3_te8": "Useful variation retained as candidate, labels still pending",
+    "7_te5": "Similar viewpoint/vehicle position to 7_te8; hold for enlarged near-duplicate and occlusion review",
+    "7_te8": "Keep as candidate; do not automatically copy labels from 7_te5"
+  }
+}

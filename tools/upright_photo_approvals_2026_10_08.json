@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-08",
+  "manifest_sha256": "d261f0452514dc7a4d6b276ea3c4beb7eba97de43ee114f8ac5ecb1c11e7b410",
+  "approved_overlays": {
+    "IMG_0288": "02da2188dbb95fdd05ba135a535a09e6a345a5622bde95baa217f5116ed7ad95",
+    "IMG_0289": "02c1d21f0c515a5485195468ea24f8bc8c9592a8be97403a7f9d5a52d1b0c591",
+    "IMG_0290": "55ea5f630775d5ca0eda0c55352ee04d097765cc1899f1cfdff0e6f78a945a78"
+  },
+  "scope": "Each full-frame overlay inspected individually after rotation. Annotation review only; close-view quota, near-duplicate selection and final group/split checks remain mandatory."
+}

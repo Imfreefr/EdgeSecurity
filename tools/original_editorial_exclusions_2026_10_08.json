@@ -1,0 +1,8 @@
+{
+  "date": "2026-10-08",
+  "input_manifest_sha256": "fb62abc198aee99f76eea9099ec93f8aca5530452ed3f6b5876d7aa221a348fb",
+  "exclusions": [
+    {"id": "6a870b0912f589cbf38e1b24", "source_sha256": "48ca7ada6a5052cdda800f4873400f98e0d00c9d6fc72d1ed470e62ebeef9c2f", "reason": "Individually inspected: large editorial circle and arrow cross the pedestrian/load region; title dominates lower frame. Cleaner frames from this scene exist. Exclude from selection, preserve original; not a negative."},
+    {"id": "6a870b0912f589cbf38e1b2c", "source_sha256": "8883fcf6eec4217d728c24b9228a9ceb90551c10a98f50ac5da33be15fe601ea", "reason": "Individually inspected: large artificial censorship patch hides the pedestrian next to the load. Cannot recover visible target boundaries by cropping without losing the useful scene. Exclude from selection, preserve original; not a negative."}
+  ]
+}

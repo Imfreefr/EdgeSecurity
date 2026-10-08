@@ -1,0 +1,23 @@
+{
+  "source_url": "https://github.com/SelimSavas/forklift-and-people-detection-with-YOLOv5",
+  "archive_sha256": "9ce7812da42ad116d11457f03ca8e39d9638ead39c4576d74c3784b240673820",
+  "usage": "private",
+  "media_license": "unknown",
+  "approved_new_images": 0,
+  "verified_new_groups": 0,
+  "review_scope": "Each of these twelve extracted images was viewed individually. This is framing triage, not box approval or proof of source independence.",
+  "decisions": [
+    {"candidate": "candidate-00000.png", "decision": "retain_for_annotation_review", "viewpoint": "elevated_residential_security_like", "reason": "Visible pedestrian and delivery van; no forklift. Camera origin and relation to other frames remain unknown."},
+    {"candidate": "candidate-00270.png", "decision": "retain_for_annotation_review", "viewpoint": "elevated_indoor_security_like", "reason": "One complete pedestrian and a second person clipped at right. Low resolution; original scene provenance needed."},
+    {"candidate": "candidate-00539.jpg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_extreme_close", "reason": "Partial forklift wheel and chassis fill frame; unsuitable for distant-camera expansion."},
+    {"candidate": "candidate-00809.jpg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "close_rotated", "reason": "Close forklift photo rotated sideways; not distant CCTV."},
+    {"candidate": "candidate-01079.jpg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "close_rotated_transformed", "reason": "Sideways transformed frame with black borders and washed-out contrast; not the desired camera framing."},
+    {"candidate": "candidate-01349.jpg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_transformed", "reason": "Ground-level monochrome construction photograph with transformed black borders; not elevated CCTV."},
+    {"candidate": "candidate-01618.jpeg", "decision": "retain_for_annotation_review", "viewpoint": "elevated_outdoor", "reason": "Forklift with visible operator and apparent person at rear. Actual camera provenance and the rear person's category need resolution before approval."},
+    {"candidate": "candidate-01888.jpeg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_close", "reason": "Training/demo gathering around forklift and cargo, viewed at ground level. Original remains preserved."},
+    {"candidate": "candidate-02158.jpeg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_close", "reason": "Cargo dominates close portrait photograph; no distant elevated-camera view."},
+    {"candidate": "candidate-02428.jpeg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level", "reason": "Low-resolution ground-level forklift photograph, not elevated CCTV."},
+    {"candidate": "candidate-02697.jpeg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_close", "reason": "Close inventory/product photograph with overlaid identification text."},
+    {"candidate": "candidate-02967.jpeg", "decision": "exclude_from_cctv_expansion_selection", "viewpoint": "ground_level_close", "reason": "Close rear forklift photograph; operator presence cannot be inferred from the hidden cabin."}
+  ]
+}

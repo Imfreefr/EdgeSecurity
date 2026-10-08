@@ -1,0 +1,10 @@
+{
+  "source_id": "Warehouse_027-Camera_0005-5s",
+  "reference_dimensions": [1920, 1080],
+  "crop": [825, 60, 1115, 800],
+  "boxes_source_xyxy": [[0, 828, 111, 906, 337], [0, 1032, 99, 1093, 316], [0, 1082, 82, 1121, 237], [0, 830, 93, 867, 204]],
+  "status": "approved_visual_review",
+  "review_date": "2026-10-07",
+  "review_method": "Full source image and enlarged transformed overlay individually inspected; boxes clipped to crop and visible extent",
+  "reason": "Elevated CCTV corridor crop; four visible outside pedestrians including partial occlusion/edge truncation. No forklifts/operators inferred; crop excludes shelf loads. Same event/cameras stay grouped."
+}

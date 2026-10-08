@@ -1,0 +1,134 @@
+{
+  "verified_date": "2026-10-07",
+  "usage_policy": "private; unknown rights do not imply permission; no public ZIP or dataset publication",
+  "groups": {
+    "private-white-hall-all-related-origin-pending": {
+      "independence_verified": false,
+      "grouping_evidence": "Three full frames from a single elevated white-hall camera in one public sample video. All kept together. Original recording/event relationships and baseline exposure unresolved; no verified new-group credit assigned.",
+      "training_allowed": null,
+      "redistribution_allowed": null,
+      "source_url": "https://github.com/Sanaurrehmanarain/forklift-safety-ai",
+      "license": "unknown for video; repository code license not applied to footage",
+      "seen_by_edgev1": null,
+      "reviewed_date": "2026-10-08",
+      "status": "three_pedestrian_frames_visually_reviewed_private_partial"
+    },
+    "private-night-yard-all-related-origin-pending": {
+      "independence_verified": false,
+      "grouping_evidence": "Three individually inspected frames from one fixed elevated night-yard video. All kept together. Original recording/event relationships and baseline exposure unresolved.",
+      "training_allowed": null,
+      "redistribution_allowed": null,
+      "source_url": "https://github.com/YanggaY/Forklift-Safety-Monitoring-System-Using-YOLO-and-OpenCV",
+      "license": "unknown for video",
+      "seen_by_edgev1": null,
+      "reviewed_date": "2026-10-08",
+      "status": "source_frames_inspected_full_annotations_pending"
+    },
+    "smartspaces-real-unknown-related-events": {
+      "independence_verified": false,
+      "grouping_evidence": "All real SmartSpaces cameras/events are kept together conservatively until relationship/provenance is resolved. The official card identifies two real scenes, but that alone does not establish independent capture events.",
+      "training_allowed": true,
+      "redistribution_allowed": true,
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SmartSpaces/blob/main/README.md",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0",
+      "authors": "NVIDIA",
+      "seen_by_edgev1": null
+    },
+    "public-factory-camera-A": {
+      "independence_verified": true,
+      "grouping_evidence": "Source states two IP cameras; reviewed corridor/press view A. All its clips and crops kept together.",
+      "training_allowed": true,
+      "redistribution_allowed": true,
+      "source_url": "https://data.mendeley.com/datasets/xjmtb22pff/1",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0",
+      "authors": "Önal, Oğuzhan; Dandıl, Emre",
+      "seen_by_edgev1": false
+    },
+    "public-factory-camera-B": {
+      "independence_verified": true,
+      "grouping_evidence": "Source states two IP cameras; reviewed elevated forklift/corridor view B. All its clips and crops kept together.",
+      "training_allowed": true,
+      "redistribution_allowed": true,
+      "source_url": "https://data.mendeley.com/datasets/xjmtb22pff/1",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0",
+      "authors": "Önal, Oğuzhan; Dandıl, Emre",
+      "seen_by_edgev1": false
+    }
+  },
+  "candidates_not_approved": [
+    {
+      "name": "NVIDIA Physical AI Smart Spaces — real subset only",
+      "source_url": "https://huggingface.co/datasets/nvidia/PhysicalAI-SmartSpaces",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0",
+      "status": "one_pedestrian_crop_reviewed_independence_pending",
+      "real_scene_allowlist": ["Warehouse_026", "Warehouse_027"],
+      "evidence": "Official publisher card explicitly identifies only scenes 026/027 as real-world test captures; videos/calibration have no published ground truth. Six frames from two pilot videos individually inspected. One corridor crop with four pedestrians manually annotated and transformed overlay checked.",
+      "reason": "All synthetic scenes excluded. Camera/event independence between the real captures has not been established; group conservatively as smartspaces-real-unknown-related-events. One image exported to a separate PARTIAL pilot; no final dataset approval or upload. This CC-BY release is distinct from the excluded AMC Sample Data EULA."
+    },
+    {
+      "name": "SPARL3 — Sensor-based Pallet Activity Recognition in Logistics",
+      "source_url": "https://zenodo.org/records/16636916",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0",
+      "status": "experiment1_downloaded_and_pilot_frames_excluded",
+      "evidence": "Zenodo API record 16636916 reports cc-by-4.0 and Experiment1.zip. Bounded ZIP directory inspection confirmed Experiment1_Blurred.mp4. Full protocol read: reach truck and pedestrian pallet truck in a real Rhenus warehouse.",
+      "reason": "Experiment1 archive checksum verified; five composite frames individually inspected. Published video mixes close/POV/eye-level views and heavy pixelation obscures people/vehicle occupants; excluded from elevated CCTV expansion. No training images approved. Other experiments not inspected; five simultaneous cameras must not be counted as independent scenes."
+    },
+    {
+      "name": "Warehouse — Addverb Technologies",
+      "source_url": "https://universe.roboflow.com/addverb-technologies/warehouse-ijyxt",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0 declared by publisher",
+      "status": "image_access_and_camera_provenance_pending",
+      "reason": "Publisher declares 8301 images and relevant classes. Image browser was not accessible through web reader; no source recordings or grouping evidence published. No independent groups or labels approved."
+    },
+    {
+      "name": "DaRA — Warehousing",
+      "source_url": "https://zenodo.org/records/10468175",
+      "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "license": "CC-BY-NC-4.0",
+      "status": "not_approved_noncommercial_scope_and_viewpoint",
+      "reason": "Zenodo API confirms noncommercial-only licence. Six fixed cameras/session and related event sessions cannot automatically form independent groups. Compatibility with redistribution and future use must be decided before inclusion. No video downloaded."
+    },
+    {
+      "name": "tir_project — iheb",
+      "source_url": "https://universe.roboflow.com/iheb/tir_project",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "license": "CC-BY-4.0 declared by publisher",
+      "status": "image_access_and_camera_provenance_pending",
+      "reason": "Publisher declares 47318 images and forklift/insan/Tir classes. Provenance, elevated framing, related cameras and annotations require individual review; browser inaccessible through web reader. No images approved."
+    },
+    {
+      "name": "AiSPRY Forklift Monitoring System",
+      "source_url": "https://universe.roboflow.com/aispry-inb32/forklift-monitoring-system",
+      "license": "CC-BY-4.0 declared by publisher",
+      "images_reported": 99,
+      "status": "download_and_individual_origin_review_pending",
+      "reason": "License declared; images, independent scenes, source rights and remapping of accident/proximity classes not yet reviewed. No images added."
+    },
+    {
+      "name": "NVIDIA AMC NV Warehouse",
+      "source_url": "https://catalog.ngc.nvidia.com/orgs/nvidia/resources/amc-nv-warehouse",
+      "license_url": "https://developer.download.nvidia.com/licenses/NVIDIA-Sample-Data-License.pdf",
+      "status": "excluded_incompatible_license",
+      "reason": "Primary NVIDIA Sample Data License read in full: section 1 limits use to internally evaluating/testing NVIDIA technologies; section 2(c) prohibits redistribution. Incompatible with the planned redistributable dataset. No dataset images downloaded."
+    },
+    {
+      "name": "LOCO",
+      "source_url": "https://github.com/tum-fml/loco",
+      "license": "CC0-1.0",
+      "status": "not_eligible_for_elevated_cctv_expansion",
+      "reason": "Publisher states walking-camera imagery in five logistics environments, not the required elevated fixed cameras. Could be a close-view training complement only."
+    },
+    {
+      "name": "keremberke/forklift-object-detection",
+      "source_url": "https://huggingface.co/datasets/keremberke/forklift-object-detection",
+      "status": "not_approved_origin_chain",
+      "reason": "CC-BY declaration in mirror insufficient to resolve underlying images.cv/ImageNet source permissions; no automatic inclusion."
+    }
+  ]
+}

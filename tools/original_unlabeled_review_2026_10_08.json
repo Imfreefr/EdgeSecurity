@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-08",
+  "method": "Individual inspection of each recovered full frame, not a contact sheet or model suggestion",
+  "decision": "excluded_mobile_eye_level_from_cctv_selection",
+  "reason": "Mobile eye-level retail footage, not elevated fixed CCTV; exclude from this selection instead of approving incomplete labels. Originals preserved; targets present, never negatives. These images are not asserted to be universally unusable.",
+  "group": "original-retail-mobile-related-clips",
+  "grouping_evidence": "Same store aisle, shelving, yellow safety chain, workers and reach truck across WA0010/WA0011; conservative shared group, not separate camera environments.",
+  "images": {
+    "VID-20260825-WA0011_frame_001": "Two central pedestrians, workers at right edge, raised truck mast and numerous shelf loads; eye-level broad aisle.",
+    "VID-20260825-WA0011_frame_002": "Two central pedestrians and partial red-shirt pedestrian at right; mast and shelf goods behind them, walking camera.",
+    "VID-20260825-WA0011_frame_003": "Two main pedestrians, small background worker and raised mast; left foreground stack dominates lower view.",
+    "VID-20260825-WA0011_frame_004": "Two main pedestrians, person partly at right edge, reach truck body behind safety chain; fixed CCTV framing absent.",
+    "VID-20260825-WA0011_frame_005": "Closer pedestrians obscure much of truck; seated occupant partly visible and goods above mast, mobile viewpoint.",
+    "VID-20260825-WA0011_frame_006": "Two main pedestrians, small cyan-shirt person in background; raised truck mast and shelf loads; not a negative.",
+    "VID-20260825-WA0011_frame_007": "Two main pedestrians and partial person at right edge; orange truck and seated occupant partly obscured.",
+    "VID-20260825-WA0011_frame_008": "Two central pedestrians and partly cropped worker at right; truck behind them with elevated load; floor-level camera.",
+    "VID-20260825-WA0011_frame_009": "Two central pedestrians, partial right-side person and seated truck occupant; forklift/load evident despite missing annotations.",
+    "VID-20260825-WA0010_frame_001": "Orange-shirt foreground person, seated reach-truck occupant and white-shirt background pedestrian; close boxes obscure vehicle.",
+    "VID-20260825-WA0010_frame_003": "Orange-shirt foreground person, seated occupant at controls and left background worker; large foreground boxes and high pallet load.",
+    "VID-20260825-WA0010_frame_004": "Orange-shirt foreground person, left pedestrian and seated occupant at controls; reach truck and raised load, mobile eye-level view.",
+    "VID-20260825-WA0010_frame_005": "Foreground arm/body, left pedestrian, seated occupant and additional partial background pedestrian; stacked boxes dominate foreground.",
+    "VID-20260825-WA0010_frame_006": "Orange-shirt partial foreground person, left worker and seated occupant; pallet load partly cropped at top, boxes below. Not elevated CCTV."
+  },
+  "confirmed_negative": false,
+  "approved_for_training": false,
+  "originals_preserved": true
+}
