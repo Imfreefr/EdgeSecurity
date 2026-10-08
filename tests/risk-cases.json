@@ -1,0 +1,12 @@
+[
+  {"name":"pedestrian-near","width":640,"detections":[{"class_id":0,"class_name":"human","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[40,0,60,20]}],"level":"high","pairs":1,"reference_gap":30},
+  {"name":"same-scene-double-resolution","width":1280,"detections":[{"class_id":0,"class_name":"human","bbox":[0,0,20,20]},{"class_id":1,"class_name":"forklift","bbox":[80,0,120,40]}],"level":"high","pairs":1,"reference_gap":30},
+  {"name":"same-scene-portrait-width","width":320,"detections":[{"class_id":0,"class_name":"human","bbox":[0,0,5,5]},{"class_id":1,"class_name":"forklift","bbox":[20,0,30,10]}],"level":"high","pairs":1,"reference_gap":30},
+  {"name":"occupant-not-pedestrian","width":640,"detections":[{"class_id":2,"class_name":"human","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[0,0,60,60]}],"level":"safe","pairs":0},
+  {"name":"operator-canonical","width":640,"detections":[{"class_id":2,"class_name":"operator","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[0,0,60,60]}],"level":"safe","pairs":0},
+  {"name":"person-plus-operator","width":640,"detections":[{"class_id":2,"class_name":"operator","bbox":[0,0,10,10]},{"class_id":0,"class_name":"human","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[0,0,60,60]}],"level":"critical","pairs":1,"reference_gap":0},
+  {"name":"medium-boundary","width":640,"detections":[{"class_id":0,"class_name":"human","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[100,0,110,10]}],"level":"medium","pairs":1,"reference_gap":90},
+  {"name":"far","width":640,"detections":[{"class_id":0,"class_name":"human","bbox":[0,0,10,10]},{"class_id":1,"class_name":"forklift","bbox":[101,0,111,10]}],"level":"safe","pairs":1,"reference_gap":91},
+  {"name":"empty","width":640,"detections":[],"level":"safe","pairs":0},
+  {"name":"legacy-human","width":640,"detections":[{"class_name":"human","bbox":[0,0,10,10]},{"class_name":"machine","bbox":[40,0,60,20]}],"level":"high","pairs":1,"reference_gap":30}
+]

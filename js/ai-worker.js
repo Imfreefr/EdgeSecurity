@@ -114,14 +114,16 @@ self.onmessage = async (e) => {
         if (
           [
             "pessoa",
+            "person",
             "human",
             "humano",
             "worker",
             "trabalhador",
-            "operador",
           ].includes(raw)
         )
           class_name = "human";
+        else if (["operador", "operator", "driver", "condutor"].includes(raw))
+          class_name = "operator";
         else if (
           [
             "máquina",

@@ -309,13 +309,13 @@
       ctx.fillText(text, x1 + 5, Math.max(17, y1 - 6));
     });
     humanCount.textContent = (data.detections || []).filter(
-      (d) => d.class_name === "human",
+      (d) => ["human", "operator"].includes(d.class_name),
     ).length;
     machineCount.textContent = (data.detections || []).filter(
       (d) => ["machine", "forklift"].includes(d.class_name),
     ).length;
     riskLevel.textContent =
-      { safe: "Seguro", medium: "Atenção", high: "Alto", critical: "CRÍTICO" }[
+      { safe: "Sem alerta", medium: "Atenção", high: "Alto", critical: "CRÍTICO" }[
         risk
       ] || risk;
     riskLevel.dataset.level = risk;

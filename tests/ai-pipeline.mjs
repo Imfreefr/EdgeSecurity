@@ -3,6 +3,7 @@ import vm from "node:vm";
 import assert from "node:assert/strict";
 const workers = [];
 let alerts = 0;
+let assessedWidth;
 const scope = {
   window: {}, document: { currentScript: { src: "https://example.test/js/ai-local.js" } },
   URL, Date, Map, console,
@@ -13,7 +14,10 @@ const scope = {
     terminate() {}
   },
 };
-scope.window.RiskEngine = { assess: () => ({level:"high", pairs:[]}) };
+scope.window.RiskEngine = { assess: (_, context) => {
+  assessedWidth = context.frame_width;
+  return {level:"high", pairs:[]};
+} };
 vm.createContext(scope);
 vm.runInContext(readFileSync("js/ai-local.js", "utf8"), scope);
 const ai = scope.window.EdgeAILocal;
@@ -24,7 +28,8 @@ worker.onmessage({data:{type:"ready"}});
 const canvas = {width:2,height:2,getContext:()=>({getImageData:()=>({data:new Uint8ClampedArray(16)})})};
 assert.equal(ai.sendFrame(canvas,"camera-a"),true);
 assert.equal(ai.sendFrame(canvas,"camera-a"),false);
-worker.onmessage({data:{type:"result",cameraId:"camera-a",detections:[]}});
+worker.onmessage({data:{type:"result",cameraId:"camera-a",width:1280,height:720,detections:[]}});
+assert.equal(assessedWidth,1280);
 await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(ai.sendFrame(canvas,"camera-a"),true);
 worker.onmessage({data:{type:"result",cameraId:"camera-a",detections:[]}});

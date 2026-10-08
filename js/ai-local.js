@@ -47,12 +47,12 @@ window.EdgeAILocal = (() => {
         ready = true;
         cbReady?.({
           model: model || "edgev1.onnx",
-          classes: ["human", "forklift"],
+          classes: ["human", "forklift", "operator", "objeto"],
         });
       } else if (type === "result") {
         framePending = false;
         const risk = window.RiskEngine
-          ? window.RiskEngine.assess(detections || [])
+          ? window.RiskEngine.assess(detections || [], { frame_width: width ?? 640 })
           : { level: "safe", pairs: [] };
         if (risk.level === "high" || risk.level === "critical")
           beep(risk.level);
@@ -67,8 +67,8 @@ window.EdgeAILocal = (() => {
               nivel: risk.level === "critical" ? "Crítico" : "Alto",
               descricao:
                 risk.level === "critical"
-                  ? "RISCO CRÍTICO: pessoa e máquina muito próximas."
-                  : "Risco de colisão detectado pela IA.",
+                  ? "Aproximação visual crítica: caixas de pedestre e empilhadeira se sobrepõem na imagem. Não confirma colisão."
+                  : "Aproximação visual alta entre pedestre e empilhadeira, estimada em pixels; distância física não calibrada.",
               status: "Aberto",
             }).then(() => lastAlerts.set(alertKey, Date.now()))
               .catch(() => {

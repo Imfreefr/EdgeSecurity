@@ -7,21 +7,29 @@ window.RiskEngine = (() => {
     const dy = Math.max(a[1] - b[3], b[1] - a[3], 0);
     return Math.hypot(dx, dy);
   }
-  function assess(detections) {
-    const people = detections.filter((d) => d.class_name === "human");
+  function assess(detections, { frame_width = 640 } = {}) {
+    if (!Number.isFinite(frame_width) || frame_width <= 0) {
+      throw new Error("Largura do frame inválida para aproximação visual.");
+    }
+    const referenceScale = 640 / frame_width;
+    // Class 2 is an occupant, not an outside pedestrian. Legacy detections
+    // without a class ID remain supported when explicitly named human.
+    const people = detections.filter((d) =>
+      d.class_id === 0 || (d.class_id == null && d.class_name === "human"));
     const machines = detections.filter((d) => d.class_name === "forklift" || d.class_name === "machine");
     const risks = [];
     for (const p of people) {
       for (const m of machines) {
         const gap = boxGap(p.bbox, m.bbox);
+        const referenceGap = gap * referenceScale;
         const pc = center(p.bbox);
         const mc = center(m.bbox);
         const cd = Math.hypot(pc[0] - mc[0], pc[1] - mc[1]);
         let level = "safe";
-        if (gap <= 0) level = "critical";
-        else if (gap <= 40) level = "high";
-        else if (gap <= 90) level = "medium";
-        risks.push({ person_track_id: p.track_id ?? null, machine_track_id: m.track_id ?? null, gap_pixels: Math.round(gap * 10) / 10, center_distance_pixels: Math.round(cd * 10) / 10, level });
+        if (referenceGap <= 0) level = "critical";
+        else if (referenceGap <= 40) level = "high";
+        else if (referenceGap <= 90) level = "medium";
+        risks.push({ person_track_id: p.track_id ?? null, machine_track_id: m.track_id ?? null, gap_pixels: Math.round(gap * 10) / 10, gap_reference_pixels: Math.round(referenceGap * 10) / 10, center_distance_pixels: Math.round(cd * 10) / 10, level });
       }
     }
     const prio = { critical: 4, high: 3, medium: 2, safe: 1 };
