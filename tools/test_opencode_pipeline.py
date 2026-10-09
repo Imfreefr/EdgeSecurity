@@ -339,5 +339,72 @@ class AmbiguousAndGatesTests(unittest.TestCase):
         self.assertFalse(g2["gates"]["ready"])
 
 
+class WhiteScreenRegressionTests(unittest.TestCase):
+    """Regressao tela branca: clique deve chamar openImg (nunca window.open nativo)."""
+
+    def _page(self):
+        import opencode_review_server as srv
+        return srv.PAGE
+
+    def test_no_native_open_collision(self):
+        import re
+        html = self._page()
+        self.assertIn("function openImg(", html)
+        self.assertNotRegex(html, r'onclick="open\(')
+        self.assertNotRegex(html, r'function open\(')
+        self.assertNotRegex(html, r'[^a-zA-Z]open\(ROWS')
+        self.assertIn("IMG.onerror", html)  # falha de carga exibe erro, sem branca
+
+    def test_routes_serve_ten_images(self):
+        import threading
+        import urllib.request
+        from http.server import HTTPServer
+        import opencode_review_server as srv
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rows = []
+            for i in range(10):
+                # inclui vertical grande p/ cobrir dimensionamento
+                size = (600, 900) if i % 2 else (64, 48)
+                p = make_img(root / f"img{i}.png", size=size)
+                rows.append(dict(id=f"img{i}", platform_name=f"img{i}", path=str(p),
+                                 width=size[0], height=size[1],
+                                 sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                                 status="pending_individual_visual_review",
+                                 boxes=[[i % 4, 0.5, 0.5, 0.4, 0.4]]))
+            man = root / "m.ndjson"
+            write_manifest(man, rows)
+            srv.Handler.rows, _ = load_working_state(man, root / "out")
+            srv.Handler.outdir = root / "out"
+            srv.Handler.outdir.mkdir(exist_ok=True)
+            srv.Handler.dupes = None
+            httpd = HTTPServer(("127.0.0.1", 0), srv.Handler)
+            port = httpd.server_address[1]
+            threading.Thread(target=httpd.serve_forever, daemon=True).start()
+            base = f"http://127.0.0.1:{port}"
+            try:
+                page = urllib.request.urlopen(base + "/").read().decode("utf-8")
+                self.assertIn("openImg", page)
+                q = json.loads(urllib.request.urlopen(base + "/api/queue").read())
+                self.assertEqual(len(q["rows"]), 10)
+                for r in q["rows"]:
+                    resp = urllib.request.urlopen(base + "/img?id=" + r["id"])
+                    self.assertEqual(resp.status, 200)
+                    self.assertGreater(int(resp.headers["Content-Length"]), 0)
+                # navega+decide em todas sem erro
+                for r in q["rows"]:
+                    body = json.dumps({"image_id": r["id"], "boxes": [], "note": "n",
+                                       "coverage_complete": True}).encode()
+                    req = urllib.request.Request(
+                        base + "/api/decide", data=body,
+                        headers={"Content-Type": "application/json"}, method="POST")
+                    self.assertTrue(json.loads(urllib.request.urlopen(req).read())["ok"])
+                q2 = json.loads(urllib.request.urlopen(base + "/api/queue").read())
+                self.assertEqual(q2["decided"], 10)
+            finally:
+                httpd.shutdown()
+                httpd.server_close()
+
+
 if __name__ == "__main__":
     unittest.main()

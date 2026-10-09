@@ -41,15 +41,22 @@ let ROWS=[],CUR=null,IMG=new Image(),DRAW=[],Z=1,SEL=-1,DECIDED=0;
 const C=['#00ff70','#ffaa00','#00cfff','#dd77ff'];
 fetch('/api/queue').then(r=>r.json()).then(d=>{ROWS=d.rows;DECIDED=d.decided;
  prog.textContent=d.decided+'/'+d.total;document.querySelector('#bar>i').style.width=(100*d.decided/d.total)+'%';
- list();if(ROWS.length)open(firstPending());});
+ list();if(ROWS.length)openImg(firstPending());});
 function firstPending(){const p=ROWS.find(r=>r.status.startsWith('pending'));return (p||ROWS[0]).id;}
 function list(){const f=document.getElementById('f').value;
  q.innerHTML=ROWS.filter(r=>f==='all'||(f==='pending')===r.status.startsWith('pending'))
-  .map(r=>`<div><a href=# onclick="open('${r.id}');return false">${r.platform_name}</a> <small>${r.status} ${r.nboxes}cx${r.amb.length?' <span class=amb>\\u26a0'+r.amb.length+'</span>':''}</small></div>`).join('');}
-function open(id){CUR=ROWS.find(r=>r.id===id);SEL=-1;
- t.textContent=CUR.platform_name+' '+CUR.width+'x'+CUR.height+(CUR.amb.length?' \\u26a0 '+CUR.amb.length+' ambigua(s)':'');
- IMG.onload=()=>{c.width=IMG.width;c.height=IMG.height;applyZoom();
-  DRAW=CUR.boxes.map(b=>({...b,approved:true}));paint();form();};
+  .map(r=>`<div><a href="#" onclick="openImg('${r.id}');return false">${r.platform_name}</a> <small>${r.status} ${r.nboxes}cx${r.amb.length?' <span class=amb>\\u26a0'+r.amb.length+'</span>':''}</small></div>`).join('');}
+// NOTA: nunca chamar de 'open' — window.open e LegacyUnforgeable e o clique
+// abriria o id como URL (pagina branca). 'openImg' nao colide.
+function openImg(id){const row=ROWS.find(r=>r.id===id);if(!row)return;
+ if(CUR&&CUR.id===id&&DRAW.length)return; // ja exibida: sem reload, sem branca
+ msg.textContent='carregando '+row.platform_name+'…';msg.className='';
+ IMG.onload=()=>{CUR=row;SEL=-1;
+  t.textContent=CUR.platform_name+' '+CUR.width+'x'+CUR.height+(CUR.amb.length?' \\u26a0 '+CUR.amb.length+' ambigua(s)':'');
+  c.width=IMG.naturalWidth||IMG.width;c.height=IMG.naturalHeight||IMG.height;
+  Z=Math.min(1,(document.querySelector('main').clientWidth-32)/c.width);applyZoom();
+  DRAW=CUR.boxes.map(b=>({...b,approved:true}));paint();form();msg.textContent='';};
+ IMG.onerror=()=>{msg.textContent='ERRO ao carregar '+row.platform_name+': imagem indisponivel (CUR anterior preservado)';msg.className='warn';};
  IMG.src='/img?id='+encodeURIComponent(id);}
 function applyZoom(){c.style.width=(c.width*Z)+'px';zi.textContent=Math.round(Z*100)+'%';}
 function zoom(f){Z=f===0?1:Math.min(4,Math.max(.2,Z*f));applyZoom();}
@@ -73,7 +80,7 @@ async function save(){const r=await fetch('/api/decide',{method:'POST',headers:{
  if(j.ok){CUR.status='visually_reviewed_pending_final_gates';CUR.boxes=DRAW.filter(b=>b.approved);CUR.nboxes=CUR.boxes.length;CUR.amb=[];DECIDED++;list();}}
 document.onkeydown=e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
  const i=ROWS.indexOf(CUR);
- if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=ROWS[(i+(e.key==='ArrowRight'?1:-1)+ROWS.length)%ROWS.length];open(n.id);}
+ if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=ROWS[(i+(e.key==='ArrowRight'?1:-1)+ROWS.length)%ROWS.length];openImg(n.id);}
  else if(e.key==='+'||e.key==='=')zoom(1.25);else if(e.key==='-')zoom(0.8);
  else if(e.key>='0'&&e.key<='3'&&SEL>=0){DRAW[SEL].class_id=+e.key;paint();form();}
  else if((e.key==='Delete'||e.key==='Backspace')&&SEL>=0){DRAW.splice(SEL,1);SEL=-1;paint();form();}

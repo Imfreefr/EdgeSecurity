@@ -55,6 +55,9 @@ git merge --no-ff feature/opencode-dataset-pipeline           # manual, quando q
   puladas entre buckets, 16 exatas = as 16 conhecidas, 692 próximas candidatas,
   nada descartado); 2ª passada com cache 0,02 s. Projeção 1.340: ~2 min 1ª vez, instantâneo depois.
 - r84 oficial intacto (`657f31a2…`), teste congelado intocado, nenhum download feito.
+- Tela branca corrigida: `open` global colidia com `window.open` (LegacyUnforgeable) e o
+  clique abria o id como URL (404). Renomeado p/ `openImg` + `onerror` com mensagem +
+  zoom inicial ajustado (fit). Regressão em 21/21 testes; servidor 8787 reiniciado.
 
 ## Pendente de validação humana
 
