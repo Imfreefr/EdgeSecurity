@@ -52,6 +52,10 @@ class DetectorClassTests(unittest.TestCase):
         self.assertEqual([item['class_name'] for item in result], ['human', 'forklift', 'operator', 'objeto'])
         self.assertEqual(result[2]['label'], 'operador')
 
+        instance.names = {0: 'pedestre', 1: 'empilhadeira', 2: 'operador', 3: 'carga'}
+        result = instance.infer(SimpleNamespace(shape=(480, 640, 3)))
+        self.assertEqual([item['class_name'] for item in result], ['human', 'forklift', 'operator', 'carga'])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -81,6 +81,8 @@ class SafetyDetector:
             if raw_name in {
                 "person",
                 "pessoa",
+                "pedestre",
+                "pedestrian",
                 "human",
                 "humano",
                 "worker",
