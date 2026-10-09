@@ -6,10 +6,8 @@ Abre http://localhost:8787 . Decisoes salvas em outdir/decisions/<id>.json
 e outdir/review-manifest.ndjson (copia de trabalho).
 """
 import argparse
-import hashlib
 import json
 import mimetypes
-import os
 import sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -17,7 +15,7 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from opencode_pipeline import (  # noqa: E402
-    atomic_json, read_manifest, validate_decision, write_manifest,
+    load_working_state, save_decision, write_manifest,
 )
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
@@ -109,25 +107,12 @@ class Handler(BaseHTTPRequestHandler):
             row = self.rows.get(body.get("image_id"))
             if not row:
                 raise ValueError("unknown image")
-            kept = validate_decision(row, body.get("boxes", []), body.get("note", ""),
-                                     body.get("coverage_complete", False))
-            dec = dict(image_id=row["id"], platform_name=row["platform_name"],
-                       source_sha256=row["sha256"], boxes=kept,
-                       note=body["note"], coverage_complete=bool(body["coverage_complete"]),
-                       approved_boxes=len(kept))
-            dec_dir = self.outdir / "decisions"
-            dec_dir.mkdir(parents=True, exist_ok=True)
-            atomic_json(dec_dir / (row["id"] + ".json"), dec)
-            # copia de trabalho (nunca o manifesto oficial): marca revisada
-            row = dict(row)
-            row.update(status="visually_reviewed_pending_final_gates", boxes=kept,
-                       proposed_boxes=kept, annotation_review_complete=True,
-                       review_reason=body["note"],
-                       proposed_overlay_sha256=hashlib.sha256(
-                           json.dumps(dec, sort_keys=True).encode()).hexdigest()[:16])
-            self.rows[row["id"]] = row
+            dec, updated = save_decision(self.outdir, row, body.get("boxes", []),
+                                         body.get("note", ""),
+                                         body.get("coverage_complete", False))
+            self.rows[updated["id"]] = updated
             write_manifest(self.outdir / "review-manifest.ndjson", list(self.rows.values()))
-            return self._send(200, json.dumps(dict(ok=True, kept=len(kept))))
+            return self._send(200, json.dumps(dict(ok=True, kept=len(dec["boxes"]))))
         except ValueError as e:
             return self._send(400, json.dumps(dict(ok=False, error=str(e))))
 
@@ -138,10 +123,11 @@ def main():
     ap.add_argument("--outdir", required=True)
     ap.add_argument("--port", type=int, default=8787)
     a = ap.parse_args()
-    Handler.rows = {r["id"]: r for r in read_manifest(a.manifest)}
+    Handler.rows, resumed = load_working_state(a.manifest, a.outdir)
     Handler.outdir = Path(a.outdir)
     Handler.outdir.mkdir(parents=True, exist_ok=True)
-    print(f"OpenCode review: {len(Handler.rows)} registros -> http://localhost:{a.port}")
+    print(f"OpenCode review: {len(Handler.rows)} registros ({resumed} retomados)"
+          f" -> http://localhost:{a.port}")
     HTTPServer(("127.0.0.1", a.port), Handler).serve_forever()
 
 

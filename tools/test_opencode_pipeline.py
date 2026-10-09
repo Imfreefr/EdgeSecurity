@@ -8,9 +8,11 @@ from pathlib import Path
 from PIL import Image
 
 from opencode_pipeline import (
-    compact_report, export_approved, find_duplicates, find_inconsistencies,
-    import_images, preannotate_batch, save_checkpoint, validate_decision,
-    validate_record, write_manifest,
+    assign_splits, compact_report, compute_hashes, export_approved,
+    find_duplicates, find_duplicates_scalable, find_inconsistencies,
+    import_images, load_working_state, pixels_to_yolo, plan_acquisition,
+    preannotate_batch, save_checkpoint, save_decision, validate_acquisition,
+    validate_decision, validate_record, write_manifest, yolo_to_pixels,
 )
 
 
@@ -99,6 +101,160 @@ class PipelineTests(unittest.TestCase):
             self.assertEqual(kept, [[2, 0.5, 0.5, 0.2, 0.2]])
             with self.assertRaises(ValueError):
                 validate_decision(row, [], note=" ", coverage_complete=True)
+
+
+class ReviewUITests(unittest.TestCase):
+    """P1: coordenadas, persistencia/retomada, erros da UI."""
+
+    def test_yolo_pixel_roundtrip(self):
+        for box, W, H in [([0, 0.5, 0.5, 0.5, 0.5], 640, 480),
+                          ([3, 0.125, 0.9, 0.25, 0.2], 3840, 2160),
+                          ([1, 0.01, 0.01, 0.02, 0.02], 100, 100)]:
+            px = yolo_to_pixels(box, W, H)
+            back = pixels_to_yolo(px[0], px[1], px[2], px[3], px[4], W, H)
+            for a, b in zip(box, back):
+                self.assertAlmostEqual(a, b, places=9)
+
+    def test_pixel_box_errors(self):
+        with self.assertRaises(ValueError):  # fora da imagem
+            pixels_to_yolo(0, -5, 0, 50, 50, 100, 100)
+        with self.assertRaises(ValueError):  # classe invalida
+            pixels_to_yolo(7, 0, 0, 50, 50, 100, 100)
+        with self.assertRaises(ValueError):  # invertida
+            pixels_to_yolo(1, 60, 60, 10, 10, 100, 100)
+
+    def test_decision_persist_resume_and_stale(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            man = root / "m.ndjson"
+            row = dict(id="i1", platform_name="i1", path="p", width=100, height=80,
+                       sha256="s1", status="pending_individual_visual_review",
+                       boxes=[[0, 0.5, 0.5, 0.4, 0.4]],
+                       annotation_review_complete=False, approved_for_training=False)
+            write_manifest(man, [row])
+            out = root / "out"
+            dec, upd = save_decision(out, row,
+                                     [dict(class_id=0, xc=0.5, yc=0.5, w=0.4, h=0.4, approved=True),
+                                      dict(class_id=1, xc=0.1, yc=0.1, w=0.1, h=0.1, approved=False)],
+                                     note="ok", coverage_complete=True)
+            self.assertEqual(dec["approved_boxes"], 1)
+            self.assertTrue((out / "decisions" / "i1.json").exists())
+            write_manifest(out / "review-manifest.ndjson", [upd])
+            state, resumed = load_working_state(man, out)  # restart simulado
+            self.assertEqual(resumed, 1)
+            self.assertEqual(state["i1"]["boxes"], [[0, 0.5, 0.5, 0.4, 0.4]])
+            # copia de trabalho obsoleta (sha divergente) e ignorada
+            stale = dict(upd, sha256="adulterado")
+            write_manifest(out / "review-manifest.ndjson", [stale])
+            state, resumed = load_working_state(man, out)
+            self.assertEqual(resumed, 0)
+            self.assertEqual(state["i1"]["status"], "pending_individual_visual_review")
+
+    def test_decision_error_cases(self):
+        row = dict(id="i", width=100, height=100, sha256="z")
+        bad = dict(class_id=0, xc=0.5, yc=0.5, w=0.4, h=0.4, approved=True)
+        for boxes, note in [([dict(bad, class_id=9)], "n"),  # classe
+                            ([dict(bad, w=9.0)], "n"),        # geometria
+                            ([bad], "   "),                   # nota vazia
+                            ([dict(bad, xc=float("nan"))], "n")]:
+            with self.assertRaises(ValueError):
+                validate_decision(row, boxes, note=note, coverage_complete=True)
+        with self.assertRaises(ValueError):  # imagem degenerada
+            validate_decision(dict(id="i", width=0, height=0, sha256="z"),
+                              [], note="n", coverage_complete=True)
+
+    def test_zero_detection_negative(self):
+        row = dict(id="i", width=100, height=100, sha256="z")
+        self.assertEqual(validate_decision(row, [], note="vazio confirmado",
+                                           coverage_complete=True), [])
+
+
+class DuplicateScaleTests(unittest.TestCase):
+    """P2: cache + buckets, equivalencia, sem auto-descarte."""
+
+    def _rows(self, root):
+        a = make_img(root / "a.png")
+        b = root / "b.png"
+        Image.open(a).save(b)
+        c = make_img(root / "c.png", size=(128, 128), color=(1, 2, 3))
+        def _sz(p):
+            with Image.open(p) as im:
+                return im.size
+        mk = lambda i, p, s: dict(id=i, platform_name=i, path=str(p),
+                                  width=_sz(p)[0], height=_sz(p)[1],
+                                  sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                                  status="pending_individual_visual_review", boxes=[])
+        return [mk("a", a, None), mk("b", b, None), mk("c", c, None)]
+
+    def test_scalable_matches_bruteforce(self):
+        with tempfile.TemporaryDirectory() as d:
+            rows = self._rows(Path(d))
+            brute = find_duplicates(rows)
+            fast = find_duplicates_scalable(rows)
+            self.assertEqual(brute["exact"], fast["exact"])
+            self.assertEqual({tuple(sorted(x["pair"])) for x in brute["near"]},
+                             {tuple(sorted(x["pair"])) for x in fast["near"]})
+            self.assertIn("a", str(fast["exact"]))  # exata detectada, nada descartado
+
+    def test_cache_reuse_and_buckets(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            rows = self._rows(root)
+            cache = root / "hashes.json"
+            r1 = find_duplicates_scalable(rows, cache_path=cache)
+            self.assertEqual(r1["computed"], 3)
+            r2 = find_duplicates_scalable(rows, cache_path=cache)
+            self.assertEqual(r2["computed"], 0)
+            self.assertEqual(r2["cache_hits"], 3)
+            # 128x128 cai em outro bucket: comparacoes < total de pares
+            self.assertLess(r2["comparisons"], 3)
+            self.assertGreaterEqual(r2["skipped_cross_bucket"], 0)
+
+
+class AcquisitionTests(unittest.TestCase):
+    """P3: plano, splits 70/15/15 seed42, guardas."""
+
+    def _pool(self, ngroups=4, per=10):
+        rows = []
+        for g in range(ngroups):
+            for i in range(per):
+                cls = 0 if i % 2 == 0 else 1
+                rows.append(dict(id=f"g{g}-{i}", platform_name=f"g{g}-{i}", path="p",
+                                 width=64, height=48, sha256=f"s{g}-{i}",
+                                 status="pending_individual_visual_review",
+                                 boxes=[[cls, 0.5, 0.5, 0.4, 0.4]], group=f"g{g}"))
+        return rows
+
+    def test_plan_gaps(self):
+        groups = [dict(group=f"g{i}", source="s", license="CC-BY-4.0",
+                       viewpoint="cftv_elevado", environments=["patio"], count=50)
+                  for i in range(20)]
+        rep = plan_acquisition(groups)
+        self.assertTrue(rep["ready"])
+        bad = plan_acquisition(groups[:5] + [dict(group="x", source="", license="",
+                                                  viewpoint="rua", environments=[], count=99)])
+        self.assertFalse(bad["ready"])
+        self.assertTrue(any("50" in e or ">=" in e or "missing" in e for e in bad["issues"]))
+
+    def test_splits_deterministic_no_leak(self):
+        rows = self._pool()
+        a = assign_splits(rows)
+        b = assign_splits(rows)
+        self.assertEqual(a["splits"], b["splits"])  # deterministico
+        self.assertEqual(len(a["splits"]), len(rows))  # 1 imagem = 1 split
+        per = list(a["per_group"].values())[0]
+        self.assertEqual((per["train"], per["val"], per["test"]), (7, 1, 2))
+        v = validate_acquisition(rows, a["splits"])
+        self.assertTrue(v["valid"])
+
+    def test_frozen_guard_and_group_coverage(self):
+        rows = self._pool(ngroups=2, per=10)
+        with self.assertRaises(ValueError):
+            assign_splits(rows, frozen_ids=["g0-0"])
+        ok = assign_splits(rows, frozen_ids=["g0-0"], allow_frozen_mix=True)
+        self.assertIn("g0-0", ok["splits"])
+        v = validate_acquisition(rows, ok["splits"])
+        self.assertFalse(v["valid"])  # so 2 grupos em val/teste
 
 
 if __name__ == "__main__":

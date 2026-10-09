@@ -142,34 +142,80 @@ def import_images(src_paths, dest_dir, source, license, group, manifest_out, dat
 def ahash(path, size=8):
     with Image.open(path) as im:
         g = im.convert("L").resize((size, size), Image.Resampling.BILINEAR)
-        px = list(g.getdata())
+        px = list(g.get_flattened_data() if hasattr(g, "get_flattened_data") else g.getdata())
     avg = sum(px) / len(px)
     bits = "".join("1" if p > avg else "0" for p in px)
     return int(bits, 2)
 
 
-def find_duplicates(rows, root=None, hamming_max=5):
+def _resolve_path(row, root):
+    p = Path(row["path"])
+    if not p.is_file() and root:
+        p = Path(root) / p.name
+    return p
+
+
+def compute_hashes(rows, root=None, cache_path=None):
+    """aHash por imagem com cache em disco {id: {file_sha, ahash}}.
+    So recalcula o que mudou (file_sha divergente). O(n) decodificacoes."""
+    cache = {}
+    if cache_path and Path(cache_path).exists():
+        try:
+            cache = json.loads(Path(cache_path).read_text(encoding="utf-8"))
+        except Exception:
+            cache = {}
+    hashes, hits, miss = {}, 0, 0
+    for r in rows:
+        entry = cache.get(r["id"])
+        if entry and entry.get("file_sha") == r["sha256"] and "ahash" in entry:
+            hashes[r["id"]] = entry["ahash"]
+            hits += 1
+            continue
+        try:
+            h = ahash(_resolve_path(r, root))
+        except Exception:
+            continue
+        hashes[r["id"]] = h
+        cache[r["id"]] = dict(file_sha=r["sha256"], ahash=h)
+        miss += 1
+    if cache_path:
+        atomic_json(cache_path, cache)
+    return hashes, dict(cache_hits=hits, computed=miss)
+
+
+def find_duplicates_scalable(rows, root=None, hamming_max=5, cache_path=None):
+    """Exatas por SHA-256 (O(n)) + proximas por aHash so dentro do mesmo
+    bucket (width,height): quase-duplicatas reais compartilham dimensoes,
+    pares entre buckets sao pulados e reportados. Nunca descarta nada:
+    retorna candidatos p/ confirmacao humana."""
     by_sha = {}
     for r in rows:
         by_sha.setdefault(r["sha256"], []).append(r["id"])
     exact = {k: v for k, v in by_sha.items() if len(v) > 1}
-    # ponytail: O(n^2) aHash, suficiente p/ lotes <=50; subir p/ BK-tree se escalar a 1000+
-    hashes, near = {}, []
+    hashes, cache_info = compute_hashes(rows, root, cache_path)
+    buckets = {}
     for r in rows:
-        p = Path(r["path"])
-        if not p.is_file() and root:
-            p = Path(root) / p.name
-        try:
-            hashes[r["id"]] = ahash(p)
-        except Exception:
-            continue
-    ids = list(hashes)
-    for i in range(len(ids)):
-        for j in range(i):
-            d = bin(hashes[ids[i]] ^ hashes[ids[j]]).count("1")
-            if d <= hamming_max:
-                near.append(dict(pair=[ids[j], ids[i]], hamming=d))
-    return dict(exact=exact, near=near)
+        if r["id"] in hashes:
+            buckets.setdefault((r.get("width"), r.get("height")), []).append(r["id"])
+    near, comparisons = [], 0
+    for ids in buckets.values():
+        for i in range(len(ids)):
+            for j in range(i):
+                comparisons += 1
+                d = bin(hashes[ids[i]] ^ hashes[ids[j]]).count("1")
+                if d <= hamming_max:
+                    near.append(dict(pair=[ids[j], ids[i]], hamming=d))
+    n = len(hashes)
+    total_pairs = n * (n - 1) // 2
+    return dict(exact=exact, near=near, buckets=len(buckets),
+                comparisons=comparisons, skipped_cross_bucket=total_pairs - comparisons,
+                **cache_info)
+
+
+def find_duplicates(rows, root=None, hamming_max=5):
+    # compat: lotes pequenos usam o mesmo motor escalavel sem cache
+    r = find_duplicates_scalable(rows, root, hamming_max)
+    return dict(exact=r["exact"], near=r["near"])
 
 
 def find_inconsistencies(rows):
@@ -226,6 +272,22 @@ def export_approved(rows, outdir, image_ext=".txt"):
 
 
 # --- 2b. validacao de decisao da UI (aprovacao por caixa) ---
+def yolo_to_pixels(box, width, height):
+    """[cls,xc,yc,w,h] normalizado -> [cls,x1,y1,x2,y2] em pixels."""
+    cls, xc, yc, w, h = box
+    return [cls, (xc - w / 2) * width, (yc - h / 2) * height,
+            (xc + w / 2) * width, (yc + h / 2) * height]
+
+
+def pixels_to_yolo(cls, x1, y1, x2, y2, width, height):
+    """Pixels -> [cls,xc,yc,w,h] normalizado. Levanta ValueError se invalido."""
+    box = [cls, ((x1 + x2) / 2) / width, ((y1 + y2) / 2) / height,
+           (x2 - x1) / width, (y2 - y1) / height]
+    if not valid_yolo_box(box):
+        raise ValueError(f"bad pixel box {[cls, x1, y1, x2, y2]}")
+    return box
+
+
 def validate_decision(image_row, boxes, note, coverage_complete):
     """boxes: [{class_id, xc, yc, w, h, approved}]. Retorna boxes YOLO aprovadas."""
     if not note or not note.strip():
@@ -241,7 +303,125 @@ def validate_decision(image_row, boxes, note, coverage_complete):
         if b.get("approved", True):
             kept.append(yolo)
     if not kept and not coverage_complete is False:
-        # negativo exige marcacao explicita de cobertura incompleta=False? nao:
-        # negativo valido = zero caixas APROVADAS + nota + coverage True (nada a cobrir)
+        # negativo valido = zero caixas APROVADAS + nota (+ coverage True: nada a cobrir)
         pass
     return kept
+
+
+def save_decision(outdir, image_row, boxes, note, coverage_complete):
+    """Persiste decisao por imagem; retorna (decision, updated_row).
+    Nunca escreve no manifesto oficial: outdir e isolado."""
+    kept = validate_decision(image_row, boxes, note, coverage_complete)
+    dec = dict(image_id=image_row["id"], platform_name=image_row["platform_name"],
+               source_sha256=image_row["sha256"], boxes=kept, note=note,
+               coverage_complete=bool(coverage_complete),
+               approved_boxes=len(kept),
+               date=datetime.now(timezone.utc).isoformat())
+    atomic_json(Path(outdir) / "decisions" / (image_row["id"] + ".json"), dec)
+    updated = dict(image_row)
+    updated.update(status="visually_reviewed_pending_final_gates", boxes=kept,
+                   proposed_boxes=kept, annotation_review_complete=True,
+                   review_reason=note,
+                   proposed_overlay_sha256=hashlib.sha256(
+                       json.dumps(dec, sort_keys=True).encode()).hexdigest()[:16])
+    return dec, updated
+
+
+def load_working_state(manifest_path, outdir):
+    """Retoma estado apos restart: manifesto base (somente leitura) +
+    copia de trabalho outdir/review-manifest.ndjson, se existir e integra.
+    Entradas obsoletas (sha divergente) sao ignoradas, nunca aplicadas."""
+    base = {r["id"]: r for r in read_manifest(manifest_path)}
+    working = Path(outdir) / "review-manifest.ndjson"
+    resumed = 0
+    if working.exists():
+        for r in read_manifest(working):
+            src = base.get(r["id"])
+            if src is not None and r.get("sha256") == src["sha256"]:
+                if r != src:
+                    resumed += 1
+                base[r["id"]] = r
+    return base, resumed
+
+
+# --- 7. aquisicao das 1000 novas imagens (planejamento + splits, sem download) ---
+ACQ_SPLITS = dict(train=0.70, val=0.15, test=0.15)
+ACQ_SEED = 42
+ACQ_MIN_GROUPS = 20
+
+
+def plan_acquisition(groups):
+    """groups: [{group, source, license, viewpoint, environments[], count}].
+    So planeja e aponta lacunas; nao baixa nada, nao toca no teste congelado."""
+    issues = []
+    if len(groups) < ACQ_MIN_GROUPS:
+        issues.append(f"need >= {ACQ_MIN_GROUPS} groups, have {len(groups)}")
+    total = 0
+    envs, cctv = set(), 0
+    for g in groups:
+        for f in ("group", "source", "license", "viewpoint"):
+            if not g.get(f):
+                issues.append(f"group {g.get('group', '?')}: missing {f}")
+        c = g.get("count", 0)
+        total += c
+        if c > MAX_PER_GROUP:
+            issues.append(f"group {g['group']}: {c} > {MAX_PER_GROUP}")
+        envs.update(g.get("environments", []))
+        if g.get("viewpoint") == "cftv_elevado":
+            cctv += c
+    if total > 1000:
+        issues.append(f"plan total {total} > 1000")
+    return dict(groups=len(groups), planned_images=total,
+                distinct_environments=sorted(envs),
+                cctv_elevado_images=cctv, issues=issues, ready=not issues)
+
+
+def assign_splits(rows, seed=ACQ_SEED, frozen_ids=(), allow_frozen_mix=False):
+    """Split 70/15/15 deterministico por grupo (seed 42). Uma imagem = um split
+    (sem vazamento). Recusa misturar ids do teste congelado sem flag explicita."""
+    import random
+    frozen = set(frozen_ids)
+    by_group = {}
+    for r in rows:
+        if r["id"] in frozen and not allow_frozen_mix:
+            raise ValueError(f"frozen test id in new pool (need explicit protocol): {r['id']}")
+        by_group.setdefault(r.get("group", "?"), []).append(r["id"])
+    splits, per_group = {}, {}
+    for group in sorted(by_group):
+        ids = sorted(by_group[group])
+        rng = random.Random(int(hashlib.sha256(f"{seed}:{group}".encode()).hexdigest()[:16], 16))
+        rng.shuffle(ids)
+        n = len(ids)
+        n_train = int(n * ACQ_SPLITS["train"])
+        n_val = int(n * ACQ_SPLITS["val"])
+        alloc = (["train"] * n_train + ["val"] * n_val +
+                 ["test"] * (n - n_train - n_val))
+        per_group[group] = dict(n=n, train=alloc.count("train"),
+                                val=alloc.count("val"), test=alloc.count("test"))
+        for i, v in zip(ids, alloc):
+            splits[i] = v
+    return dict(splits=splits, per_group=per_group, seed=seed)
+
+
+def validate_acquisition(rows, splits, min_val_groups=3, min_test_groups=3):
+    """Confere >=3 grupos em val e teste + cobertura pedestre/empilhadeira no teste."""
+    by_split_groups = {}
+    for r in rows:
+        by_split_groups.setdefault(splits.get(r["id"]), set()).add(r.get("group"))
+    issues = []
+    if len(by_split_groups.get("val", set())) < min_val_groups:
+        issues.append(f"val needs >= {min_val_groups} groups")
+    if len(by_split_groups.get("test", set())) < min_test_groups:
+        issues.append(f"test needs >= {min_test_groups} groups")
+    test_ids = {r["id"] for r in rows if splits.get(r["id"]) == "test"}
+    cls = set()
+    for r in rows:
+        if r["id"] in test_ids:
+            cls.update(c for c, *_ in r.get("boxes", []))
+    if not {0, 1} <= cls:
+        issues.append("test split must contain pedestre(0)+empilhadeira(1)")
+    leaked = len(splits) - len(set(splits))
+    if leaked:
+        issues.append("leak: image in multiple splits")
+    return dict(issues=issues, groups_per_split={k: sorted(v) for k, v in by_split_groups.items()},
+                valid=not issues)
