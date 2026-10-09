@@ -58,6 +58,10 @@ git merge --no-ff feature/opencode-dataset-pipeline           # manual, quando q
 - Tela branca corrigida: `open` global colidia com `window.open` (LegacyUnforgeable) e o
   clique abria o id como URL (404). Renomeado p/ `openImg` + `onerror` com mensagem +
   zoom inicial ajustado (fit). Regressão em 21/21 testes; servidor 8787 reiniciado.
+- Controles mortos: `onclick` no container da caixa reconstruía o form no meio do clique
+  (dropdown fechava, foco perdido). Removido; edição visual direta (selecionar/drag/alças,
+  epsilon em bordas), seletor com nomes, badge ● não salvo, salvar-avança. 16/16 no
+  teste funcional Node (`opencode_editor_domtest.mjs`); 8787 reiniciado.
 
 ## Pendente de validação humana
 

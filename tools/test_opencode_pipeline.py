@@ -354,6 +354,13 @@ class WhiteScreenRegressionTests(unittest.TestCase):
         self.assertNotRegex(html, r'function open\(')
         self.assertNotRegex(html, r'[^a-zA-Z]open\(ROWS')
         self.assertIn("IMG.onerror", html)  # falha de carga exibe erro, sem branca
+        # controles vivos: sem onclick no container + nomes legiveis + drag/alcas
+        self.assertNotRegex(html, r'class="box[^"]*" onclick')
+        for name in ("pedestre", "empilhadeira", "operador", "carga"):
+            self.assertIn(name, html)
+        for fn in ("boxAt", "cornerAt", "markDirty", "onmousedown", "onmousemove",
+                   "onmouseup", "updateDirty"):
+            self.assertIn(fn, html)
 
     def test_routes_serve_ten_images(self):
         import threading

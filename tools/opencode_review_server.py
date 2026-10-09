@@ -34,11 +34,13 @@ main{flex:1;overflow:auto;padding:8px}canvas{border:1px solid #333;cursor:crossh
 <span id=zi></span><br><canvas id=c></canvas><div id=boxes></div>
 <label>Nota <input id=note size=60 placeholder="motivo da decisao"></label>
 <label><input type=checkbox id=cov> cobertura completa</label>
-<button onclick="save()">Salvar decisao</button> <span id=msg></span>
-<p><small>Teclas: &#8592;/&#8594; imagem, +/- zoom, 0-3 classe da caixa, Del remove, Enter salva</small></p></main>
+<button onclick="save()">Salvar e avançar</button> <span id=msg></span> <span id=dirty style="display:none;color:#a60">● não salvo</span>
+<p><small>Imagem: clique numa caixa p/ selecionar, arraste p/ mover, cantos p/ redimensionar, clique no vazio p/ adicionar. Teclas: &#8592;/&#8594; imagem, +/- zoom, 0-3 classe, Del remove, Enter salva. Trocar de imagem descarta o não-salvo.</small></p></main>
 <script>
-let ROWS=[],CUR=null,IMG=new Image(),DRAW=[],Z=1,SEL=-1,DECIDED=0;
+let ROWS=[],CUR=null,IMG=new Image(),DRAW=[],Z=1,SEL=-1,DECIDED=0,DIRTY=false,DRAG=null;
 const C=['#00ff70','#ffaa00','#00cfff','#dd77ff'];
+const NAMES=['pedestre','empilhadeira','operador','carga'];
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 fetch('/api/queue').then(r=>r.json()).then(d=>{ROWS=d.rows;DECIDED=d.decided;
  prog.textContent=d.decided+'/'+d.total;document.querySelector('#bar>i').style.width=(100*d.decided/d.total)+'%';
  list();if(ROWS.length)openImg(firstPending());});
@@ -55,35 +57,94 @@ function openImg(id){const row=ROWS.find(r=>r.id===id);if(!row)return;
   t.textContent=CUR.platform_name+' '+CUR.width+'x'+CUR.height+(CUR.amb.length?' \\u26a0 '+CUR.amb.length+' ambigua(s)':'');
   c.width=IMG.naturalWidth||IMG.width;c.height=IMG.naturalHeight||IMG.height;
   Z=Math.min(1,(document.querySelector('main').clientWidth-32)/c.width);applyZoom();
-  DRAW=CUR.boxes.map(b=>({...b,approved:true}));paint();form();msg.textContent='';};
- IMG.onerror=()=>{msg.textContent='ERRO ao carregar '+row.platform_name+': imagem indisponivel (CUR anterior preservado)';msg.className='warn';};
+  DRAW=CUR.boxes.map(b=>({...b,approved:true}));paint();form();msg.textContent='';DIRTY=false;updateDirty();};
+ IMG.onerror=()=>{msg.textContent='ERRO ao carregar '+row.platform_name+': imagem indisponivel (anterior preservada)';msg.className='warn';};
  IMG.src='/img?id='+encodeURIComponent(id);}
+function updateDirty(){dirty.style.display=DIRTY?'inline':'none';}
+function markDirty(){DIRTY=true;updateDirty();}
 function applyZoom(){c.style.width=(c.width*Z)+'px';zi.textContent=Math.round(Z*100)+'%';}
 function zoom(f){Z=f===0?1:Math.min(4,Math.max(.2,Z*f));applyZoom();}
+// --- edicao visual direta (coordenadas sempre normalizadas YOLO) ---
+function dpos(e){const r=c.getBoundingClientRect();
+ return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,w:r.width,h:r.height};}
+function boxAt(x,y){const EPS=1e-6;
+ for(let i=DRAW.length-1;i>=0;i--){const b=DRAW[i];if(!b.approved)continue;
+ if(Math.abs(x-b.xc)<=b.w/2+EPS&&Math.abs(y-b.yc)<=b.h/2+EPS)return i;}return -1;}
+function cornerAt(i,x,y,tol){const b=DRAW[i];
+ const cs=[['nw',b.xc-b.w/2,b.yc-b.h/2],['ne',b.xc+b.w/2,b.yc-b.h/2],
+           ['sw',b.xc-b.w/2,b.yc+b.h/2],['se',b.xc+b.w/2,b.yc+b.h/2]];
+ for(const [n,cx,cy]of cs)if(Math.abs(x-cx)<=tol&&Math.abs(y-cy)<=tol)return n;
+ return null;}
+c.onmousedown=e=>{if(e.button!==0||!CUR)return;const p=dpos(e);
+ const i=boxAt(p.x,p.y);
+ if(i>=0){SEL=i;const b0=DRAW[i],cn=cornerAt(i,p.x,p.y,12/Math.min(p.w,p.h));
+  DRAG={mode:cn?'resize':'move',idx:i,corner:cn,sx:p.x,sy:p.y,
+   orig:{xc:b0.xc,yc:b0.yc,w:b0.w,h:b0.h,
+    x1:b0.xc-b0.w/2,y1:b0.yc-b0.h/2,x2:b0.xc+b0.w/2,y2:b0.yc+b0.h/2}};
+  form();}
+ else DRAG={mode:'maybe-add',sx:p.x,sy:p.y,moved:false};};
+c.onmousemove=e=>{if(!CUR)return;const p=dpos(e);
+ if(!DRAG){const i=boxAt(p.x,p.y);
+  c.style.cursor=i<0?'crosshair':(cornerAt(i,p.x,p.y,12/Math.min(p.w,p.h))?'nwse-resize':'move');return;}
+ if(Math.hypot(p.x-DRAG.sx,p.y-DRAG.sy)>0.004)DRAG.moved=true;
+ if(!DRAG.moved||DRAG.mode==='maybe-add')return;
+ const b=DRAW[DRAG.idx],o=DRAG.orig;
+ if(DRAG.mode==='move'){b.xc=+clamp(o.xc+p.x-DRAG.sx,b.w/2,1-b.w/2).toFixed(4);
+  b.yc=+clamp(o.yc+p.y-DRAG.sy,b.h/2,1-b.h/2).toFixed(4);}
+ else{let x1=o.x1,y1=o.y1,x2=o.x2,y2=o.y2;const dx=p.x-DRAG.sx,dy=p.y-DRAG.sy;
+  if(DRAG.corner.includes('e'))x2=clamp(o.x2+dx,o.x1+0.01,1);
+  if(DRAG.corner.includes('s'))y2=clamp(o.y2+dy,o.y1+0.01,1);
+  if(DRAG.corner.includes('w'))x1=clamp(o.x1+dx,0,o.x2-0.01);
+  if(DRAG.corner.includes('n'))y1=clamp(o.y1+dy,0,o.y2-0.01);
+  b.xc=+((x1+x2)/2).toFixed(4);b.yc=+((y1+y2)/2).toFixed(4);
+  b.w=+(x2-x1).toFixed(4);b.h=+(y2-y1).toFixed(4);}
+ markDirty();paint();};
+c.onmouseup=e=>{if(!DRAG)return;const p=dpos(e);
+ if(DRAG.mode==='maybe-add'&&!DRAG.moved&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1){
+  DRAW.push({class_id:SEL>=0?DRAW[SEL].class_id:0,
+   xc:+clamp(p.x,0.05,0.95).toFixed(4),yc:+clamp(p.y,0.05,0.95).toFixed(4),
+   w:0.1,h:0.1,approved:true});SEL=DRAW.length-1;markDirty();}
+ DRAG=null;paint();form();};
+c.onmouseleave=()=>{if(DRAG&&DRAG.moved){DRAG=null;paint();form();}};
 function paint(){const x=c.getContext('2d');x.drawImage(IMG,0,0);
  const sx=c.width/CUR.width,sy=c.height/CUR.height;
  DRAW.forEach((b,i)=>{if(!b.approved)return;const[cl,xc,yc,w,h]=[b.class_id,b.xc,b.yc,b.w,b.h];
   const amb=CUR.amb.includes(i);
-  x.strokeStyle=amb?'#ff0000':C[cl];x.lineWidth=amb?3:2;x.setLineDash(amb?[6,3]:[]);
+  x.strokeStyle=amb?'#ff0000':C[cl];x.lineWidth=(i===SEL?4:(amb?3:2));x.setLineDash(amb?[6,3]:[]);
   x.strokeRect((xc-w/2)*CUR.width*sx,(yc-h/2)*CUR.height*sy,w*CUR.width*sx,h*CUR.height*sy);x.setLineDash([]);
-  x.fillStyle=amb?'#ff0000':C[cl];x.fillText(i+':'+cl,(xc-w/2)*CUR.width*sx,(yc-h/2)*CUR.height*sy-4);});}
-c.onclick=e=>{const r=c.getBoundingClientRect();
- const xc=(e.clientX-r.left)/r.width,yc=(e.clientY-r.top)/r.height;
- DRAW.push({class_id:0,xc:+xc.toFixed(4),yc:+yc.toFixed(4),w:0.1,h:0.1,approved:true});SEL=DRAW.length-1;paint();form();};
-function form(){boxes.innerHTML=DRAW.map((b,i)=>`<div class="box ${i===SEL?'sel':''}" onclick="SEL=${i};form()">${CUR.amb.includes(i)?'<span class=amb>\\u26a0 ambigua</span> ':''}<label><input type=checkbox ${b.approved?'checked':''} onchange="DRAW[${i}].approved=this.checked;paint()"> aprovar</label>
- classe <select onchange="DRAW[${i}].class_id=+this.value;paint()">${[0,1,2,3].map(k=>`<option ${k===b.class_id?'selected':''}>${k}</option>`).join('')}</select>
- ${['xc','yc','w','h'].map(k=>`${k}<input type=number step=0.001 min=0 max=1 value=${b[k]} style=width:70px onchange="DRAW[${i}].${k}=+this.value;paint()">`).join(' ')}
- <button onclick="DRAW.splice(${i},1);paint();form()">x</button></div>`).join('');}
+  x.fillStyle=amb?'#ff0000':C[cl];x.fillText(i+':'+NAMES[cl],(xc-w/2)*CUR.width*sx,(yc-h/2)*CUR.height*sy-4);});
+ if(SEL>=0&&DRAW[SEL]&&DRAW[SEL].approved){const b=DRAW[SEL];
+  x.fillStyle='#fff';x.strokeStyle='#000';x.lineWidth=1;
+  for(const px of [b.xc-b.w/2,b.xc+b.w/2])for(const py of [b.yc-b.h/2,b.yc+b.h/2]){
+   const dx=px*CUR.width*sx,dy=py*CUR.height*sy;
+   x.fillRect(dx-4,dy-4,8,8);x.strokeRect(dx-4,dy-4,8,8);}}}
+// Sem onclick no container (era a causa dos controles mortos: todo clique
+// borbulhava e reconstruia o formulario no meio da interacao).
+function setBox(i,k,v){const b=DRAW[i];if(!b)return;
+ if(k==='class_id'){v=+v;if(![0,1,2,3].includes(v))return;b.class_id=v;}
+ else{v=+v;if(!isFinite(v))return;
+  b[k]=+((k==='w'||k==='h')?clamp(v,0.01,1):clamp(v,0,1)).toFixed(4);
+  b.xc=+clamp(b.xc,b.w/2,1-b.w/2).toFixed(4);b.yc=+clamp(b.yc,b.h/2,1-b.h/2).toFixed(4);}
+ markDirty();paint();}
+function form(){boxes.innerHTML=DRAW.map((b,i)=>`<div class="box ${i===SEL?'sel':''}">${CUR.amb.includes(i)?'<span class=amb>\\u26a0 ambigua</span> ':''}<button onclick="SEL=${i};paint();form()">sel</button>
+ <label><input type=checkbox ${b.approved?'checked':''} onchange="DRAW[${i}].approved=this.checked;markDirty();paint();form()">${b.approved?'aprovada':'rejeitada'}</label>
+ classe <select onchange="setBox(${i},'class_id',this.value)">${[0,1,2,3].map(k=>`<option value=${k} ${k===b.class_id?'selected':''}>${k} ${NAMES[k]}</option>`).join('')}</select>
+ ${['xc','yc','w','h'].map(k=>`${k}<input type=number step=0.005 min=0 max=1 value=${b[k]} style=width:75px onchange="setBox(${i},'${k}',this.value)">`).join(' ')}
+ <button onclick="DRAW.splice(${i},1);SEL=-1;markDirty();paint();form()">x</button></div>`).join('');}
 async function save(){const r=await fetch('/api/decide',{method:'POST',headers:{'Content-Type':'application/json'},
  body:JSON.stringify({image_id:CUR.id,boxes:DRAW,note:note.value,coverage_complete:cov.checked})});
  const j=await r.json();msg.textContent=j.ok?'salvo':'ERRO '+(j.error||r.status);msg.className=j.ok?'ok':'warn';
- if(j.ok){CUR.status='visually_reviewed_pending_final_gates';CUR.boxes=DRAW.filter(b=>b.approved);CUR.nboxes=CUR.boxes.length;CUR.amb=[];DECIDED++;list();}}
+ if(j.ok){CUR.status='visually_reviewed_pending_final_gates';CUR.boxes=DRAW.filter(b=>b.approved);CUR.nboxes=CUR.boxes.length;CUR.amb=[];DECIDED++;
+  DIRTY=false;updateDirty();note.value='';list();
+  prog.textContent=DECIDED+'/'+ROWS.length;
+  const nx=ROWS.find(r=>r.status.startsWith('pending'));
+  if(nx)openImg(nx.id);else msg.textContent+=' — fila concluída';}}
 document.onkeydown=e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
  const i=ROWS.indexOf(CUR);
  if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const n=ROWS[(i+(e.key==='ArrowRight'?1:-1)+ROWS.length)%ROWS.length];openImg(n.id);}
  else if(e.key==='+'||e.key==='=')zoom(1.25);else if(e.key==='-')zoom(0.8);
- else if(e.key>='0'&&e.key<='3'&&SEL>=0){DRAW[SEL].class_id=+e.key;paint();form();}
- else if((e.key==='Delete'||e.key==='Backspace')&&SEL>=0){DRAW.splice(SEL,1);SEL=-1;paint();form();}
+ else if(e.key>='0'&&e.key<='3'&&SEL>=0){setBox(SEL,'class_id',+e.key);form();}
+ else if((e.key==='Delete'||e.key==='Backspace')&&SEL>=0){DRAW.splice(SEL,1);SEL=-1;markDirty();paint();form();}
  else if(e.key==='Enter')save();};
 </script>"""
 
