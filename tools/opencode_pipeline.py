@@ -308,20 +308,33 @@ def validate_decision(image_row, boxes, note, coverage_complete):
     return kept
 
 
-def save_decision(outdir, image_row, boxes, note, coverage_complete):
+def save_decision(outdir, image_row, boxes, note, coverage_complete,
+                  amb_resolutions=None):
     """Persiste decisao por imagem; retorna (decision, updated_row).
-    Nunca escreve no manifesto oficial: outdir e isolado."""
+    amb_resolutions: [{pair: [[cls,xc,yc,w,h]x2], note}] — resolucao EXPLICITA
+    de ambiguidade com justificativa; nunca automatica. Nunca escreve no
+    manifesto oficial: outdir e isolado."""
     kept = validate_decision(image_row, boxes, note, coverage_complete)
+    resolved = []
+    for r in amb_resolutions or []:
+        pair = r.get("pair")
+        if (not isinstance(pair, list) or len(pair) != 2
+                or any(not valid_yolo_box(b) for b in pair)):
+            raise ValueError(f"bad ambiguity pair {pair}")
+        if not r.get("note") or not r["note"].strip():
+            raise ValueError("ambiguity resolution needs a note")
+        resolved.append(dict(pair_sig=pair_sig(pair), note=r["note"].strip(),
+                             date=datetime.now(timezone.utc).isoformat()))
     dec = dict(image_id=image_row["id"], platform_name=image_row["platform_name"],
                source_sha256=image_row["sha256"], boxes=kept, note=note,
                coverage_complete=bool(coverage_complete),
-               approved_boxes=len(kept),
+               approved_boxes=len(kept), amb_resolved=resolved,
                date=datetime.now(timezone.utc).isoformat())
     atomic_json(Path(outdir) / "decisions" / (image_row["id"] + ".json"), dec)
     updated = dict(image_row)
     updated.update(status="visually_reviewed_pending_final_gates", boxes=kept,
                    proposed_boxes=kept, annotation_review_complete=True,
-                   review_reason=note,
+                   review_reason=note, amb_resolved=resolved,
                    proposed_overlay_sha256=hashlib.sha256(
                        json.dumps(dec, sort_keys=True).encode()).hexdigest()[:16])
     return dec, updated
@@ -521,10 +534,22 @@ def pending_dupe_items(worklist, decisions):
 
 
 def flag_ambiguous_boxes(boxes_yolo, width, height, iou_min=0.8):
-    """Indices de caixas sobrepostas (mesma classe ou pessoa 0/2): precisam de
-    atencao humana na UI. Geometria em pixels p/ IoU."""
+    """Indices de caixas sobrepostas (compat; prefira ambiguity_report)."""
+    return sorted(ambiguity_report(boxes_yolo, width, height, iou_min)["box_idx"])
+
+
+def pair_sig(pair_boxes):
+    """Assinatura estavel de um par p/ vincular resolucoes (ordem-invariante)."""
+    norm = [[b[0]] + [round(float(v), 4) for v in b[1:5]] for b in pair_boxes]
+    return json.dumps(sorted(norm), separators=(",", ":"))
+
+
+def ambiguity_report(boxes_yolo, width, height, iou_min=0.8):
+    """Pares sobrepostos com motivo por caixa:
+    'duplicata' (mesma classe) ou 'pessoa x operador' (0/2). Derivado da
+    geometria atual — revisao humana resolve via save_decision, nunca sozinha."""
     px = [yolo_to_pixels(b, width, height) for b in boxes_yolo]
-    flagged = set()
+    pairs, reasons = [], {}
     for i in range(len(px)):
         for j in range(i):
             _, x1, y1, x2, y2 = px[i]
@@ -535,8 +560,13 @@ def flag_ambiguous_boxes(boxes_yolo, width, height, iou_min=0.8):
             same = px[i][0] == px[j][0]
             person = {px[i][0], px[j][0]} == {0, 2}
             if iou >= iou_min and (same or person):
-                flagged.update((i, j))
-    return sorted(flagged)
+                reason = ("duplicata (mesma classe, IoU %.2f)" % iou if same
+                          else "pessoa x operador (IoU %.2f)" % iou)
+                pairs.append(dict(a=j, b=i, iou=round(iou, 4), reason=reason,
+                                  pair_sig=pair_sig([boxes_yolo[j], boxes_yolo[i]])))
+                reasons.setdefault(j, reason)
+                reasons.setdefault(i, reason)
+    return dict(pairs=pairs, box_idx=sorted(reasons), box_reasons=reasons)
 
 
 # --- 9. aquisicao assistida: gates de fonte/licenca, sem downloads ---

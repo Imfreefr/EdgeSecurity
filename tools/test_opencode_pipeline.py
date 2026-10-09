@@ -8,14 +8,15 @@ from pathlib import Path
 from PIL import Image
 
 from opencode_pipeline import (
-    acquisition_gates, assign_splits, build_dupe_worklist, cluster_dupe_pairs,
-    compact_report, compute_hashes, dupe_tier, export_approved,
-    find_duplicates, find_duplicates_scalable, find_inconsistencies,
-    flag_ambiguous_boxes, import_images, load_dupe_decisions,
-    load_working_state, pending_dupe_items, pixels_to_yolo, plan_acquisition,
-    preannotate_batch, save_checkpoint, save_decision, save_dupe_decision,
-    score_group_priority, validate_acquisition,
-    validate_decision, validate_record, validate_source, write_manifest, yolo_to_pixels,
+    acquisition_gates, ambiguity_report, assign_splits, build_dupe_worklist,
+    cluster_dupe_pairs, compact_report, compute_hashes, dupe_tier,
+    export_approved, find_duplicates, find_duplicates_scalable,
+    find_inconsistencies, flag_ambiguous_boxes, import_images,
+    load_dupe_decisions, load_working_state, pair_sig, pending_dupe_items,
+    pixels_to_yolo, plan_acquisition, preannotate_batch, save_checkpoint,
+    save_decision, save_dupe_decision, score_group_priority,
+    validate_acquisition, validate_decision, validate_record, validate_source,
+    write_manifest, yolo_to_pixels,
 )
 
 
@@ -309,6 +310,13 @@ class AmbiguousAndGatesTests(unittest.TestCase):
         boxes = [[0, 0.5, 0.5, 0.4, 0.4], [0, 0.51, 0.51, 0.4, 0.4],  # mesma classe, IoU alta
                  [1, 0.1, 0.1, 0.1, 0.1]]
         self.assertEqual(flag_ambiguous_boxes(boxes, 100, 100), [0, 1])
+        rep = ambiguity_report(boxes, 100, 100)
+        self.assertEqual(rep["box_idx"], [0, 1])
+        self.assertTrue(rep["box_reasons"][0].startswith("duplicata"))
+        self.assertEqual(len(rep["pairs"]), 1)
+        self.assertIn("pair_sig", rep["pairs"][0])
+        # assinatura ordem-invariante
+        self.assertEqual(pair_sig([boxes[0], boxes[1]]), pair_sig([boxes[1], boxes[0]]))
         self.assertEqual(flag_ambiguous_boxes([[[0, 0.1, 0.1, 0.1, 0.1]][0]], 100, 100), [])
         # pessoa 0 x operador 2 sobrepostos tambem sinaliza
         self.assertEqual(flag_ambiguous_boxes(
@@ -411,6 +419,52 @@ class WhiteScreenRegressionTests(unittest.TestCase):
             finally:
                 httpd.shutdown()
                 httpd.server_close()
+
+
+class AmbiguityResolutionTests(unittest.TestCase):
+    """Resolucao explicita de ambiguidade: com nota, persistente, sem auto."""
+
+    def _row(self):
+        return dict(id="i", platform_name="i", path="p", width=100, height=100,
+                    sha256="s", status="pending_individual_visual_review",
+                    boxes=[[0, 0.5, 0.5, 0.4, 0.4], [0, 0.52, 0.52, 0.4, 0.4]],
+                    annotation_review_complete=False, approved_for_training=False)
+
+    def test_save_with_resolution_persists(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            row = self._row()
+            man = root / "m.ndjson"
+            write_manifest(man, [row])
+            out = root / "out"
+            res = [dict(pair=[row["boxes"][0], row["boxes"][1]],
+                        note="duplicata real, mantidas as duas")]
+            dec, upd = save_decision(out, row, [], note="vazio", coverage_complete=True,
+                                     amb_resolutions=res)
+            self.assertEqual(len(dec["amb_resolved"]), 1)
+            self.assertEqual(dec["amb_resolved"][0]["note"], "duplicata real, mantidas as duas")
+            self.assertIn("pair_sig", dec["amb_resolved"][0])
+            write_manifest(out / "review-manifest.ndjson", [upd])
+            state, resumed = load_working_state(man, out)  # reload
+            self.assertEqual(resumed, 1)
+            self.assertEqual(state["i"]["amb_resolved"], dec["amb_resolved"])
+
+    def test_resolution_errors_and_no_auto(self):
+        row = self._row()
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            # sem nota -> erro; par invalido -> erro
+            with self.assertRaises(ValueError):
+                save_decision(out, row, [], note="n", coverage_complete=True,
+                              amb_resolutions=[dict(pair=[row["boxes"][0], row["boxes"][1]],
+                                                    note="  ")])
+            with self.assertRaises(ValueError):
+                save_decision(out, row, [], note="n", coverage_complete=True,
+                              amb_resolutions=[dict(pair=[[9, 0.5, 0.5, 0.2, 0.2],
+                                                           row["boxes"][1]], note="n")])
+            # sem resolucoes -> nada resolvido (troca de classe nao resolve sozinha)
+            dec, _ = save_decision(out, row, [], note="n", coverage_complete=True)
+            self.assertEqual(dec["amb_resolved"], [])
 
 
 if __name__ == "__main__":

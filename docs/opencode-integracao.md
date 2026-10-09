@@ -62,6 +62,11 @@ git merge --no-ff feature/opencode-dataset-pipeline           # manual, quando q
   (dropdown fechava, foco perdido). Removido; edição visual direta (selecionar/drag/alças,
   epsilon em bordas), seletor com nomes, badge ● não salvo, salvar-avança. 16/16 no
   teste funcional Node (`opencode_editor_domtest.mjs`); 8787 reiniciado.
+- Estados visuais: ambiguidade era índice da proposta original (não recalculava após
+  editar; aprovar/classe não limpava). Agora é derivada da geometria atual com motivo
+  (`ambiguity_report`), label `i:[classe] nome`, rejeitada em cinza ✗, resolvida com ✓rev
+  só via botão+justificativa (`amb_resolved` c/ `pair_sig`, sem auto-resolução; órfãs
+  descartadas com aviso). 23/23 + 26/26 testes; 8787 reiniciado (8 linhas c/ amb).
 
 ## Pendente de validação humana
 
