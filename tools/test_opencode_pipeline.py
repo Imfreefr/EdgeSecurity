@@ -9,14 +9,16 @@ from PIL import Image
 
 from opencode_pipeline import (
     acquisition_gates, ambiguity_report, assign_splits, build_dupe_worklist,
-    cluster_dupe_pairs, compact_report, compute_hashes, dupe_tier,
-    export_approved, find_duplicates, find_duplicates_scalable,
+    check_split_leakage, check_write_origin, cluster_dupe_pairs,
+    compact_report, compute_hashes, dupe_tier, export_approved,
+    export_ultralytics, find_duplicates, find_duplicates_scalable,
     find_inconsistencies, flag_ambiguous_boxes, import_images,
-    load_dupe_decisions, load_working_state, pair_sig, pending_dupe_items,
-    pixels_to_yolo, plan_acquisition, preannotate_batch, save_checkpoint,
-    save_decision, save_dupe_decision, score_group_priority,
-    validate_acquisition, validate_decision, validate_record, validate_source,
-    write_manifest, yolo_to_pixels,
+    import_ultralytics, is_human_approved, load_dupe_decisions,
+    load_working_state, pair_sig, pending_dupe_items, pixels_to_yolo,
+    plan_acquisition, preannotate_batch, read_manifest, review_state,
+    save_checkpoint, save_decision, save_dupe_decision, score_group_priority,
+    unresolved_ambiguities, validate_acquisition, validate_decision,
+    validate_record, validate_source, write_manifest, yolo_to_pixels,
 )
 
 
@@ -88,7 +90,15 @@ class PipelineTests(unittest.TestCase):
             rows = [dict(id="ok", platform_name="ok", path="x", width=10, height=10,
                          sha256="x", status="visually_reviewed_pending_final_gates",
                          boxes=[[0, 0.5, 0.5, 0.5, 0.5]],
-                         annotation_review_complete=True, approved_for_training=False),
+                         annotation_review_complete=True, approved_for_training=False,
+                         review_method="human", reviewer="humano-teste",
+                         review_reason="confere"),
+                    # flags ligadas mas metodo auto: NAO pode exportar (regressao)
+                    dict(id="auto", platform_name="auto", path="x", width=10, height=10,
+                         sha256="w", status="visually_reviewed_pending_final_gates",
+                         boxes=[[0, 0.5, 0.5, 0.5, 0.5]],
+                         annotation_review_complete=True, approved_for_training=True,
+                         review_method="auto", reviewer=None),
                     dict(id="bad", platform_name="bad", path="x", width=10, height=10,
                          sha256="y", status="pending_individual_visual_review",
                          boxes=[[1, 9.0, 0.5, 0.2, 0.2]],
@@ -96,6 +106,13 @@ class PipelineTests(unittest.TestCase):
             rep = export_approved(rows, root / "yolo")
             self.assertEqual(rep["exported"], 1)
             self.assertTrue((root / "yolo" / "classes.txt").exists())
+            self.assertEqual(rep["skipped_by_state"].get("auto"), 2)  # auto + sem metodo
+            self.assertTrue(is_human_approved(rows[0]))
+            self.assertFalse(is_human_approved(rows[1]))
+            self.assertEqual(review_state(rows[0]), "human-approved")
+            self.assertEqual(review_state(rows[1]), "auto")
+            self.assertIn("auto/draft counted as approved",
+                          validate_record(rows[1]))
             row = dict(id="i", width=100, height=100, sha256="z")
             kept = validate_decision(row, [dict(class_id=2, xc=0.5, yc=0.5, w=0.2, h=0.2,
                                                 approved=True),
@@ -241,24 +258,49 @@ class AcquisitionTests(unittest.TestCase):
         self.assertTrue(any("50" in e or ">=" in e or "missing" in e for e in bad["issues"]))
 
     def test_splits_deterministic_no_leak(self):
-        rows = self._pool()
+        rows = self._pool(ngroups=20, per=5)
         a = assign_splits(rows)
         b = assign_splits(rows)
         self.assertEqual(a["splits"], b["splits"])  # deterministico
-        self.assertEqual(len(a["splits"]), len(rows))  # 1 imagem = 1 split
-        per = list(a["per_group"].values())[0]
-        self.assertEqual((per["train"], per["val"], per["test"]), (7, 1, 2))
+        self.assertEqual(len(a["splits"]), len(rows))
+        # REGRESSAO: nenhum grupo em dois splits (nivel de grupo)
+        self.assertEqual(check_split_leakage(rows, a["splits"]), {})
+        for g, info in a["per_group"].items():
+            got = {a["splits"][r["id"]] for r in rows if r["group"] == g}
+            self.assertEqual(len(got), 1, g)  # grupo inteiro num split so
+        self.assertAlmostEqual(sum(a["ratios"].values()), 1.0, places=3)
         v = validate_acquisition(rows, a["splits"])
-        self.assertTrue(v["valid"])
+        self.assertTrue(v["valid"], v["issues"])
+
+    def test_split_leak_detector_catches_manual_mix(self):
+        rows = self._pool(ngroups=2, per=4)
+        bad = {r["id"]: ("train" if i % 2 == 0 else "test")
+               for i, r in enumerate(rows)}  # alternado = vaza por grupo
+        leak = check_split_leakage(rows, bad)
+        self.assertEqual(set(leak), {"g0", "g1"})
+        v = validate_acquisition(rows, bad)
+        self.assertFalse(v["valid"])
+        self.assertTrue(any("leak" in e for e in v["issues"]))
 
     def test_frozen_guard_and_group_coverage(self):
-        rows = self._pool(ngroups=2, per=10)
+        rows = self._pool(ngroups=8, per=10)
+        with self.assertRaises(ValueError):
+            assign_splits(rows, frozen_groups=["g0"])
         with self.assertRaises(ValueError):
             assign_splits(rows, frozen_ids=["g0-0"])
-        ok = assign_splits(rows, frozen_ids=["g0-0"], allow_frozen_mix=True)
-        self.assertIn("g0-0", ok["splits"])
+        ok = assign_splits(rows, frozen_groups=["g0"], allow_frozen_mix=True)
+        self.assertEqual(ok["per_group"]["g0"]["split"], "test")  # congelado fica
         v = validate_acquisition(rows, ok["splits"])
-        self.assertFalse(v["valid"])  # so 2 grupos em val/teste
+        self.assertTrue(v["valid"], v["issues"])
+        tiny = self._pool(ngroups=2, per=10)
+        v2 = validate_acquisition(tiny, assign_splits(tiny)["splits"])
+        self.assertFalse(v2["valid"])  # so 2 grupos em val/teste
+
+    def test_row_without_group_rejected(self):
+        rows = self._pool(ngroups=2, per=2)
+        del rows[0]["group"]
+        with self.assertRaises(ValueError):
+            assign_splits(rows)
 
 
 class DupeReviewTests(unittest.TestCase):
@@ -465,6 +507,142 @@ class AmbiguityResolutionTests(unittest.TestCase):
             # sem resolucoes -> nada resolvido (troca de classe nao resolve sozinha)
             dec, _ = save_decision(out, row, [], note="n", coverage_complete=True)
             self.assertEqual(dec["amb_resolved"], [])
+
+    def test_unresolved_ambiguity_blocks_export(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            row = dict(self._row(), review_method="human", reviewer="hum",
+                       review_reason="ok", annotation_review_complete=True)
+            self.assertEqual(review_state(row), "unresolved-ambiguity")
+            self.assertEqual(len(unresolved_ambiguities(row)), 1)
+            rep = export_approved([row], root / "yolo")
+            self.assertEqual(rep["exported"], 0)
+            self.assertEqual(rep["skipped_by_state"].get("unresolved-ambiguity"), 1)
+            # com resolucao humana vinculada -> exporta
+            sig = pair_sig([row["boxes"][0], row["boxes"][1]])
+            row2 = dict(row, amb_resolved=[dict(pair_sig=sig, note="ok",
+                                                date="2026-10-09")])
+            self.assertEqual(review_state(row2), "human-approved")
+            rep2 = export_approved([row2], root / "yolo2")
+            self.assertEqual(rep2["exported"], 1)
+
+
+class WriteOriginTests(unittest.TestCase):
+    """Bloqueante 3: gravacao so da interface local."""
+
+    def test_pure_origin_checks(self):
+        self.assertTrue(check_write_origin("127.0.0.1:8787")[0])
+        self.assertTrue(check_write_origin("localhost", "http://localhost:8787/")[0])
+        self.assertTrue(check_write_origin("127.0.0.1", None, None)[0])  # curl/scripts
+        self.assertFalse(check_write_origin("192.168.1.5:8787")[0])
+        self.assertFalse(check_write_origin("example.com")[0])
+        self.assertFalse(check_write_origin("127.0.0.1:8787", "https://evil.test/")[0])
+        self.assertFalse(check_write_origin("127.0.0.1:8787", None, "http://evil.test/x")[0])
+        self.assertFalse(check_write_origin("", "http://127.0.0.1:8787/")[0])
+
+    def test_live_rejects_foreign_origin(self):
+        import threading
+        import urllib.request
+        from http.server import HTTPServer
+        import opencode_review_server as srv
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            p = make_img(root / "a.png", size=(64, 48))
+            row = dict(id="a", platform_name="a", path=str(p), width=64, height=48,
+                       sha256=hashlib.sha256(p.read_bytes()).hexdigest(),
+                       status="pending_individual_visual_review", boxes=[])
+            man = root / "m.ndjson"
+            write_manifest(man, [row])
+            srv.Handler.rows, _ = load_working_state(man, root / "out")
+            srv.Handler.outdir = root / "out"
+            srv.Handler.outdir.mkdir(exist_ok=True)
+            srv.Handler.dupes = None
+            httpd = HTTPServer(("127.0.0.1", 0), srv.Handler)
+            port = httpd.server_address[1]
+            threading.Thread(target=httpd.serve_forever, daemon=True).start()
+            base = f"http://127.0.0.1:{port}"
+            body = json.dumps({"image_id": "a", "boxes": [], "note": "n",
+                               "coverage_complete": True}).encode()
+
+            def post(origin=None):
+                req = urllib.request.Request(
+                    base + "/api/decide", data=body,
+                    headers={"Content-Type": "application/json",
+                             **({"Origin": origin} if origin else {})}, method="POST")
+                try:
+                    return urllib.request.urlopen(req).status, None
+                except urllib.request.HTTPError as e:
+                    return e.code, e.read().decode("utf-8", "replace")
+
+            code, _ = post("https://evil.test/")
+            self.assertEqual(code, 403)
+            self.assertFalse((root / "out" / "decisions" / "a.json").exists())
+            code, _ = post("http://127.0.0.1:%d/" % port)
+            self.assertEqual(code, 200)
+            code, _ = post(None)  # sem Origin (curl/scripts locais)
+            self.assertEqual(code, 200)
+            httpd.shutdown()
+            httpd.server_close()
+
+
+class UltralyticsIOTests(unittest.TestCase):
+    """Export compativel + import como draft (nunca aprovado)."""
+
+    def _human_row(self, i, img, group="g-ultra"):
+        return dict(id=f"u{i}", platform_name=f"u{i}", path=str(img),
+                    width=64, height=48, sha256=hashlib.sha256(img.read_bytes()).hexdigest(),
+                    status="visually_reviewed_pending_final_gates",
+                    boxes=[[0, 0.5, 0.5, 0.4, 0.4]], approved_for_training=False,
+                    annotation_review_complete=True, confirmed_negative=False,
+                    source="origem-teste", license="CC-BY-4.0", group=group,
+                    review_method="human", reviewer="hum", review_reason="ok")
+
+    def test_export_only_human_and_roundtrip_is_draft(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            img = make_img(root / "src.png")
+            rows = [self._human_row(0, img),
+                    dict(self._human_row(1, img), id="u1", platform_name="u1",
+                         review_method="draft", reviewer=None, review_reason="")]
+            splits = {"u0": "train", "u1": "val"}
+            rep = export_ultralytics(rows, root / "pkg", splits)
+            self.assertEqual(rep["labels"], 1)
+            self.assertEqual(rep["pending_review"], 1)
+            self.assertTrue((root / "pkg" / "labels" / "train" / "u0.txt").exists())
+            self.assertFalse((root / "pkg" / "labels" / "val" / "u1.txt").exists())
+            yaml = (root / "pkg" / "data.yaml").read_text(encoding="utf-8")
+            self.assertIn("nc: 4", yaml)
+            meta = json.loads((root / "pkg" / "review-manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(meta["u0"]["review_state"], "human-approved")
+            self.assertEqual(meta["u0"]["license"], "CC-BY-4.0")
+            # round-trip: importado volta como draft e NAO exporta sem revisao
+            rep2 = import_ultralytics(root / "pkg", root / "store", root / "imp.ndjson")
+            self.assertEqual(rep2["imported"], 2)  # u0 rotulada + u1 sem txt
+            back = read_manifest(root / "imp.ndjson")
+            self.assertTrue(all(r["review_method"] == "draft" for r in back))
+            self.assertTrue(all(r["status"] == "pending_individual_visual_review" for r in back))
+            self.assertEqual(export_approved(back, root / "yolo")["exported"], 0)
+
+    def test_import_rejects_bad_labels_and_missing_provenance(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            imgs = root / "pkg" / "images"
+            labs = root / "pkg" / "labels"
+            imgs.mkdir(parents=True)
+            labs.mkdir(parents=True)
+            make_img(imgs / "good.png")
+            (labs / "good.txt").write_text("0 0.5 0.5 0.4 0.4\n", encoding="utf-8")
+            make_img(imgs / "bad.png")
+            (labs / "bad.txt").write_text("9 0.5 0.5 0.4 0.4\n", encoding="utf-8")
+            with self.assertRaises(ValueError):  # sem proveniencia
+                import_ultralytics(root / "pkg", root / "s1", root / "m1.ndjson")
+            rep = import_ultralytics(root / "pkg", root / "s2", root / "m2.ndjson",
+                                     default_source="s", default_license="CC-BY-4.0",
+                                     default_group="g")
+            self.assertEqual(rep["imported"], 1)
+            self.assertEqual(rep["skipped"][0]["file"], "bad.png")
+            back = read_manifest(root / "m2.ndjson")
+            self.assertEqual(back[0]["boxes"], [[0, 0.5, 0.5, 0.4, 0.4]])
 
 
 if __name__ == "__main__":

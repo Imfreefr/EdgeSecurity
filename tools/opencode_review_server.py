@@ -15,8 +15,9 @@ from urllib.parse import parse_qs, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from opencode_pipeline import (  # noqa: E402
-    ambiguity_report, load_dupe_decisions, load_working_state,
-    pending_dupe_items, save_decision, save_dupe_decision, write_manifest,
+    ambiguity_report, check_write_origin, load_dupe_decisions,
+    load_working_state, pending_dupe_items, save_decision, save_dupe_decision,
+    write_manifest,
 )
 
 PAGE = """<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
@@ -293,6 +294,13 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, "{}")
 
     def do_POST(self):
+        # Gravacao so da interface local: Host loopback + Origin/Referer
+        # mesma-origem quando presentes. Nao depende de CORS.
+        ok, why = check_write_origin(self.headers.get("Host"),
+                                     self.headers.get("Origin"),
+                                     self.headers.get("Referer"))
+        if not ok:
+            return self._send(403, json.dumps(dict(ok=False, error=why)))
         path = urlparse(self.path).path
         try:
             body = json.loads(self.rfile.read(int(self.headers["Content-Length"] or 0)))
