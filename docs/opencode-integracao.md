@@ -68,6 +68,27 @@ git merge --no-ff feature/opencode-dataset-pipeline           # manual, quando q
   só via botão+justificativa (`amb_resolved` c/ `pair_sig`, sem auto-resolução; órfãs
   descartadas com aviso). 23/23 + 26/26 testes; 8787 reiniciado (8 linhas c/ amb).
 
+## Bloqueantes Codex (corrigidos nesta branch, sem merge/push)
+
+1. **Vazamento entre grupos nos splits** — `assign_splits` repartia 70/15/15 *dentro* de
+   cada grupo (todo grupo aparecia nos 3 splits) e o detector de vazamento era vazio
+   (`len(dict)` nunca acusa). Agora: split em **nível de grupo** (grupo inteiro num split
+   só), determinístico, grupo sem nome rejeitado, congelados nunca redistribuídos,
+   `check_split_leakage` real ligado em `validate_acquisition`.
+2. **Proposta auto como revisão** — estados rigorosos `auto|draft|human-approved|
+   unresolved-ambiguity|rejected` (`review_state`); `export_approved` só sai com
+   `review_method=human` + revisor + motivo e sem ambiguidade aberta; `save_decision`
+   carimba humano; import vira `draft`. `validate_record` acusa `approved_for_training`
+   sem humano.
+3. **POST de origem estrangeira** — `check_write_origin`: Host precisa ser loopback e
+   Origin/Referer presentes precisam ser mesma-origem loopback (sem depender de CORS);
+   servidor mantém bind 127.0.0.1; 403 sem gravar nada.
+4. **Ultralytics como interface principal** — studio próprio suspenso (auxiliar);
+   `export_ultralytics` (images/labels/data.yaml/review-manifest.json, só aprovadas;
+   sem upload) + `import_ultralytics` (proveniência obrigatória, tudo `draft`,
+   linhas inválidas rejeitam a imagem). Round-trip validado: importado não exporta
+   sem revisão humana.
+
 ## Pendente de validação humana
 
 - Inspeção visual das overlays (ferramenta validada, não anotação).

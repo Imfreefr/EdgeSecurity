@@ -91,9 +91,42 @@ def validate_record(row):
             break
     if row.get("approved_for_training") and not row.get("annotation_review_complete"):
         errs.append("approved without review")
+    if row.get("approved_for_training") and not is_human_approved(row):
+        errs.append("auto/draft counted as approved")
     if row.get("approved_for_training") and not row.get("boxes") and not row.get("confirmed_negative"):
         errs.append("approved empty without negative confirmation")
     return errs
+
+
+REVIEW_METHODS = {"auto", "draft", "human"}
+
+
+def is_human_approved(row):
+    """So conta como aprovada: flag de revisao + metodo humano + revisor + motivo.
+    Proposta automatica ou rascunho nunca passam, mesmo com flags ligadas."""
+    return bool(row.get("annotation_review_complete")
+                and row.get("review_method") == "human"
+                and row.get("reviewer")
+                and (row.get("review_reason") or row.get("note")))
+
+
+def unresolved_ambiguities(row):
+    """Pares ambiguos da geometria atual sem resolucao humana vinculada."""
+    rep = ambiguity_report(row.get("boxes", []), row.get("width", 0) or 0,
+                           row.get("height", 0) or 0)
+    done = {r.get("pair_sig") for r in row.get("amb_resolved", [])}
+    return [p for p in rep["pairs"] if p["pair_sig"] not in done]
+
+
+def review_state(row):
+    """auto | draft | human-approved | unresolved-ambiguity | rejected."""
+    if str(row.get("status", "")).startswith("excluded"):
+        return "rejected"
+    if is_human_approved(row):
+        return "unresolved-ambiguity" if unresolved_ambiguities(row) else "human-approved"
+    if row.get("review_method") == "draft":
+        return "draft"
+    return "auto"
 
 
 # --- 1. pre-anotacao em lote (reusa implementacao existente) ---
@@ -132,7 +165,8 @@ def import_images(src_paths, dest_dir, source, license, group, manifest_out, dat
             status="pending_individual_visual_review", boxes=[],
             approved_for_training=False, annotation_review_complete=False,
             confirmed_negative=False, source=source, license=license,
-            group=group, import_date=date))
+            group=group, import_date=date, review_method="draft",
+            review_decision=None, reviewer=None))
         n_group += 1
     write_manifest(manifest_out, rows)
     return dict(imported=len(src_paths), group=group, total=len(rows))
@@ -251,22 +285,28 @@ def validate_manifest(rows):
 
 
 def export_approved(rows, outdir, image_ext=".txt"):
+    """Exporta SOMENTE revisao humana aprovada sem ambiguidade aberta.
+    Auto/draft/rejeitado nunca saem, mesmo com flags ligadas."""
     outdir = Path(outdir)
     outdir.mkdir(parents=True, exist_ok=True)
     (outdir / "classes.txt").write_text("\n".join(CLASSES) + "\n", encoding="utf-8")
-    n, skipped = 0, 0
+    n, skipped, reasons = 0, 0, Counter()
     for r in rows:
-        if not r.get("annotation_review_complete"):
+        state = review_state(r)
+        if state != "human-approved":
             skipped += 1
+            reasons[state] += 1
             continue
         if validate_record(r):
             skipped += 1
+            reasons["invalid-geometry"] += 1
             continue
         lines = [f"{c} {x} {y} {w} {h}" for c, x, y, w, h in r.get("boxes", [])]
         (outdir / (r["platform_name"] + image_ext)).write_text(
             ("\n".join(lines) + "\n") if lines else "", encoding="utf-8")
         n += 1
-    rep = dict(exported=n, skipped=skipped, classes=list(CLASSES))
+    rep = dict(exported=n, skipped=skipped, classes=list(CLASSES),
+               skipped_by_state=dict(reasons))
     atomic_json(outdir / "export-report.json", rep)
     return rep
 
@@ -329,12 +369,16 @@ def save_decision(outdir, image_row, boxes, note, coverage_complete,
                source_sha256=image_row["sha256"], boxes=kept, note=note,
                coverage_complete=bool(coverage_complete),
                approved_boxes=len(kept), amb_resolved=resolved,
+               review_method="human", reviewer="opencode-studio",
                date=datetime.now(timezone.utc).isoformat())
     atomic_json(Path(outdir) / "decisions" / (image_row["id"] + ".json"), dec)
     updated = dict(image_row)
     updated.update(status="visually_reviewed_pending_final_gates", boxes=kept,
                    proposed_boxes=kept, annotation_review_complete=True,
                    review_reason=note, amb_resolved=resolved,
+                   review_method="human", review_decision="approved",
+                   reviewer="opencode-studio",
+                   review_date=datetime.now(timezone.utc).isoformat(),
                    proposed_overlay_sha256=hashlib.sha256(
                        json.dumps(dec, sort_keys=True).encode()).hexdigest()[:16])
     return dec, updated
@@ -357,9 +401,34 @@ def load_working_state(manifest_path, outdir):
     return base, resumed
 
 
+# --- seguranca do servidor local: gravacao so da interface autorizada ---
+LOOPBACK_HOSTS = {"127.0.0.1", "::1", "localhost"}
+
+
+def check_write_origin(host, origin=None, referer=None):
+    """POSTs que alteram dados exigem Host loopback; Origin/Referer, quando
+    presentes (navegadores sempre enviam em POST), precisam ser mesma-origem
+    loopback. Sem depender de CORS. Retorna (ok, motivo)."""
+    from urllib.parse import urlparse
+    hostname = (host or "").split("@")[-1].split(":")[0].strip("[]").lower()
+    if hostname not in LOOPBACK_HOSTS:
+        return False, f"forbidden host {host!r}"
+    for label, value in (("origin", origin), ("referer", referer)):
+        if not value:
+            continue
+        try:
+            parts = urlparse(value)
+        except Exception:
+            return False, f"bad {label}"
+        if parts.scheme not in ("http", "https"):
+            return False, f"bad {label} scheme"
+        if (parts.hostname or "").strip("[]").lower() not in LOOPBACK_HOSTS:
+            return False, f"foreign {label} {value!r}"
+    return True, "local"
+
+
 # --- 7. aquisicao das 1000 novas imagens (planejamento + splits, sem download) ---
 ACQ_SPLITS = dict(train=0.70, val=0.15, test=0.15)
-ACQ_SEED = 42
 ACQ_MIN_GROUPS = 20
 
 
@@ -389,31 +458,55 @@ def plan_acquisition(groups):
                 cctv_elevado_images=cctv, issues=issues, ready=not issues)
 
 
-def assign_splits(rows, seed=ACQ_SEED, frozen_ids=(), allow_frozen_mix=False):
-    """Split 70/15/15 deterministico por grupo (seed 42). Uma imagem = um split
-    (sem vazamento). Recusa misturar ids do teste congelado sem flag explicita."""
-    import random
-    frozen = set(frozen_ids)
+def check_split_leakage(rows, splits):
+    """Grupos independentes presentes em mais de um split = vazamento.
+    Retorna {grupo: [splits]} vazio quando limpo."""
+    seen = {}
+    for r in rows:
+        seen.setdefault(r.get("group"), set()).add(splits.get(r["id"]))
+    return {g: sorted(s - {None}) for g, s in seen.items() if len(s - {None}) > 1}
+
+
+def assign_splits(rows, frozen_groups=(), frozen_ids=(), allow_frozen_mix=False,
+                  min_val_groups=3, min_test_groups=3):
+    """Split ~70/15/15 em NIVEL DE GRUPO: cada grupo independente vai INTEIRO
+    para um unico split — nenhum grupo aparece em dois splits (sem vazamento).
+    Deterministico (ordena por tamanho/nome, sem sorteio). Grupos congelados
+    (teste ja fixado) nunca sao redistribuidos: ficam no teste. Val/teste
+    recebem os menores grupos ate a cobertura minima; o resto vai ao maior
+    deficit. Grupo sem nome e rejeitado (vazamento se esconde em anonimo)."""
+    frozen_g, frozen_i = set(frozen_groups), set(frozen_ids)
     by_group = {}
     for r in rows:
-        if r["id"] in frozen and not allow_frozen_mix:
-            raise ValueError(f"frozen test id in new pool (need explicit protocol): {r['id']}")
-        by_group.setdefault(r.get("group", "?"), []).append(r["id"])
-    splits, per_group = {}, {}
-    for group in sorted(by_group):
-        ids = sorted(by_group[group])
-        rng = random.Random(int(hashlib.sha256(f"{seed}:{group}".encode()).hexdigest()[:16], 16))
-        rng.shuffle(ids)
-        n = len(ids)
-        n_train = int(n * ACQ_SPLITS["train"])
-        n_val = int(n * ACQ_SPLITS["val"])
-        alloc = (["train"] * n_train + ["val"] * n_val +
-                 ["test"] * (n - n_train - n_val))
-        per_group[group] = dict(n=n, train=alloc.count("train"),
-                                val=alloc.count("val"), test=alloc.count("test"))
-        for i, v in zip(ids, alloc):
-            splits[i] = v
-    return dict(splits=splits, per_group=per_group, seed=seed)
+        group = r.get("group")
+        if not group:
+            raise ValueError(f"row {r.get('id', '?')} without independent group")
+        if (group in frozen_g or r["id"] in frozen_i) and not allow_frozen_mix:
+            raise ValueError(f"frozen test data in new pool (need explicit protocol): {group}")
+        by_group.setdefault(group, []).append(r["id"])
+    total = sum(len(v) for v in by_group.values())
+    targets = {s: total * ACQ_SPLITS[s] for s in ("train", "val", "test")}
+    group_split, counts = {}, {s: 0 for s in targets}
+    groups_in = lambda s: sum(1 for g, v in group_split.items() if v == s)
+    for group in sorted(frozen_g & set(by_group)):
+        group_split[group] = "test"
+        counts["test"] += len(by_group[group])
+    ordered = sorted((g for g in by_group if g not in group_split),
+                     key=lambda g: (len(by_group[g]), g))
+    for group in ordered:  # cobertura minima primeiro (menores grupos), resto no deficit
+        if groups_in("val") < min_val_groups and (
+                groups_in("test") >= min_test_groups or len(by_group[group]) <= total * 0.05 + 1):
+            group_split[group] = "val"
+        elif groups_in("test") < min_test_groups:
+            group_split[group] = "test"
+        else:
+            group_split[group] = max(targets, key=lambda s: targets[s] - counts[s])
+        counts[group_split[group]] += len(by_group[group])
+    splits = {i: group_split[g] for g, ids in by_group.items() for i in ids}
+    assert not check_split_leakage(rows, splits), "internal leak"
+    per_group = {g: dict(n=len(ids), split=group_split[g]) for g, ids in by_group.items()}
+    return dict(splits=splits, per_group=per_group,
+                ratios={s: round(counts[s] / total, 4) if total else 0 for s in counts})
 
 
 def validate_acquisition(rows, splits, min_val_groups=3, min_test_groups=3):
@@ -433,9 +526,11 @@ def validate_acquisition(rows, splits, min_val_groups=3, min_test_groups=3):
             cls.update(c for c, *_ in r.get("boxes", []))
     if not {0, 1} <= cls:
         issues.append("test split must contain pedestre(0)+empilhadeira(1)")
-    leaked = len(splits) - len(set(splits))
-    if leaked:
-        issues.append("leak: image in multiple splits")
+    for group, where in sorted(check_split_leakage(rows, splits).items()):
+        issues.append(f"leak: group {group} in splits {where}")
+    unassigned = [r["id"] for r in rows if r["id"] not in splits]
+    if unassigned:
+        issues.append(f"{len(unassigned)} images without split")
     return dict(issues=issues, groups_per_split={k: sorted(v) for k, v in by_split_groups.items()},
                 valid=not issues)
 
@@ -621,3 +716,133 @@ def acquisition_gates(groups):
     return dict(gates=gates, issues=issues,
                 collect_order=[g for _, g in ranked],
                 planned_images=plan["planned_images"])
+
+
+# --- 10. Ultralytics Platform: export compativel + import com metadados ---
+def export_ultralytics(rows, outdir, splits=None, dataset_name="edgesecurity-cctv"):
+    """Pacote p/ a Ultralytics Platform (interface principal de anotacao):
+    images/{split}/ + labels/{split}/ (.txt YOLO so de human-approved) +
+    data.yaml + review-manifest.json (metadados de revisao por imagem).
+    Rascunhos/auto saem SEM txt e listados em pending-review. Nao faz upload."""
+    outdir = Path(outdir)
+    splits = splits or {}
+    meta, counts = {}, Counter()
+    for r in rows:
+        split = splits.get(r["id"], "train")
+        if split not in ("train", "val", "test"):
+            raise ValueError(f"bad split {split} for {r['id']}")
+        src = Path(r["path"])
+        if not src.is_file():
+            counts["missing-image"] += 1
+            continue
+        idir = outdir / "images" / split
+        ldir = outdir / "labels" / split
+        idir.mkdir(parents=True, exist_ok=True)
+        ldir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, idir / (r["platform_name"] + src.suffix))
+        state = review_state(r)
+        if state == "human-approved" and not validate_record(r):
+            lines = [f"{c} {x} {y} {w} {h}" for c, x, y, w, h in r.get("boxes", [])]
+            (ldir / (r["platform_name"] + ".txt")).write_text(
+                ("\n".join(lines) + "\n") if lines else "", encoding="utf-8")
+            counts["labeled"] += 1
+        else:
+            counts["pending-review"] += 1
+        meta[r["id"]] = dict(platform_name=r["platform_name"], sha256=r["sha256"],
+                             width=r["width"], height=r["height"], split=split,
+                             source=r.get("source", ""), license=r.get("license", ""),
+                             group=r.get("group", ""), review_state=state,
+                             review_method=r.get("review_method"),
+                             reviewer=r.get("reviewer"),
+                             review_date=r.get("review_date"),
+                             review_reason=r.get("review_reason", ""))
+    (outdir / "data.yaml").write_text(
+        f"path: {outdir.resolve()}\ntrain: images/train\nval: images/val\n"
+        f"test: images/test\nnc: 4\nnames: [{', '.join(CLASSES)}]\n",
+        encoding="utf-8")
+    atomic_json(outdir / "review-manifest.json", meta)
+    rep = dict(dataset=dataset_name, images=len(meta), labels=counts["labeled"],
+               pending_review=counts["pending-review"],
+               missing_images=counts["missing-image"], splits=dict(Counter(
+                   m["split"] for m in meta.values())))
+    atomic_json(outdir / "export-report.json", rep)
+    return rep
+
+
+def import_ultralytics(package_dir, dest_dir, manifest_out, default_source="",
+                       default_license="", default_group=""):
+    """Le pacote images/ + labels/ (+ review-manifest.json p/ proveniencia).
+    Proveniencia obrigatoria (mapa ou padrao explicito). Tudo entra como DRAFT,
+    nunca aprovado — precisa de revisao humana antes de exportar. Linhas
+    invalidas rejeitam a imagem inteira, com motivo no relatorio."""
+    package_dir, dest_dir, manifest_out = map(Path, (package_dir, dest_dir, manifest_out))
+    known = {}
+    pmap = package_dir / "review-manifest.json"
+    if pmap.is_file():
+        known = json.loads(pmap.read_text(encoding="utf-8"))
+    if manifest_out.exists():
+        existing = read_manifest(manifest_out)
+    else:
+        existing = []
+    have_ids = {r["id"] for r in existing}
+    rows, skipped = list(existing), []
+    imgs = sorted(p for p in (package_dir / "images").rglob("*")
+                  if p.suffix.lower() in (".jpg", ".jpeg", ".png", ".webp"))
+    if not imgs:
+        raise ValueError("no images in package")
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    for src in imgs:
+        ident, meta = src.stem, known.get(src.stem, {})
+        if ident in have_ids:
+            skipped.append(dict(file=src.name, reason="duplicate id"))
+            continue
+        source = meta.get("source", default_source)
+        license = meta.get("license", default_license)
+        group = meta.get("group", default_group)
+        if not (source and license and group):
+            raise ValueError(f"{src.name}: provenance missing (no map, no default)")
+        boxes, bad = [], None
+        lab = package_dir / "labels" / (src.stem + ".txt")
+        if not lab.is_file():  # layout sem subpastas de split
+            lab = next((c for c in package_dir.rglob(src.stem + ".txt")), None)
+        if lab is not None:
+            for ln, line in enumerate(lab.read_text(encoding="utf-8").splitlines(), 1):
+                if not line.strip():
+                    continue
+                parts = line.split()
+                try:
+                    cls = int(parts[0])
+                    box = [cls] + [float(v) for v in parts[1:5]]
+                    assert len(parts) == 5
+                except Exception:
+                    bad = f"line {ln}: malformed"
+                    break
+                if not valid_yolo_box(box):
+                    bad = f"line {ln}: invalid class/geometry"
+                    break
+                boxes.append(box)
+        if bad:
+            skipped.append(dict(file=src.name, reason=bad))
+            continue
+        with Image.open(src) as im:
+            im.load()
+            w, h = im.size
+        dst = dest_dir / src.name
+        if dst.exists():
+            skipped.append(dict(file=src.name, reason="duplicate file"))
+            continue
+        shutil.copyfile(src, dst)
+        rows.append(dict(
+            id=ident, platform_name=ident, path=str(dst.resolve()),
+            width=w, height=h, sha256=digest(dst),
+            status="pending_individual_visual_review", boxes=boxes,
+            approved_for_training=False, annotation_review_complete=False,
+            confirmed_negative=False, source=source, license=license,
+            group=group, import_date=datetime.now(timezone.utc).date().isoformat(),
+            review_method="draft", review_decision=None, reviewer=None,
+            imported_from="ultralytics-platform"))
+        have_ids.add(ident)
+    write_manifest(manifest_out, rows)
+    rep = dict(imported=len(rows) - len(existing), skipped=skipped, total=len(rows))
+    atomic_json(manifest_out.parent / "import-report.json", rep)
+    return rep
