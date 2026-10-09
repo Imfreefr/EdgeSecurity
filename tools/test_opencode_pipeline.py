@@ -8,11 +8,14 @@ from pathlib import Path
 from PIL import Image
 
 from opencode_pipeline import (
-    assign_splits, compact_report, compute_hashes, export_approved,
+    acquisition_gates, assign_splits, build_dupe_worklist, cluster_dupe_pairs,
+    compact_report, compute_hashes, dupe_tier, export_approved,
     find_duplicates, find_duplicates_scalable, find_inconsistencies,
-    import_images, load_working_state, pixels_to_yolo, plan_acquisition,
-    preannotate_batch, save_checkpoint, save_decision, validate_acquisition,
-    validate_decision, validate_record, write_manifest, yolo_to_pixels,
+    flag_ambiguous_boxes, import_images, load_dupe_decisions,
+    load_working_state, pending_dupe_items, pixels_to_yolo, plan_acquisition,
+    preannotate_batch, save_checkpoint, save_decision, save_dupe_decision,
+    score_group_priority, validate_acquisition,
+    validate_decision, validate_record, validate_source, write_manifest, yolo_to_pixels,
 )
 
 
@@ -255,6 +258,85 @@ class AcquisitionTests(unittest.TestCase):
         self.assertIn("g0-0", ok["splits"])
         v = validate_acquisition(rows, ok["splits"])
         self.assertFalse(v["valid"])  # so 2 grupos em val/teste
+
+
+class DupeReviewTests(unittest.TestCase):
+    """Item 1: tiers, clusters, decisoes, nada auto-excluido."""
+
+    def _row(self, i):
+        return dict(id=i, platform_name=i, path=f"/tmp/{i}.jpg", width=64, height=48,
+                    sha256="s" + i, status="pending_individual_visual_review",
+                    boxes=[], group="g", source_dataset="origem-teste")
+
+    def test_tiers(self):
+        self.assertEqual(dupe_tier({"sha256": "x"}), ("exact", 1.0))
+        self.assertEqual(dupe_tier({"hamming": 0})[0], "near")
+        self.assertEqual(dupe_tier({"hamming": 2})[0], "near")
+        self.assertEqual(dupe_tier({"hamming": 3})[0], "similar")
+        t, s = dupe_tier({"hamming": 4})
+        self.assertEqual(t, "similar")
+        self.assertAlmostEqual(s, 1 - 4 / 64)
+
+    def test_clusters(self):
+        clusters = cluster_dupe_pairs([("a", "b"), ("b", "c"), ("d", "e")])
+        self.assertEqual(sorted(map(sorted, clusters)), [["a", "b", "c"], ["d", "e"]])
+
+    def test_worklist_and_decisions(self):
+        rows = [self._row(i) for i in "abc"]
+        rows[0] = dict(rows[0], sha256="same")
+        rows[1] = dict(rows[1], sha256="same")
+        dup = dict(exact={"same": ["a", "b"]}, near=[dict(pair=["b", "c"], hamming=4)])
+        wl = build_dupe_worklist(rows, dup)
+        self.assertEqual(len(wl["items"]), 2)
+        tiers = {i["tier"] for i in wl["items"]}
+        self.assertEqual(tiers, {"exact", "similar"})
+        self.assertTrue(all(i["a"]["source"] == "origem-teste" for i in wl["items"]))
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            dec = save_dupe_decision(out, "a:::b", "duplicate", note="iguais")
+            self.assertEqual(dec["verdict"], "duplicate")
+            self.assertEqual(len(pending_dupe_items(wl, load_dupe_decisions(out))), 1)
+            with self.assertRaises(ValueError):
+                save_dupe_decision(out, "a:::c", "maybe", note="n")
+            with self.assertRaises(ValueError):
+                save_dupe_decision(out, "a:::c", "duplicate", note="  ")
+
+
+class AmbiguousAndGatesTests(unittest.TestCase):
+    """Itens 3 e 4: caixas ambiguas + gates de aquisicao."""
+
+    def test_flag_ambiguous(self):
+        boxes = [[0, 0.5, 0.5, 0.4, 0.4], [0, 0.51, 0.51, 0.4, 0.4],  # mesma classe, IoU alta
+                 [1, 0.1, 0.1, 0.1, 0.1]]
+        self.assertEqual(flag_ambiguous_boxes(boxes, 100, 100), [0, 1])
+        self.assertEqual(flag_ambiguous_boxes([[[0, 0.1, 0.1, 0.1, 0.1]][0]], 100, 100), [])
+        # pessoa 0 x operador 2 sobrepostos tambem sinaliza
+        self.assertEqual(flag_ambiguous_boxes(
+            [[0, 0.5, 0.5, 0.4, 0.4], [2, 0.5, 0.5, 0.4, 0.4]], 100, 100), [0, 1])
+
+    def test_source_gates(self):
+        good = dict(group="g1", source="https://exemplo/dataset", license="CC-BY-4.0",
+                    viewpoint="cftv_elevado", environments=["patio"], count=50)
+        self.assertEqual(validate_source(good), [])
+        bad = dict(group="g2", source="", license="todos-direitos", viewpoint="")
+        self.assertTrue(len(validate_source(bad)) >= 2)
+        auth = dict(group="g3", source="privado", license="proprietaria",
+                    authorization_ref="contrato-12", viewpoint="cftv_elevado",
+                    environments=["doca"], count=10)
+        self.assertEqual(validate_source(auth), [])
+        self.assertGreater(score_group_priority(good, set()),
+                           score_group_priority(dict(viewpoint="rua", environments=[],
+                                                     lighting=[]), {"patio"}))
+        groups = [dict(group=f"g{i}", source="s", license="CC-BY-4.0",
+                       viewpoint="cftv_elevado", environments=[f"env{i}"], count=50)
+                  for i in range(20)]
+        g = acquisition_gates(groups)
+        self.assertTrue(g["gates"]["ready"])
+        self.assertFalse(g["gates"]["download_allowed"])  # humano autoriza fora
+        # empate de score: desempate reverso por nome de grupo (deterministico)
+        self.assertEqual(g["collect_order"], sorted([f"g{i}" for i in range(20)], reverse=True))
+        g2 = acquisition_gates(groups[:3])
+        self.assertFalse(g2["gates"]["ready"])
 
 
 if __name__ == "__main__":

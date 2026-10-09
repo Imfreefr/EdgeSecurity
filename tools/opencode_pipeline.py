@@ -425,3 +425,169 @@ def validate_acquisition(rows, splits, min_val_groups=3, min_test_groups=3):
         issues.append("leak: image in multiple splits")
     return dict(issues=issues, groups_per_split={k: sorted(v) for k, v in by_split_groups.items()},
                 valid=not issues)
+
+
+# --- 8. revisao de duplicatas: tiers, clusters, decisoes persistentes ---
+DUPE_TIERS = dict(exact="duplicata exata", near="quase-duplicata", similar="cena parecida")
+DUPE_VERDICTS = {"duplicate", "not_duplicate"}
+
+
+def dupe_tier(entry):
+    """entry de find_duplicates_scalable -> (tier, score 0..1)."""
+    if "sha256" in entry:
+        return "exact", 1.0
+    d = entry.get("hamming", 64)
+    if d <= 2:
+        return "near", 1.0 - d / 64.0
+    return "similar", 1.0 - d / 64.0
+
+
+def cluster_dupe_pairs(pairs):
+    """Union-find: pares que compartilham imagens viram um cluster.
+    Reduz N comparacoes a poucos grupos p/ revisao."""
+    parent = {}
+
+    def find(x):
+        parent.setdefault(x, x)
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    for a, b in pairs:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb
+    clusters = {}
+    for x in list(parent):
+        clusters.setdefault(find(x), []).append(x)
+    return [sorted(v) for v in clusters.values()]
+
+
+def build_dupe_worklist(rows, dup_result):
+    """Junta exatas + proximas num worklist com tier, score e origem.
+    So propoe; nunca exclui."""
+    by_id = {r["id"]: r for r in rows}
+    items = []
+    for sha, ids in dup_result.get("exact", {}).items():
+        ids = sorted(ids)
+        for i in range(len(ids)):
+            for j in range(i):
+                a, b = by_id[ids[j]], by_id[ids[i]]
+                items.append(dict(key=f"{a['id']}:::{b['id']}", tier="exact", score=1.0,
+                                  a=_dupe_side(a), b=_dupe_side(b)))
+    for e in dup_result.get("near", []):
+        a, b = by_id[e["pair"][0]], by_id[e["pair"][1]]
+        tier, score = dupe_tier(e)
+        items.append(dict(key=f"{a['id']}:::{b['id']}", tier=tier, score=round(score, 4),
+                          hamming=e.get("hamming"), a=_dupe_side(a), b=_dupe_side(b)))
+    clusters = cluster_dupe_pairs([tuple(i["key"].split(":::")) for i in items])
+    return dict(items=items, clusters=clusters, tiers={t: DUPE_TIERS[t] for t in DUPE_TIERS})
+
+
+def _dupe_side(r):
+    return dict(id=r["id"], platform_name=r["platform_name"], path=r["path"],
+                width=r.get("width"), height=r.get("height"),
+                group=r.get("group"), source=r.get("source_dataset", r.get("source", "")),
+                status=r.get("status"), nboxes=len(r.get("boxes", [])))
+
+
+def save_dupe_decision(outdir, key, verdict, note=""):
+    if verdict not in DUPE_VERDICTS:
+        raise ValueError(f"verdict must be one of {sorted(DUPE_VERDICTS)}")
+    if not note or not note.strip():
+        raise ValueError("note required")
+    dec = dict(key=key, verdict=verdict, note=note,
+               date=datetime.now(timezone.utc).isoformat())
+    atomic_json(Path(outdir) / "dupe-decisions" / (hashlib.sha256(key.encode()).hexdigest()[:16] + ".json"), dec)
+    return dec
+
+
+def load_dupe_decisions(outdir):
+    d = Path(outdir) / "dupe-decisions"
+    out = {}
+    if d.is_dir():
+        for f in d.glob("*.json"):
+            try:
+                dec = json.loads(f.read_text(encoding="utf-8"))
+                out[dec["key"]] = dec
+            except Exception:
+                continue
+    return out
+
+
+def pending_dupe_items(worklist, decisions):
+    return [i for i in worklist["items"] if i["key"] not in decisions]
+
+
+def flag_ambiguous_boxes(boxes_yolo, width, height, iou_min=0.8):
+    """Indices de caixas sobrepostas (mesma classe ou pessoa 0/2): precisam de
+    atencao humana na UI. Geometria em pixels p/ IoU."""
+    px = [yolo_to_pixels(b, width, height) for b in boxes_yolo]
+    flagged = set()
+    for i in range(len(px)):
+        for j in range(i):
+            _, x1, y1, x2, y2 = px[i]
+            _, u1, v1, u2, v2 = px[j]
+            inter = max(0, min(x2, u2) - max(x1, u1)) * max(0, min(y2, v2) - max(y1, v1))
+            union = (x2 - x1) * (y2 - y1) + (u2 - u1) * (v2 - v1) - inter
+            iou = inter / union if union > 0 else 0
+            same = px[i][0] == px[j][0]
+            person = {px[i][0], px[j][0]} == {0, 2}
+            if iou >= iou_min and (same or person):
+                flagged.update((i, j))
+    return sorted(flagged)
+
+
+# --- 9. aquisicao assistida: gates de fonte/licenca, sem downloads ---
+ACQ_LICENSE_ALLOW = {"CC-BY-4.0", "CC-BY-SA-4.0", "CC0-1.0", "ODC-BY-1.0"}
+ACQ_VIEWPOINT_BONUS = {"cftv_elevado": 3, "cftv_nivel_rua": 1}
+
+
+def validate_source(group):
+    """Valida UMA fonte candidata: exige origem rastreavel + licenca permitida
+    (ou autorizacao explicita). Nao baixa nada."""
+    issues = []
+    if not group.get("source"):
+        issues.append("missing source")
+    if not group.get("license"):
+        issues.append("missing license")
+    elif (group["license"] not in ACQ_LICENSE_ALLOW
+          and not group.get("authorization_ref")):
+        issues.append(f"license {group['license']} needs authorization_ref")
+    if not group.get("viewpoint"):
+        issues.append("missing viewpoint")
+    return issues
+
+
+def score_group_priority(group, known_environments):
+    """Prioridade: CCTV elevado + ambientes novos. Maior = coletar antes."""
+    score = ACQ_VIEWPOINT_BONUS.get(group.get("viewpoint", ""), 0)
+    score += sum(1 for e in group.get("environments", []) if e not in known_environments)
+    score += len(group.get("lighting", []))
+    return score
+
+
+def acquisition_gates(groups):
+    """Checklist bloqueante: downloads so com ready=True + decisao humana
+    explicita (a flag nunca e setada aqui)."""
+    plan = plan_acquisition(groups)
+    issues = list(plan["issues"])
+    known, ranked = set(), []
+    for g in sorted(groups, key=lambda g: g.get("group", "")):
+        for e in validate_source(g):
+            issues.append(f"{g.get('group', '?')}: {e}")
+        ranked.append((score_group_priority(g, known), g.get("group")))
+        known.update(g.get("environments", []))
+    ranked.sort(reverse=True)
+    cctv = sum(1 for g in groups if g.get("viewpoint") == "cftv_elevado")
+    gates = dict(plan_ready=plan["ready"],
+                 sources_valid=all(not validate_source(g) for g in groups),
+                 groups_20_plus=len(groups) >= ACQ_MIN_GROUPS,
+                 cctv_priority=cctv > 0,
+                 download_allowed=False)  # sempre False: humano autoriza fora daqui
+    gates["ready"] = all([gates["plan_ready"], gates["sources_valid"],
+                          gates["groups_20_plus"]]) and not issues
+    return dict(gates=gates, issues=issues,
+                collect_order=[g for _, g in ranked],
+                planned_images=plan["planned_images"])
